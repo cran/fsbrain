@@ -1,0 +1,194 @@
+---
+title: "fsbrain: Utility Functions for the Analysis of Structural Neuroimaging Data in GNU R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Analysis of structural neuroimaging data with fsbrain}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+In this document, we demonstrate some high-level functions for loading and analysing structural neuroimaging data preprocessed with [FreeSurfer](https://surfer.nmr.mgh.harvard.edu). FreeSurfer stores its output in a directory structure with fixed subfolder names. This package implements several high-level functions that allow the user to access surface-based brain structure data for large groups of subjects with very little code. It also supports the computation of statistics for individual brain structures or brain atlas regions for brain morphometry measures. Statistical analysis can then be performed using standard methods implemented in other packages.
+
+Note: While this packages provides an abstract access layer to neuroimaging data, it does *not* implement file readers. It uses the 'freesurferformats' package in the background to parse the file formats.
+
+### Example data used in this document
+
+We will use example data that comes with fsbrain throughout this manual. Feel free to replace the subjects_dir and subjects_list with data from your study.
+
+```{r, eval = FALSE}
+library("fsbrain");
+fsbrain::download_optional_data();
+subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+subjects_list = c("subject1", "subject2");
+```
+
+# Accessing group data
+
+This section explains how to load raw data for groups of subjects from files.
+
+## Morphometry data for groups
+
+Use *group.morph.native()* and *group.morph.standard()* to load morphometry data for groups from morphometry data files (curv/MGH/MGZ).
+
+## Annotations for groups
+
+Use *group.annot()* to load annotation data for groups from files.
+
+## Labels for groups
+
+Use *group.label()* to load label data for groups from files.
+
+
+# Aggregating morphometry data
+
+This section explains aggregation functions. These allow you to retrieve the mean, max, min, or whatever value over a number of vertices. Aggregation is supported on hemisphere level and on the level of brain atlas regions.
+
+## Aggregating group data over entire hemispheres
+
+### A single morphometry measure in native space
+
+The fsbrain package provides a high-level interface to access data for groups of subjects. Here, we compute the mean thickness for each subject in native space:
+
+```{r, eval = FALSE}
+mean_thickness_lh_native = group.morph.agg.native(subjects_dir, subjects_list, "thickness", "lh", agg_fun=mean);
+mean_thickness_lh_native;
+```
+
+
+### A single morphometry measure in standard space
+
+Here, we compute the mean thickness for each subject in standard space:
+
+```{r, eval = FALSE}
+mean_thickness_lh_std = group.morph.agg.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm="10", agg_fun=mean);
+mean_thickness_lh_std;
+```
+
+
+### Several measures over several hemispheres in native space
+
+When working with native space data for groups, vertex-wise comparison is not possible and one is often interested in aggregating data or summary statistics. Obtaining these for a group becomes easy with 'fsbrain':
+
+
+```{r, eval = FALSE}
+agg_nat = group.multimorph.agg.native(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), agg_fun = mean);
+head(agg_nat);
+```
+
+
+The measure values are the mean thickness/area/volume over all vertices of the subject, computed from the respective native space morphometry files (e.g., 'subject1/surf/lh.thickness', 'subject2/surf/lh.thickness', and so on).
+
+Note that you can get short format by setting 'cast = FALSE', which will result in a dataframe with the following columns instead:
+
+* `subject_id`
+* `lh.thickness`
+* `rh.thickness`
+* `lh.area`
+* `eh.area`
+* `lh.volume`
+* `rh.volume`
+
+### Several measures over several hemispheres in standard space
+
+You could do the same in standard space with `group.multimorph.agg.standard()`, even though it's less common as typically vertex-wise analysis is used in standard space. This requires that you pass the `fwhm` parameter to identify which smoothing value you want:
+
+```{r, eval = FALSE}
+data_std = group.multimorph.agg.standard(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), fwhm='10', agg_fun = mean);
+head(data_std);
+```
+
+Other parameters exist to define the template subject, which defaults to 'fsaverage' in the example above.
+
+
+## Aggregating over atlas regions
+
+### Native space
+
+Instead of looking at the full hemispheres, you may want to look at brain regions from some atlas (also called *cortical parcellation*). Examples are the Desikan atlas and the Destrieux atlas, both of which come with FreeSurfer.
+
+
+```{r, eval = FALSE}
+atlas = 'aparc';         # or 'aparc.a2009s', or 'aparc.DKTatlas'.
+measure = 'thickness';
+region_means_native = group.agg.atlas.native(subjects_dir, subjects_list, measure, "lh", atlas, agg_fun = mean);
+head(region_means_native);
+```
+
+
+The measure values are the mean thickness over all vertices of the respective region of the subject, computed from the respective native space morphometry files (e.g., 'subject1/surf/lh.thickness', 'subject2/surf/lh.thickness', and so on). The brain parcellation for the subject is read from its annotation file ( 'subject1/label/lh.aparc.annot' in this case).
+
+
+### Standard space
+
+You could do the same in standard space with `group.agg.atlas.standard()`, even though it's less common as typically vertex-wise analysis is used in standard space. This requires that you pass the `fwhm` parameter to identify which smoothing value you want, and that you have the template subject in the subjects_dir. The template subject defaults to fsaverage.
+
+```{r, eval = FALSE}
+region_means_std = group.agg.atlas.standard(subjects_dir, subjects_list, measure, "lh", atlas, fwhm = '10', agg_fun = mean);
+```
+
+Other parameters exist to define the template subject, which defaults to 'fsaverage' in the example above.
+
+
+# Working with atlas data
+
+You can use a mask to analyze (or exclude) data from certain regions. A typical usecase is to ignore the vertices from the medial wall in statistical analyses of the whole hemisphere, or to analyze only vertices from a specific label or atlas region. To archieve this, one could create a mask based on the 'medial_wall' region of the 'aparc.a2009s' atlas, and set all vertices in that region to NA for the subjects. Make sure to use functions that can work with NA values e.g., nanmean instead of mean) when working with the masked data.
+
+## Loading label files
+
+One can load label files from disk using the *subject.label()* and *group.label()* functions.
+
+## Creating a label from an atlas region
+
+One can use the *label.from.annotdata()* function on subject level, or the *group.label.from.annot()* function on group level to create a label from a brain parcellation.
+
+
+## Mapping one result value to each brain atlas region
+
+Mapping a single value to an atlas region of a subject (usually a template subject like fsaverage) is useful to display results, like p values or effect sizes, on the brain surface. Here is an example script that uses fsbrain to do that:
+
+```{r, eval = FALSE}
+hemi = "lh"               # 'lh' or 'rh'
+atlas = "aparc"           # an atlas, e.g., 'aparc', 'aparc.a2009s', 'aparc.DKTatlas'
+
+template_subjects_dir = "~/software/freesurfer/subjects";    # Some directory where we can find fsaverage. This can be omitted if FREESURFER_HOME is set, the function will find fsaverage in there by default.
+
+# One can also retrieve all region names of an atlas. This would get all 36 aparc regions:
+region_names_aparc = fsbrain::get.atlas.region.names('aparc', template_subjects_dir=template_subjects_dir);
+region_value_list = as.list(rnorm(length(region_names_aparc), mean=5, sd=1.5)); # assign some random normal values for this example. One would put effect size values or whatever here. The order of values has to match the order of the region names.
+names(region_value_list) = region_names_aparc;    # Assign the names to the values.
+
+ret = fsbrain::write.region.values.fsaverage(hemi, atlas, region_value_list, output_file="/tmp/spread.mgz", template_subjects_dir=template_subjects_dir, show_freeview_tip=TRUE);
+```
+
+This code will write an MGZ file that can be visualized in FreeView or Matlab/Surfstat.
+
+# Data visualization
+
+This package comes with a range of visualization functions. They are based on OpenGL using the rgl package. See the rgl documentation for the requirements. Under MacOS, you will need to have XQuartz installed.
+
+## Rendering annotations (or brain parcellations based on an atlas)
+
+Let's first visualize an annotation:
+
+```{r, eval = FALSE}
+vis.subject.annot(subjects_dir, 'subject1', 'aparc', 'both');
+```
+
+
+This will give you an interactive window in which you can freely rotate a view similar to the one shown in the following screenshot:
+
+![**Figure 1**: Atlas regions visualized on a brain surface mesh. Annotation and mesh loaded with `freesurferformats`, and rendered using the `rgl` package.](rgl_brain_aparc.jpg)
+
+You can also visualize morphometry data:
+
+```{r, eval = FALSE}
+morph_data_lh = subject.morph.native(subjects_dir, 'subject1', 'thickness', 'lh');
+morph_data_rh = subject.morph.native(subjects_dir, 'subject1', 'thickness', 'rh');
+vis.data.on.subject(subjects_dir, 'subject1', morph_data_lh, morph_data_rh);
+```
+
+
+![**Figure 2**: Cortical thickness data visualized on a brain mesh. Morphometry data and mesh loaded with `freesurferformats`, mesh rendered using the `rgl` package.](rgl_brain_ct.jpg)
+
+
+If you prefer a 2D view that shows brain regions from different viewports in cartoon style, you may want to try the `ggseg` package instead.
