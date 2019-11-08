@@ -83,3 +83,71 @@ test_that("Surface data can be read on subject level", {
 })
 
 
+test_that("A plain or inverted new mask can be created for single hemisphere data", {
+    labels = list(c(4,6), c(8,11, 4));
+
+    expected_mask_inverted = c(FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, TRUE);
+    expected_mask = !expected_mask_inverted;
+
+    mask = mask.from.labeldata.for.hemi(labels, 11);
+    expect_equal(mask, expected_mask);
+
+    mask_inv = mask.from.labeldata.for.hemi(labels, 11, invert_labels=TRUE);
+    expect_equal(mask_inv, expected_mask_inverted);
+})
+
+
+test_that("Creating a mask and specifying too few vertices fails", {
+    labels = list(c(4,6), c(8,11, 4));
+    expect_error(mask = mask.from.labeldata.for.hemi(labels, 9));   # 9 is bad if the highest index in the labels is 11
+})
+
+
+test_that("An existing mask can be modified by applying more labels", {
+    labels = list(c(1,2), c(6,7));
+
+    existing_mask = c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE);
+
+    edited_mask = mask.from.labeldata.for.hemi(labels, 10, existing_mask = existing_mask);
+    expect_equal(edited_mask, c(FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE));
+})
+
+
+test_that("An existing mask can be modified by applying more inverted labels", {
+    labels = list(c(1,2), c(6,7));
+
+    existing_mask = c(TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE);
+
+    edited_mask = mask.from.labeldata.for.hemi(labels, 10, existing_mask = existing_mask, invert_labels=TRUE);
+    expect_equal(edited_mask, c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE));
+})
+
+
+test_that("We can build a mask from an atlas region and edit it", {
+    fsbrain::download_optional_data();
+
+    # Define the data to use:
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+    surface = 'white';
+    hemi = 'both';
+    atlas = 'aparc';
+    region = 'bankssts';
+
+    # Create a mask from a region of an annotation:
+    lh_annot = subject.annot(subjects_dir, subject_id, 'lh', atlas);
+    rh_annot = subject.annot(subjects_dir, subject_id, 'rh', atlas);
+    lh_label = label.from.annotdata(lh_annot, region);
+    rh_label = label.from.annotdata(rh_annot, region);
+    lh_mask = mask.from.labeldata.for.hemi(lh_label, length(lh_annot$vertices));
+    rh_mask = mask.from.labeldata.for.hemi(rh_label, length(rh_annot$vertices));
+
+    # Edit the mask: add the vertices from another region to it:
+    region2 = 'medialorbitofrontal';
+    lh_label2 = label.from.annotdata(lh_annot, region2);
+    rh_label2 = label.from.annotdata(rh_annot, region2);
+    lh_mask2 = mask.from.labeldata.for.hemi(lh_label2, length(lh_annot$vertices), existing_mask = lh_mask);
+    rh_mask2 = mask.from.labeldata.for.hemi(rh_label2, length(rh_annot$vertices), existing_mask = rh_mask);
+})
+
+

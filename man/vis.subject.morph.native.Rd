@@ -6,7 +6,7 @@
 \usage{
 vis.subject.morph.native(subjects_dir, subject_id, measure, hemi,
   surface = "white", colormap = squash::jet, views = c("t4"),
-  rgloptions = list())
+  rgloptions = list(), rglactions = list(), draw_colorbar = FALSE)
 }
 \arguments{
 \item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
@@ -19,17 +19,21 @@ vis.subject.morph.native(subjects_dir, subject_id, measure, hemi,
 
 \item{surface, }{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
 
-\item{colormap, }{a colormap. See the squash package for some colormaps. Defaults to squash::jet.}
+\item{colormap, }{a colormap. See the squash package for some colormaps. Defaults to [squash::jet].}
 
 \item{views, }{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
 \item{rgloptions}{option list passed to [rgl::par3d()]. Example: rgloptions = list("windowRect"=c(50,50,1000,1000));}
+
+\item{rglactions, }{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.}
+
+\item{draw_colorbar}{logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE.}
 }
 \value{
 list of coloredmeshes. The coloredmeshes used for the visualization.
 }
 \description{
-Creates a surface mesh, applies a colormap transform the morphometry data values into colors, and renders the resulting colored mesh in an interactive window. If hemi is 'both', the data is rendered for the wholw brain.
+Creates a surface mesh, applies a colormap transform the morphometry data values into colors, and renders the resulting colored mesh in an interactive window. If hemi is 'both', the data is rendered for the whole brain.
 }
 \examples{
 \donttest{
@@ -42,6 +46,9 @@ Creates a surface mesh, applies a colormap transform the morphometry data values
 \seealso{
 Other visualization functions: \code{\link{vis.data.on.fsaverage}},
   \code{\link{vis.data.on.subject}},
-  \code{\link{vis.subject.annot}}
+  \code{\link{vis.region.values.on.subject}},
+  \code{\link{vis.subject.annot}},
+  \code{\link{vis.subject.label}},
+  \code{\link{vis.subject.morph.standard}}
 }
 \concept{visualization functions}

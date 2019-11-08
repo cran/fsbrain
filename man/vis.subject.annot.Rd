@@ -5,7 +5,8 @@
 \title{Visualize an annotation for a subject.}
 \usage{
 vis.subject.annot(subjects_dir, subject_id, atlas, hemi,
-  surface = "white", views = c("t4"), rgloptions = list())
+  surface = "white", views = c("t4"), rgloptions = list(),
+  rglactions = list())
 }
 \arguments{
 \item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
@@ -21,12 +22,14 @@ vis.subject.annot(subjects_dir, subject_id, atlas, hemi,
 \item{views, }{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
 \item{rgloptions}{option list passed to [rgl::par3d()]. Example: rgloptions = list("windowRect"=c(50,50,1000,1000));}
+
+\item{rglactions, }{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.}
 }
 \value{
 list of coloredmeshes. The coloredmeshes used for the visualization.
 }
 \description{
-Creates a surface mesh, loads the colors from the annotation, and renders the resulting colored mesh in an interactive window. If hemi is 'both', the data is rendered for the wholw brain.
+Creates a surface mesh, loads the colors from the annotation, and renders the resulting colored mesh in an interactive window. If hemi is 'both', the data is rendered for the whole brain.
 }
 \examples{
 \donttest{
@@ -39,6 +42,9 @@ Creates a surface mesh, loads the colors from the annotation, and renders the re
 \seealso{
 Other visualization functions: \code{\link{vis.data.on.fsaverage}},
   \code{\link{vis.data.on.subject}},
-  \code{\link{vis.subject.morph.native}}
+  \code{\link{vis.region.values.on.subject}},
+  \code{\link{vis.subject.label}},
+  \code{\link{vis.subject.morph.native}},
+  \code{\link{vis.subject.morph.standard}}
 }
 \concept{visualization functions}

@@ -12,14 +12,20 @@
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
+#' @param rgloptions, named list. Parameters passed to [rgl::par3d()]. Defaults to the empty list.
+#'
+#' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. Defaults to the empty list.
+#'
+#' @param draw_colorbar logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE.
+#'
 #' @keywords internal
 #' @importFrom rgl open3d bg3d wire3d shade3d mfrow3d next3d text3d rgl.viewpoint
-brainview.si <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, rgloptions = list()) {
+brainview.si <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, rgloptions = list(), rglactions=list(), draw_colorbar = FALSE) {
 
     if(!is.list(coloredmeshes)) {
         stop("Parameter 'coloredmeshes' must be a list.");
     }
-    invisible(vis.coloredmeshes(coloredmeshes, rgloptions = rgloptions));
+    invisible(vis.coloredmeshes(coloredmeshes, rgloptions = rgloptions, rglactions = rglactions, draw_colorbar = draw_colorbar));
 }
 
 
@@ -45,14 +51,20 @@ brainview.si <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 #'
 #' @param duration rotation duration value, passed to [rgl::spin3d()]. Defaults to 20.
 #'
+#' @param rgloptions, named list. Parameters passed to [rgl::par3d()]. Defaults to the empty list.
+#'
+#' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. Defaults to the empty list.
+#'
+#' @param draw_colorbar logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE.
+#'
 #' @keywords internal
 #' @importFrom rgl open3d bg3d wire3d shade3d mfrow3d next3d text3d rgl.viewpoint
-brainview.sr <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, x=0, y=1, z=0, rpm=15, duration=20, rgloptions = list()) {
+brainview.sr <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, x=0, y=1, z=0, rpm=6, duration=10, rgloptions = list(), rglactions=list(), draw_colorbar = FALSE) {
 
     if(!is.list(coloredmeshes)) {
         stop("Parameter 'coloredmeshes' must be a list.");
     }
-    invisible(vis.coloredmeshes.rotating(coloredmeshes, x=x, y=y, z=z, rpm=rpm, duration=duration, rgloptions = rgloptions));
+    invisible(vis.coloredmeshes.rotating(coloredmeshes, x=x, y=y, z=z, rpm=rpm, duration=duration, rgloptions = rgloptions, rglactions = rglactions));
 }
 
 
@@ -68,9 +80,15 @@ brainview.sr <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
+#' @param rgloptions, named list. Parameters passed to [rgl::par3d()]. Defaults to the empty list.
+#'
+#' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
+#'
+#' @param draw_colorbar logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE.
+#'
 #' @keywords internal
 #' @importFrom rgl open3d bg3d wire3d shade3d mfrow3d next3d text3d rgl.viewpoint
-brainview.t4 <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, rgloptions = list()) {
+brainview.t4 <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, rgloptions = list(), rglactions = list(), draw_colorbar = FALSE) {
 
     label_shift_y = -20;
 
@@ -82,7 +100,10 @@ brainview.t4 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
     layout_dim_y = 2;
     num_views = layout_dim_x * layout_dim_y;
 
+    coloredmeshes = unify.coloredmeshes.colormaps(coloredmeshes);
+
     hemi_sorted_cmeshes = sort.coloredmeshes.by.hemi(coloredmeshes);
+
     lh_meshes = hemi_sorted_cmeshes$lh;
     rh_meshes = hemi_sorted_cmeshes$rh;
 
@@ -112,7 +133,7 @@ brainview.t4 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the lower left view
     rgl::next3d();
-    vis.rotated.coloredmeshes(lh_meshes, pi/2, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(lh_meshes, pi/2, 1, 0, 0, style=style, draw_colorbar=(draw_colorbar && (length(rh_meshes)==0)));
     rgl::rgl.viewpoint(90, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y,0,"medial lh");
@@ -121,17 +142,49 @@ brainview.t4 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the lower right view
     rgl::next3d();
-    vis.rotated.coloredmeshes(rh_meshes, pi/2, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(rh_meshes, pi/2, 1, 0, 0, style=style, draw_colorbar=draw_colorbar);
     rgl::rgl.viewpoint(-90, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y,0,"medial rh");
     }
 
-    #rgl::highlevel(integer()); # To trigger display as rglwidget
 
+    perform.rglactions(rglactions);
     invisible(coloredmeshes);
 }
 
+
+#' @title Perform rglactions, like taking screenshots.
+#'
+#' @description Take a list specifying actions and execute them. This function should be called once an rgl scene has been setup and rendered. A typical usecase is to save a screenshot of the scene.
+#'
+#' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
+#'
+#' @keywords internal
+#' @importFrom rgl rgl.snapshot
+perform.rglactions <- function(rglactions) {
+    if(is.list(rglactions)) {
+        if("snapshot_png" %in% names(rglactions)) {
+            output_image = path.expand(rglactions$snapshot_png);
+            rgl::rgl.snapshot(output_image, fmt="png");
+            message(sprintf("Screenshot written to '%s' (current working dir is '%s').\n", output_image, getwd()));
+        }
+    }
+}
+
+#' @title Check for a key in names of rglactions.
+#'
+#' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
+#'
+#' @return logical, whether the rglactions instance has the requested key as a name.
+#'
+#' @keywords internal
+rglactions.has.key <- function(rglactions, key) {
+    if(is.list(rglactions)) {
+        return(key %in% names(rglactions));
+    }
+    return(FALSE);
+}
 
 
 #' @title Visualize a list of colored meshes from nine angles.
@@ -146,11 +199,16 @@ brainview.t4 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
+#' @param rgloptions, named list. Parameters passed to [rgl::par3d()]. Defaults to the empty list. To increase plot resolution to 2000x1600 px, try: \code{rgloptions=list("windowRect"=c(50,50,2000,1600))}.
+#'
+#' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
+#'
+#' @param draw_colorbar logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE.
+#'
 #' @keywords internal
 #' @importFrom rgl open3d bg3d wire3d shade3d mfrow3d next3d text3d rgl.viewpoint
-brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, rgloptions = list()) {
+brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", draw_labels = FALSE, rgloptions = list(), rglactions = list(), draw_colorbar = FALSE) {
 
-    #do_draw_colorbar = FALSE;
 
     label_shift_y = -20;
     label_shift_y_dorsal = -120;
@@ -164,6 +222,8 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
     layout_dim_y = 3;
     num_views = layout_dim_x * layout_dim_y;
 
+    coloredmeshes = unify.coloredmeshes.colormaps(coloredmeshes);
+
     hemi_sorted_cmeshes = sort.coloredmeshes.by.hemi(coloredmeshes);
     lh_meshes = hemi_sorted_cmeshes$lh;
     rh_meshes = hemi_sorted_cmeshes$rh;
@@ -173,7 +233,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
     do.call(rgl::par3d, rgloptions);
     Sys.sleep(1);
     rgl::bg3d(background);
-    rgl::mfrow3d(layout_dim_x, layout_dim_y);
+    rgl::mfrow3d(layout_dim_x, layout_dim_y, sharedMouse = TRUE);
 
 
     #  ------------------ Row 1 --------------------
@@ -217,7 +277,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the 2nd row central view: draw both hemis from below (bottom view)
     rgl::next3d();
-    vis.rotated.coloredmeshes(coloredmeshes, pi, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(coloredmeshes, pi, 1, 0, 0, style=style, draw_colorbar = draw_colorbar);
     rgl::rgl.viewpoint(0, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y_ventral,0,"ventral");
@@ -244,7 +304,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
         rgl::text3d(0,label_shift_y,0,"rostal");
     }
 
-    # Create the bottom central view. Empty, could later draw colorbar here.
+    # Create the bottom central view.
     rgl::next3d();
     if(draw_labels) {
         rgl::text3d(0,label_shift_y,0,"(empty)");
@@ -254,14 +314,6 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
         #  Therefore, we draw empty text for now.
         rgl::text3d(0,label_shift_y,0,"");
 
-        #if(do_draw_colorbar) {
-        #    rgl::bgplot3d({
-        #        graphics::plot.new();
-        #        plotrix::color.legend(0.1, 0.1, 0.9, 0.9,
-        #                     rect.col=grDevices::rainbow(1000),
-        #                     legend=(-3):3, gradient="y", cex = 1.5)
-        #    });
-        #}
     }
 
     # Create the bottom right view
@@ -272,7 +324,8 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
         rgl::text3d(0,label_shift_y,0,"caudal");
     }
 
-    #rgl::highlevel(integer()); # To trigger display as rglwidget
-    invisible(coloredmeshes);
+
+    perform.rglactions(rglactions);
+    return(invisible(coloredmeshes));
 }
 

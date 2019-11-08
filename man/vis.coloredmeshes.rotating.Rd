@@ -2,11 +2,11 @@
 % Please edit documentation in R/vis_meshes.R
 \name{vis.coloredmeshes.rotating}
 \alias{vis.coloredmeshes.rotating}
-\title{Visualize a list of colored meshes in a single scene and rotate them.}
+\title{Visualize a list of colored meshes in a single scene and rotate them, movie-style.}
 \usage{
 vis.coloredmeshes.rotating(coloredmeshes, background = "white",
-  skip_all_na = TRUE, style = "default", x = 0, y = 1, z = 0,
-  rpm = 15, duration = 20, rgloptions = list())
+  skip_all_na = TRUE, style = "default", x = 0, y = 0, z = 1,
+  rpm = 6, duration = 10, rgloptions = list(), rglactions = list())
 }
 \arguments{
 \item{coloredmeshes, }{list of coloredmesh. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.}
@@ -28,11 +28,13 @@ vis.coloredmeshes.rotating(coloredmeshes, background = "white",
 \item{duration}{rotation duration value, passed to [rgl::spin3d()]. Defaults to 20.}
 
 \item{rgloptions}{option list passed to [rgl::par3d()]. Example: rgloptions = list("windowRect"=c(50,50,1000,1000));}
+
+\item{rglactions, }{named list. A list in which the names are from a set of pre-defined actions. Defaults to the empty list.}
 }
 \value{
 the list of visualized coloredmeshes
 }
 \description{
-Visualize a list of colored meshes in a single scene and rotate them.
+Visualize a list of colored meshes in a single scene and rotate them, movie-style.
 }
 \keyword{internal}

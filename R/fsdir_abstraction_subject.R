@@ -288,6 +288,96 @@ subject.label <- function(subjects_dir, subject_id, label, hemi, return_one_base
     return(freesurferformats::read.fs.label(labelfile, return_one_based_indices=return_one_based_indices));
 }
 
+#' @title Create a binary mask from labels.
+#'
+#' @description Create a binary mask for the data of a single hemisphere from one or more labels. A label contains the vertex indices which are part of it, but often having a mask in more convenient.
+#'
+#' @param labels, list of labels. A label is just a vector of vertex indices. It can be created manually, but is typically loaded from a label file using [fsbrain::subject.label].
+#'
+#' @param num_vertices_in_hemi, integer. The number of vertices of the surface for which the mask is created. This must be for a single hemisphere.
+#'
+#' @param invert_labels logical, whether to invert the label data.
+#'
+#' @param existing_mask an existing mask to modify or NULL. If it is NULL, a new mask will be created before applying any labels, and the values set during initialization of this new mask are the negation of the 'invert_label' parameter. Defaults to NULL.
+#'
+#' @return logical vector. The mask. It contains a logical value for each vertex. By default, the vertex indices from the labels are FALSE and the rest are TRUE, but this can be changed with the parameter 'invert_labels'.
+#'
+#' @examples
+#' \donttest{
+#'    fsbrain::download_optional_data();
+#'
+#'   # Define the data to use:
+#'   subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#'   subject_id = 'subject1';
+#'   surface = 'white';
+#'   hemi = 'both';
+#'   atlas = 'aparc';
+#'   region = 'bankssts';
+#'
+#'   # Create a mask from a region of an annotation:
+#'   lh_annot = subject.annot(subjects_dir, subject_id, 'lh', atlas);
+#'   rh_annot = subject.annot(subjects_dir, subject_id, 'rh', atlas);
+#'   lh_label = label.from.annotdata(lh_annot, region);
+#'   rh_label = label.from.annotdata(rh_annot, region);
+#'   lh_mask = mask.from.labeldata.for.hemi(lh_label, length(lh_annot$vertices));
+#'   rh_mask = mask.from.labeldata.for.hemi(rh_label, length(rh_annot$vertices));
+#'
+#'   # Edit the mask: add the vertices from another region to it:
+#'   region2 = 'medialorbitofrontal';
+#'   lh_label2 = label.from.annotdata(lh_annot, region2);
+#'   rh_label2 = label.from.annotdata(rh_annot, region2);
+#'   lh_mask2 = mask.from.labeldata.for.hemi(lh_label2, length(lh_annot$vertices),
+#'    existing_mask = lh_mask);
+#'   rh_mask2 = mask.from.labeldata.for.hemi(rh_label2, length(rh_annot$vertices),
+#'    existing_mask = rh_mask);
+#' }
+#'
+#' @family label data functions
+#' @family mask functions
+#'
+#' @export
+mask.from.labeldata.for.hemi <- function(labels, num_vertices_in_hemi, invert_labels=FALSE, existing_mask=NULL) {
+    if(is.null(existing_mask)) {
+        mask = rep(!invert_labels, num_vertices_in_hemi);
+    } else {
+        if(! is.logical(existing_mask)) {
+            stop("Parameter 'existing_mask' must be logical vector if given.");
+        }
+        if(length(existing_mask) != num_vertices_in_hemi) {
+            stop(sprintf("The mask supplied in parameter 'existing_mask' has %d entries but parameter 'num_vertices_in_hemi' is %d. Numbers must match.\n", length(existing_mask), num_vertices_in_hemi));
+        }
+        mask = existing_mask;
+    }
+    for(label_idx in seq_len(length(labels))) {
+        label = unlist(labels[label_idx]);
+        if(max(label) > num_vertices_in_hemi) {
+            stop(sprintf("Label #%d contains vertex index %d, but parameter 'num_vertices_in_hemi' is only %d. Vertex index must no exceed vertex count.\n", label_idx, max(label), num_vertices_in_hemi));
+        }
+        mask[label] = invert_labels;
+    }
+    return(mask);
+}
+
+#' @title Create labeldata from a mask.
+#'
+#' @description Create labeldata from a mask. This function is trivial and only calls [base::which] after performing basic sanity checks.
+#'
+#' @param mask a logical vector
+#'
+#' @param invert Whether to report the inverse the mask before determining the indices. Defaults to FALSE.
+#'
+#' @return labeldata. The list of indices which are TRUE in the mask (or the ones which FALSE if 'invert' is TRUE).
+#'
+#' @family label data functions
+#'
+#' @export
+labeldata.from.mask <- function(mask, invert=FALSE) {
+    if(! is.logical(mask)) {
+        stop("Parameter 'mask' must be logical vector.");
+    }
+    return(which(mask != invert));
+}
+
 
 #'@title Load an annotation for a subject.
 #'
@@ -301,7 +391,8 @@ subject.label <- function(subjects_dir, subject_id, label, hemi, return_one_base
 #'
 #' @param atlas, string. The atlas name. E.g., "aparc", "aparc.2009s", or "aparc.DKTatlas". Used to construct the name of the annotation file to be loaded.
 #'
-#' @return the annotation, as returned by freesurferformats::read.fs.annot().
+#' @return the annotation, as returned by [freesurferformats::read.fs.annot()]. It is a named list, enties are: "vertices" vector of n vertex indices, starting with 0. "label_codes": vector of n integers, each entry is a color code, i.e., a value from the 5th column in the table structure included in the "colortable" entry (see below). "label_names": the n brain structure names for the vertices, already retrieved from the colortable using the code. "hex_colors_rgb": Vector of hex color for each vertex.
+#'      The "colortable" is another named list with 3 entries: "num_entries": int, number of brain structures. "struct_names": vector of strings, the brain structure names. "table": numeric matrix with num_entries rows and 5 colums. The 5 columns are: 1 = color red channel, 2=color blue channel, 3=color green channel, 4=color alpha channel, 5=unique color code. "colortable_df": The same information as a dataframe. Contains the extra columns "hex_color_string_rgb" and "hex_color_string_rgba" that hold the color as an RGB(A) hex string, like "#rrggbbaa".
 #'
 #' @examples
 #' \donttest{
