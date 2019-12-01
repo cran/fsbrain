@@ -21,6 +21,15 @@
 #  # output: Data length is 163842 for subject1, 163842 for subject2.
 
 ## ---- eval = FALSE-------------------------------------------------------
+#  # Load the full hemisphere data, including media wall:
+#  fulldata = group.morph.native(subjects_dir, subjects_list, "thickness", "lh");
+#  mean(fulldata$subject1);
+#  
+#  # This time, restrict data to the cerebral cortex:
+#  cortexdata = group.morph.native(subjects_dir, subjects_list, "thickness", "lh", cortex_only=TRUE);
+#  mean(cortexdata$subject1, na.rm=TRUE);
+
+## ---- eval = FALSE-------------------------------------------------------
 #  grouplabels = group.label(subjects_dir, subjects_list, "cortex.label", hemi='lh');
 #  cat(sprintf("The left hemisphere cortex label of subject1 includes %d vertices.\n", length(grouplabels$subject1)));
 #  # output: The left hemisphere cortex label of subject1 includes 140891 vertices.
@@ -102,6 +111,10 @@
 #  #6   subject2   rh    thickness     2.2926377
 
 ## ---- eval = FALSE-------------------------------------------------------
+#  data_std_cortex = group.multimorph.agg.standard(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), fwhm='10', agg_fun = mean, cortex_only=TRUE,  agg_fun_extra_params=list("na.rm"=TRUE));
+#  head(data_std_cortex);
+
+## ---- eval = FALSE-------------------------------------------------------
 #  atlas = 'aparc';         # or 'aparc.a2009s', or 'aparc.DKTatlas'.
 #  measure = 'thickness';
 #  region_means_native = group.agg.atlas.native(subjects_dir, subjects_list, measure, "lh", atlas, agg_fun = mean);
@@ -164,6 +177,24 @@
 #  vis.subject.label(subjects_dir, subject_id, label, hemi);
 
 ## ---- eval = FALSE-------------------------------------------------------
+#  surface = 'white';  # If possible, use the 'inflated' surface instead: it is much easier to find the vertices on it. We do not
+#  #  use it here because the inflated surface is not shipped with the example data for this package to reduce download size.
+#  
+#  # For the left hemi, we just specify 3 vertices. They are very small in the high-resolution mesh and may be hard to spot.
+#  my_lh_result_cluster_vertices = c(1000, 1001, 1002);  # Would be a lot more than just 3 in real life, and they would be adjacent (these are not).
+#  lh_labeldata = my_lh_result_cluster_vertices;
+#  
+#  # For the right hemi, we extend the neighborhood around our vertices of interest for the visualization. This makes the a lot easier to spot.
+#  my_highest_effect_size_vertex = 5000;
+#  rh_labeldata = c(my_highest_effect_size_vertex);
+#  rh_surface = subject.surface(subjects_dir, subject_id, surface, 'rh');
+#  rh_labeldata_neighborhood = mesh.vertex.neighbors(rh_surface, rh_labeldata);   # extend neighborhood for better visibility
+#  rh_labeldata_neighborhood = mesh.vertex.neighbors(rh_surface, rh_labeldata_neighborhood$vertices);   # extend neighborhood again
+#  
+#  # Hint: Check the area around the visual cortex when searching for the vertices in interactive mode.
+#  vis.labeldata.on.subject(subjects_dir, subject_id, lh_labeldata, rh_labeldata_neighborhood$vertices, views=c('si'), surface=surface);
+
+## ---- eval = FALSE-------------------------------------------------------
 #  surface = 'white';
 #  hemi = 'both';
 #  atlas = 'aparc';
@@ -222,4 +253,17 @@
 #  rglactions = list("movie"=movie_base_filename, "clip_data"=c(0.05, 0.95));
 #  # Creating a movie requires the rotating view ('sr' for 'single rotating'). The action will be silently ignored in all other views.
 #  vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('sr'), rgloptions=rgloptions, rglactions=rglactions);
+
+## ---- eval = FALSE-------------------------------------------------------
+#  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#  subject_id = 'subject1';
+#  rgloptions=list("windowRect"=c(50, 50, 1000, 1000));     # larger plot
+#  surface = 'white';
+#  measure = 'thickness';
+#  vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si'), rgloptions=rgloptions, draw_colorbar = TRUE);
+
+## ---- eval = FALSE-------------------------------------------------------
+#  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#  coloredmeshes = vis.subject.morph.native(subjects_dir, 'subject1', 'thickness', 'lh', views=c('t4'), colormap=squash::jet);
+#  coloredmesh.plot.colorbar.separate(coloredmeshes, horizontal=TRUE);
 

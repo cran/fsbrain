@@ -5,18 +5,20 @@
 \title{Retrieve native space morphometry data for a single subject.}
 \usage{
 subject.morph.native(subjects_dir, subject_id, measure, hemi,
-  format = "curv")
+  format = "curv", cortex_only = FALSE)
 }
 \arguments{
-\item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
+\item{subjects_dir}{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
 
-\item{subject_id, }{string. The subject identifier}
+\item{subject_id}{string. The subject identifier}
 
-\item{measure, }{string. Name of the vertex-wise measure of morphometry data file. E.g., "area" or "thickness". Used to construct the name of the morphometry file to be loaded.}
+\item{measure}{string. Name of the vertex-wise measure of morphometry data file. E.g., "area" or "thickness". Used to construct the name of the morphometry file to be loaded.}
 
-\item{hemi, }{string, one of 'lh', 'rh' or 'both'. The hemisphere name. Used to construct the names of the annotation and morphometry data files to be loaded.}
+\item{hemi}{string, one of 'lh', 'rh' or 'both'. The hemisphere name. Used to construct the names of the annotation and morphometry data files to be loaded.}
 
-\item{format, }{string. One of 'mgh', 'mgz', 'curv'. Defaults to 'curv'.}
+\item{format}{string. One of 'mgh', 'mgz', 'curv'. Defaults to 'curv'.}
+
+\item{cortex_only}{logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subject. Defaults to FALSE.}
 }
 \value{
 vector with native space morph data
@@ -28,12 +30,23 @@ Load native space morphometry data (like 'surf/lh.area') for a subject from disk
 \donttest{
    fsbrain::download_optional_data();
    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+
+   # Load the full data:
    thickness_lh = subject.morph.native(subjects_dir, "subject1", "thickness", "lh");
+   mean(thickness_lh);  # prints 2.437466
+
+   # Load the data again, but this time exclude the medial wall:
+   thickness_lh_cortex = subject.morph.native(subjects_dir, "subject1", "thickness",
+    "lh", cortex_only=TRUE);
+   mean(thickness_lh_cortex, na.rm=TRUE);     # prints 2.544132
+   vis.data.on.subject(subjects_dir, "subject1", thickness_lh_cortex, NULL);
 }
 
 }
 \seealso{
-Other morphometry data functions: \code{\link{group.morph.native}},
+Other morphometry data functions: \code{\link{apply.label.to.morphdata}},
+  \code{\link{apply.labeldata.to.morphdata}},
+  \code{\link{group.morph.native}},
   \code{\link{group.morph.standard}},
   \code{\link{subject.morph.standard}}
 }

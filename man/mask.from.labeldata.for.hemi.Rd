@@ -8,9 +8,9 @@ mask.from.labeldata.for.hemi(labels, num_vertices_in_hemi,
   invert_labels = FALSE, existing_mask = NULL)
 }
 \arguments{
-\item{labels, }{list of labels. A label is just a vector of vertex indices. It can be created manually, but is typically loaded from a label file using [fsbrain::subject.label].}
+\item{labels}{list of labels. A label is just a vector of vertex indices. It can be created manually, but is typically loaded from a label file using [fsbrain::subject.label].}
 
-\item{num_vertices_in_hemi, }{integer. The number of vertices of the surface for which the mask is created. This must be for a single hemisphere.}
+\item{num_vertices_in_hemi}{integer. The number of vertices of the surface for which the mask is created. This must be for a single hemisphere.}
 
 \item{invert_labels}{logical, whether to invert the label data.}
 

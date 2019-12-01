@@ -4,11 +4,11 @@
 \alias{vis.subject.morph.standard}
 \title{Visualize native space morphometry data for a subject.}
 \usage{
-vis.subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm,
-  surface = "white", template_subject = "fsaverage",
-  template_subjects_dir = NULL, colormap = squash::jet,
-  views = c("t4"), rgloptions = list(), rglactions = list(),
-  draw_colorbar = FALSE)
+vis.subject.morph.standard(subjects_dir, subject_id, measure,
+  hemi = "both", fwhm = "10", surface = "white",
+  template_subject = "fsaverage", template_subjects_dir = NULL,
+  colormap = squash::jet, views = c("t4"), rgloptions = list(),
+  rglactions = list(), draw_colorbar = FALSE, cortex_only = FALSE)
 }
 \arguments{
 \item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
@@ -27,15 +27,17 @@ vis.subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm,
 
 \item{template_subjects_dir}{The template subjects dir. If NULL, the value of the parameter 'subjects_dir' is used. Defaults to NULL. If you have FreeSurfer installed and configured, and are using the standard fsaverage subject, try passing the result of calling 'file.path(Sys.getenv('FREESURFER_HOME'), 'subjects')'.}
 
-\item{colormap, }{a colormap. See the squash package for some colormaps. Defaults to [squash::jet].}
+\item{colormap, }{a colormap. See the squash package for some colormaps. Defaults to \code{\link[squash]{jet}}.}
 
 \item{views, }{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
-\item{rgloptions}{option list passed to [rgl::par3d()]. Example: rgloptions = list("windowRect"=c(50,50,1000,1000));}
+\item{rgloptions}{option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}}
 
 \item{rglactions, }{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.}
 
-\item{draw_colorbar}{logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE.}
+\item{draw_colorbar}{logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE. See \code{\link[fsbrain]{coloredmesh.plot.colorbar.separate}} for an alternative.}
+
+\item{cortex_only}{logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subject. Defaults to FALSE.}
 }
 \value{
 list of coloredmeshes. The coloredmeshes used for the visualization.
@@ -61,9 +63,17 @@ Creates a surface mesh, applies a colormap transform the morphometry data values
 \seealso{
 Other visualization functions: \code{\link{vis.data.on.fsaverage}},
   \code{\link{vis.data.on.subject}},
+  \code{\link{vis.labeldata.on.subject}},
+  \code{\link{vis.mask.on.subject}},
   \code{\link{vis.region.values.on.subject}},
   \code{\link{vis.subject.annot}},
   \code{\link{vis.subject.label}},
+  \code{\link{vis.subject.morph.native}},
+  \code{\link{vislayout.from.coloredmeshes}}
+
+Other morphometry visualization functions: \code{\link{vis.data.on.fsaverage}},
+  \code{\link{vis.data.on.subject}},
   \code{\link{vis.subject.morph.native}}
 }
+\concept{morphometry visualization functions}
 \concept{visualization functions}

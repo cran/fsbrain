@@ -11,12 +11,12 @@ test_that("We can visualize morphometry data in multiview.", {
     measure = 'thickness';
     surface = 'white';
 
-    rgloptions=list("windowRect"=c(20,20,1900,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+    rgloptions=list("windowRect"=c(80,80,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
     rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95));
     rglactionsmovie = list("snapshot_png"="~/fsbrain.png", "movie"="brain_rot");
 
     coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si', 't4', 't9'), rgloptions=rgloptions, rglactions=rglactions);
-    coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('sr'));
+    coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si'));
 
     vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t4'), rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t4.png"));
     vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t9'), rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t9.png"));
@@ -71,7 +71,7 @@ test_that("We can visualize p values or other arbitrary data, one value per atla
 
 
     if(dir.exists(file.path(subjects_dir, subject))) {
-        rgloptions=list("windowRect"=c(0,0,1200,1200), mar=c(0,0,0,0));
+        rgloptions=list("windowRect"=c(80,80,1200,1200), mar=c(0,0,0,0));
         rglactions = list("snapshot_png"="~/fsbrain_pvalues_fsavg.png");
         vis.region.values.on.subject(subjects_dir, subject, atlas, lh_region_value_list, rh_region_value_list, rgloptions=rgloptions, rglactions=rglactions);
     } else {
@@ -182,4 +182,128 @@ test_that("A region from an atlas can be converted to a label and visualized.", 
     vis.mask.on.subject(subjects_dir, subject_id, lh_mask2, rh_mask2);
 })
 
+
+test_that("We can visualize label data or arbitrary sets of vertices.", {
+    skip("This test has to be run manually and interactively.");
+    fsbrain::download_optional_data();
+    subject_id = 'subject1';
+    surface = 'white';  # If possible, use the 'inflated' surface instead: it is much easier to find the vertices on it. We do not
+    #  use it here because the inflated surface is not shipped with the example data for this package to reduce download size.
+
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+
+    # For the left hemi, we just specify 3 vertices. They are very small in the high-resolution mesh and may be hard to spot.
+    lh_labeldata = c(1000, 1001, 1002);
+
+    # For the right hemi, we extend the neighborhood around our vertices of interest for the visualization. This makes the a lot easier to spot.
+    rh_labeldata = c(5000)
+    rh_surface = subject.surface(subjects_dir, subject_id, surface, 'rh');
+    rh_labeldata_neighborhood = mesh.vertex.neighbors(rh_surface, rh_labeldata);   # extend neighborhood
+    rh_labeldata_neighborhood = mesh.vertex.neighbors(rh_surface, rh_labeldata_neighborhood$vertices);   # extend neighborhood again
+
+    # Hint: Check the area around the visual cortex when searching for the vertices in interactive mode.
+    vis.labeldata.on.subject(subjects_dir, subject_id, lh_labeldata, rh_labeldata_neighborhood$vertices, views=c('si'), surface=surface);
+})
+
+
+test_that("We can combine an output view with a separate colormap.", {
+    skip("This test has to be run manually and interactively.");
+
+    fsbrain::download_optional_data();
+
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+    measure = 'jacobian_white';
+    measure_legend_text = "Jacobian white";
+    surface = 'white';
+
+    output_width = 1200; # in px
+    output_height = output_width;
+    cbar_height = output_height;  # We cannot set this much smaller without getting errors, we will instead crop the resulting image in imagemagick below.
+    output_main_image = path.expand(sprintf("~/fsbrain_img_main_%s.png", measure));
+    output_cbar_image = path.expand(sprintf("~/fsbrain_img_cbar_%s.png", measure));
+    output_main_movie_file_noext = sprintf("fsbrain_mov_main_%s", measure);
+    output_main_movie = sprintf("~/%s.gif", output_main_movie_file_noext);
+
+    rgloptions=list("windowRect"=c(80, 80, output_width, output_height));
+    rglactions = list("snapshot_png"=output_main_image, "movie"=output_main_movie_file_noext);
+
+    # Some measures need a bit of cleanup:
+    if(measure %in% c("curv", "thickness", "jacobian_white")) {
+        rglactions$clip_data = c(0.05, 0.95);
+    }
+
+    coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('sr'), rgloptions=rgloptions, rglactions=rglactions, cortex_only=TRUE);
+
+    #coloredmesh.plot.colorbar.separate(coloredmeshes, png_options = list("filename"=output_cbar_image, "width"=output_width, "height"=cbar_height), image.plot_extra_options = list("legend.lab"=measure_legend_text, horizontal=TRUE, legend.cex=1.5, legend.line=-3));
+    # You will have to manually export the cbar with the settings above. Programmatically saving it seems to result in missing colors in the bar
+    # for some reason. UPDATE: This seems to happen only for some OpenGL implementations (i.e., it is hardware/system dependent). Try it on your machine.
+    coloredmesh.plot.colorbar.separate(coloredmeshes, image.plot_extra_options = list("legend.lab"=measure_legend_text, horizontal=TRUE, legend.cex=1.5, legend.line=-3));
+
+    combine.colorbar.with.brainview.animation(output_main_movie, output_cbar_image, "~/anim_with_cbar.gif");
+
+
+    ## The following are some ideas on how to combine the colorbar and another image using imagemagick.
+    ## The colorbar shouldis displayed below the full image here.
+    ## These are to be run on the command line of the OS, but we could turn them into R code with the 'magick' package later I guess.
+    #
+    # cd ~
+
+    ## Remove the whitespace around the colorbar:
+    # convert fsbrain_img_cbar.png -trim +repage fsbrain_img_cbar_min.png
+
+    ## Vertically append the colorbar below the main image
+    # convert fsbrain_img_main.png fsbrain_img_cbar_min.png -gravity center -background white -append fsbrain_img_combined.png
+
+
+    ## Append the colorbar below the gif movie: this is a bit more tricky. We have to split the gif into its
+    ## frames, append to them, then recombine.
+
+
+    ## One may want to crop something from the top of the colorbar image before combining the images, to reduce white space.
+    ## In this example, we remove the 20 px at the top.
+    # convert fsbrain_img_cbar.png -gravity North -chop 1x80 fsbrain_img_cbar_cropped.gif
+    # convert fsbrain_img_cbar_min.png fsbrain_img_cbar_min.gif
+
+    ## Split the animated gif into frames:
+    # convert fsbrain_mov_main.gif -coalesce frames-%03d.gif
+    ## We may want to crop a bit from the frames as well.
+    ## In this example, we remove the 40 px at the bottom.
+    # for FRAME in frames*; do convert $FRAME -gravity South -chop 1x40 $FRAME; done
+
+    ## Now combine colorbar and image for each frame:
+    # for FRAME in frames*; do montage $FRAME fsbrain_img_cbar_cropped.gif -tile 1x2 -geometry +0+0 -background white $FRAME; done
+
+    ## And finally create a new animated gif from all the frames:
+    # convert -delay 5 -loop 0 -layers optimize frames* fsbrain_mov_combined.gif
+
+    ## This will give you the image and the rotating brain gif animation, both with a suitable colorbar at the bottom of the image/animation.
+})
+
+
+### Some ideas for creating an MP4 movie from the frames of the GIF animation (on the OS command line): ###
+#
+# 1) split the GIF into frames: convert anim_with_cbar.gif -coalesce frames-%03d.png -y
+# 2) encode to MP4 using ffmpeg with libx264 codec: ffmpeg -framerate 20 -i frames-%03d.png -c:v libx264 -crf 18 -pix_fmt yuv420p brain_once.mp4
+# It may be better to make the video loop 3 times, so the user has more time to view it:
+# 3a) for i in {1..3}; do printf "file '%s'\n" brain_once.mp4 >> vidlist.txt; done
+# 3b) ffmpeg -f concat -i vidlist.txt -c copy brain_looped.mp4 -y
+# If you intend to upload to youtube or other video streaming platforms, you may want to optimize the file for them to get good quality:
+    # 4) ffmpeg -i brain_looped.mp4 -vf yadif,format=yuv420p -c:v libx264 -crf 18 -bf 2 -c:a aac -q:a 1 -ac 2 -ar 48000 -use_editlist 0 -movflags +faststart brain_looped_opt_streaming.mp4 -y
+
+
+test_that("We can construct a tight layout image by merging several sd views.", {
+    skip("This test has to be run manually and interactively.");
+
+    fsbrain::download_optional_data();
+
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+
+        views = get.view.angle.names(angle_set = "t9");
+    merged_img = "~/fsbrain_merged_brainviews.png";
+    rgloptions=list("windowRect"=c(80,80,500,500));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+
+    coloredmeshes = vis.subject.morph.native(subjects_dir, "subject1", "thickness", cortex_only=TRUE, rglactions=list("clip_data"=c(0.05, 0.95)), views=NULL);
+    vislayout.from.coloredmeshes(coloredmeshes);
+})
 

@@ -22,6 +22,24 @@ test_that("Loading of native space whole brain morph data on subject level works
     num_verts_subject1_rh = 153333;
     expect_equal(class(data), "numeric");
     expect_equal(length(data), num_verts_subject1_lh + num_verts_subject1_rh);
+    expect_equal(sum(is.na(data)), 0);   # No data was masked, i.e., this includes the medial wall data.
+})
+
+
+test_that("Loading of native space whole brain morph data on subject level, limited to the cortex, works", {
+    fsbrain::download_optional_data();
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
+
+    data = subject.morph.native(subjects_dir, "subject1", "thickness", "lh", cortex_only = TRUE);
+
+    known_vertex_count_cortex_label = 140891;
+    num_verts_subject1_lh = 149244;
+    num_vertices_medial_wall = num_verts_subject1_lh - known_vertex_count_cortex_label;
+
+    expect_equal(class(data), "numeric");
+    expect_equal(length(data), num_verts_subject1_lh);
+    expect_equal(sum(is.na(data)), num_vertices_medial_wall);
 })
 
 
@@ -148,6 +166,7 @@ test_that("We can build a mask from an atlas region and edit it", {
     rh_label2 = label.from.annotdata(rh_annot, region2);
     lh_mask2 = mask.from.labeldata.for.hemi(lh_label2, length(lh_annot$vertices), existing_mask = lh_mask);
     rh_mask2 = mask.from.labeldata.for.hemi(rh_label2, length(rh_annot$vertices), existing_mask = rh_mask);
+    expect_equal(1L, 1L); # force to run the test (tests without any asserts are skipped)
 })
 
 

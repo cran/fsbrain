@@ -11,11 +11,11 @@
 #'
 #' @param style, a named list of style parameters or a string specifying an available style by name (e.g., 'shiny'). Defaults to 'default', the default style.
 #'
-#' @param rgloptions option list passed to [rgl::par3d()]. Example: rgloptions = list("windowRect"=c(50,50,1000,1000));
+#' @param rgloptions option list passed to [rgl::par3d()]. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))};
 #'
 #' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. Defaults to the empty list.
 #'
-#' @param draw_colorbar, logical. Whether to draw a colorbar. WARNING: Will only show up if there is enough space in the plot area and does not resize properly. Defaults to FALSE.
+#' @param draw_colorbar, logical. Whether to draw a colorbar. WARNING: Will only show up if there is enough space in the plot area and does not resize properly. Defaults to FALSE. See [fsbrain::coloredmesh.plot.colorbar.separate()] for an alternative.
 #'
 #' @return the list of visualized coloredmeshes
 #'
@@ -146,17 +146,21 @@ vis.rotated.coloredmeshes <- function(coloredmeshes, rotation_angle, x, y, z, st
 }
 
 
-#' @title Draw a coloredbar into the current plot.
+#' @title Draw coloredbar into background of current plot.
 #'
-#' @description Requires a rgl 3d visualisation to be open that already contains a rendered object.
+#' @description Requires a rgl 3d visualisation to be open that already contains a rendered object. Uses [rgl::bgplot3d()] to add a colorbar in the background of the plot. Experimental.
 #'
-#' @param coloredmeshes, list of coloredmeshes. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
+#' @param coloredmeshes list of coloredmeshes. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
+#'
+#' @param horizontal logical, whether the colorbar should be drawn in horizontal oritentation. Defaults to TRUE.
+#'
+#' @param num_steps integer, number of steps to use for the colorbar. Defaults to 100.
 #'
 #' @importFrom rgl bgplot3d
 #' @importFrom squash cmap makecmap
 #' @importFrom fields image.plot
 #' @keywords internal
-draw.colorbar <- function(coloredmeshes) {
+draw.colorbar <- function(coloredmeshes, horizontal=TRUE, num_steps=100) {
     if(length(coloredmeshes) < 1) {
         return();
     }
@@ -168,17 +172,111 @@ draw.colorbar <- function(coloredmeshes) {
 
         colormap = check.for.coloredmeshes.colormap(coloredmeshes);
         if(! is.null(colormap)) {
-            cat(sprintf("Found data of length %d for %d meshes.\n", length(full_data), length(coloredmeshes)));
-            col = squash::cmap(full_data, map = squash::makecmap(full_data, colFn = colormap));
+            col = squash::cmap(full_data, map = squash::makecmap(full_data, n = num_steps, colFn = colormap));
 
-            rgl::bgplot3d(fields::image.plot(legend.only = TRUE, zlim = range(full_data), col = col, horizontal = TRUE));
+            rgl::bgplot3d(fields::image.plot(legend.only = TRUE, zlim = range(full_data, finite=TRUE), col = col, horizontal = horizontal));
 
         } else {
-            warning("Requested to draw colorbar, but meshes contain no colormap function. Skipping.");
+            message("Requested to draw background colorbar, but meshes contain no colormap function. Skipping.");
         }
     } else {
-        warning("Requested to draw colorbar, but meshes contain no data. Skipping.");
+        message("Requested to draw background colorbar, but meshes contain no data. Skipping.");
     }
+}
+
+#' @title Draw colorbar for coloredmeshes in separate 2D plot.
+#'
+#' @description Draw a colorbar for the coloredmeshes to a separate 2D plot. Due to the suboptimal handling of colorbar drawing in the three-dimensional multi-panel views, it is often desirable to plot the colorbar in a separate window, export it from there and then manually add it to the final plot version in some image manipulation software like Inkscape. If you need more control over the colormap than offered by this function (e.g., setting the color value for NA values or making a symmetric colormap to ensure that the zero point for divergent colormaps is a neutral color), you should write custom code, and the return value from this function will come in handy to do that.
+#'
+#' @param coloredmeshes list of coloredmeshes. A coloredmesh is a named list as returned by the `coloredmesh.from` functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh. The `vis*` functions (like \code{\link[fsbrain]{vis.subject.morph.native}}) all return a list of coloredmeshes.
+#'
+#' @param show logical, Whether to open the resulting plot. Defaults to TRUE.
+#'
+#' @param makecmap_extra_options named list of extra optins to pass to \code{\link[squash]{makecmap}}. This can be used to overwrite the colormap function, explicitely set the color for NA data values, or whatever. The first mandatory data argument is passed in from the coloredmesh data already and "colFn" is also set based on the coloredmeshes, so there is no need to pass these. Your list will be merged with the internal options, so you could overwrite named arguments if needed.
+#'
+#' @param image.plot_extra_options named list of extra optins to pass to \code{\link[fields]{image.plot}}. This can be used to add a legend to the colorbar, rotate the colorbar, or whatever. The options "legend_only", "zlim", and "col" are computed and set for you  by this function, so there is no need to pass these. Your list will be merged with the internal options, so you could overwrite named arguments if needed.
+#'
+#' @param png_options Options to pass to \code{\link[grDevices]{png}}, see the docs of that function for details. Allow you to save the plot as a png bitmap image. Example: \code{png_options = list("filename"="outfile.png", "width"=800)}. Defaults to NULL, which will not save anything.
+#'
+#' @param silent logical, whether to suppress messages. Defaults to FALSE.
+#'
+#' @return named list with the following entries: "full_data": the combined data from all coloredmeshes (can be NULL if they have no data). "colormap": the colormap function from the coloredmeshes (can be NULL if they have none).
+#'
+#' @examples
+#' \donttest{
+#'    fsbrain::download_optional_data();
+#'    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#'    coloredmeshes = vis.subject.morph.native(subjects_dir, 'subject1',
+#'     'thickness', 'lh', views=c('t4'));
+#'    coloredmesh.plot.colorbar.separate(coloredmeshes);
+#'
+#'    # Or plot a colorbar with a label:
+#'    coloredmesh.plot.colorbar.separate(coloredmeshes,
+#'     image.plot_extra_options = list("legend.lab"="Thickness [mm]",
+#'     horizontal=TRUE, legend.cex=1.5, legend.line=-3));
+#' }
+#'
+#' @family colorbar functions
+#'
+#' @importFrom fields image.plot
+#' @importFrom squash cmap makecmap
+#' @importFrom graphics plot.new
+#' @importFrom grDevices png pdf dev.off
+#' @importFrom utils modifyList
+#' @export
+coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=TRUE, makecmap_extra_options = list("n"=128), image.plot_extra_options = list("horizontal"=TRUE), png_options=NULL, silent=FALSE) {
+
+    ret_list = list("full_data"=NULL, "colormap"=NULL);
+
+    if(length(coloredmeshes) < 1) {
+        message("Requested to draw separate colorbar, but mesh list is empty. Skipping.");
+        return(invisible(ret_list));
+    }
+
+    comb_res = combine.coloredmeshes.data(coloredmeshes);
+
+    if(comb_res$found_morph_data_in_any && length(comb_res$full_data) > 0) {
+        full_data = comb_res$full_data;
+        ret_list$full_data = full_data;
+
+        colormap = check.for.coloredmeshes.colormap(coloredmeshes);
+        ret_list$colormap = colormap;
+
+        if(! is.null(colormap)) {
+            makecmap_options_internal = list(full_data, colFn = colormap);
+            makecmap_options = modifyList(makecmap_options_internal, makecmap_extra_options);
+            col = squash::cmap(full_data, map = do.call(squash::makecmap, makecmap_options));
+            ret_list$col = col;
+
+            zlim = base::range( c(seq(min(full_data), max(full_data)), finite=TRUE));
+            ret_list$zlim = zlim;
+            image.plot_options_internal = list(legend.only=TRUE, zlim=zlim, col = col, add=TRUE, graphics.reset=TRUE);
+            image.plot_options = modifyList(image.plot_options_internal, image.plot_extra_options);
+            if(show) {
+                plot.new();
+                do.call(fields::image.plot, image.plot_options);
+            }
+
+            if(! is.null(png_options)) {
+                do.call(png, png_options);
+                plot.new();
+                do.call(fields::image.plot, image.plot_options);
+                dev.off();
+                if(! is.null(png_options$filename)) {
+                    if(! silent) {
+                        message(sprintf("Colorbar image written to file '%s'.\n", png_options$filename));
+                    }
+                }
+            }
+
+
+        } else {
+            message("Requested to draw separate colorbar, but meshes contain no colormap function. Skipping.");
+        }
+    } else {
+        message("Requested to draw separate colorbar, but meshes contain no data. Skipping.");
+    }
+    return(invisible(ret_list));
 }
 
 

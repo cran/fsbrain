@@ -5,7 +5,8 @@
 \title{Retrieve standard space morphometry data for a group of subjects.}
 \usage{
 group.morph.standard(subjects_dir, subjects_list, measure, hemi,
-  fwhm = "10", template_subject = "fsaverage", format = "mgh")
+  fwhm = "10", template_subject = "fsaverage", format = "mgh",
+  cortex_only = FALSE)
 }
 \arguments{
 \item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
@@ -21,6 +22,8 @@ group.morph.standard(subjects_dir, subjects_list, measure, hemi,
 \item{template_subject, }{string. Template subject name, defaults to 'fsaverage'.}
 
 \item{format, }{string. One of 'mgh', 'mgz', 'curv'. Defaults to 'mgh'.}
+
+\item{cortex_only}{logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the template subject. Defaults to FALSE.}
 }
 \value{
 named list with standard space morph data, the names are the subject identifiers from the subjects_list, and the values are morphometry data vectors (all with identical length, the data is mapped to a template subject).
@@ -33,12 +36,19 @@ Load standard space morphometry data (like 'surf/lh.area') for a group of subjec
    fsbrain::download_optional_data();
    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
    subjects_list = c("subject1", "subject2");
-   data = group.morph.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm='10');
+   fulldata = group.morph.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm='10');
+   mean(fulldata$subject1);
+
+   cortexdata = group.morph.standard(subjects_dir, subjects_list, "thickness",
+    "lh", fwhm='10', cortex_only=TRUE);
+   mean(cortexdata$subject1, na.rm=TRUE);
 }
 
 }
 \seealso{
-Other morphometry data functions: \code{\link{group.morph.native}},
+Other morphometry data functions: \code{\link{apply.label.to.morphdata}},
+  \code{\link{apply.labeldata.to.morphdata}},
+  \code{\link{group.morph.native}},
   \code{\link{subject.morph.native}},
   \code{\link{subject.morph.standard}}
 }
