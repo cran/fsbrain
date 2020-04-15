@@ -4,11 +4,16 @@
 \alias{vislayout.from.coloredmeshes}
 \title{Visualize coloredmeshes from several angles and combine the images into a new figure.}
 \usage{
-vislayout.from.coloredmeshes(coloredmeshes,
+vislayout.from.coloredmeshes(
+  coloredmeshes,
   view_angles = get.view.angle.names(angle_set = "t4"),
-  rgloptions = list(), rglactions = list(),
-  output_img = "fsbrain_arranged.png", silent = FALSE,
-  grid_like = TRUE)
+  rgloptions = list(),
+  rglactions = list(),
+  style = "default",
+  output_img = "fsbrain_arranged.png",
+  silent = FALSE,
+  grid_like = TRUE
+)
 }
 \arguments{
 \item{coloredmeshes, }{list of coloredmesh. A coloredmesh is a named list as returned by the `coloredmesh.from*` functions (like \code{\link[fsbrain]{coloredmesh.from.morph.native}}). It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh. The `vis*` functions (like \code{\link[fsbrain]{vis.subject.morph.native}}) all return a list of coloredmeshes.}
@@ -18,6 +23,8 @@ vislayout.from.coloredmeshes(coloredmeshes,
 \item{rgloptions}{option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
 
 \item{rglactions}{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.}
+
+\item{style}{character string, a rendering style, e.g., 'default', 'shiny' or 'semitransparent'. Alternatively, a named list of style parameters (see \code{\link[rgl]{material3d}}), e.g., \code{list("shininess"=50, specular="black", alpha=0.5)}. Use the magic word 'from_mesh' to use the 'style' field of each coloredmesh instead of a single, global style. In that case, you will have to make sure your meshes have such a field, if not, the style 'default' is used as a fallback for those which don't.}
 
 \item{output_img}{string, path to the output file. Defaults to "fsbrain_arranged.png"}
 
@@ -32,7 +39,7 @@ list of coloredmeshes. The coloredmeshes used for the visualization.
 Create a tight layout view of coloredmeshes from several angles. Creates separate `sd_<angle>` images, then crops and finally merges them into a single output image with image magick. The `coloredmeshes` to pass to this function are usually obtained by running any `vis*` function (like \code{\link[fsbrain]{vis.subject.morph.native}}, \code{\link[fsbrain]{vis.subject.morph.standard}}, \code{\link[fsbrain]{vis.subject.label}}, \code{\link[fsbrain]{vis.subject.annot}}, and others). That means you can use this function to visualize all kinds of data, e.g., morphometry data in native and standard space, labels, and brain atlases.
 }
 \examples{
-\donttest{
+\dontrun{
    fsbrain::download_optional_data();
    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
    # Use any vis function to get coloredmeshes. You can visualize morphometry,
@@ -40,21 +47,28 @@ Create a tight layout view of coloredmeshes from several angles. Creates separat
    coloredmeshes = vis.subject.morph.native(subjects_dir, "subject1", "thickness",
     cortex_only=TRUE, rglactions=list("clip_data"=c(0.05, 0.95)),
     views=NULL);
-   # The meshes contain the surface, data, and color information and can be visualized:
-   vislayout.from.coloredmeshes(coloredmeshes);
+   # The meshes contain the surface, data, and color information and can be
+   #  visualized. You could adapt the rendering style while doing so:
+   vislayout.from.coloredmeshes(coloredmeshes, style='shiny');
+   # You could change the rendering style on a per-mesh basis.
+   coloredmeshes[[1]]$style = list("shininess"=50, alpha=0.5);
+   vislayout.from.coloredmeshes(coloredmeshes, style='from_mesh');
 }
 
 
 }
 \seealso{
-Other visualization functions: \code{\link{vis.data.on.fsaverage}},
-  \code{\link{vis.data.on.subject}},
-  \code{\link{vis.labeldata.on.subject}},
-  \code{\link{vis.mask.on.subject}},
-  \code{\link{vis.region.values.on.subject}},
-  \code{\link{vis.subject.annot}},
-  \code{\link{vis.subject.label}},
-  \code{\link{vis.subject.morph.native}},
-  \code{\link{vis.subject.morph.standard}}
+Other visualization functions: 
+\code{\link{vis.color.on.subject}()},
+\code{\link{vis.data.on.fsaverage}()},
+\code{\link{vis.data.on.subject}()},
+\code{\link{vis.labeldata.on.subject}()},
+\code{\link{vis.mask.on.subject}()},
+\code{\link{vis.region.values.on.subject}()},
+\code{\link{vis.subject.annot}()},
+\code{\link{vis.subject.label}()},
+\code{\link{vis.subject.morph.native}()},
+\code{\link{vis.subject.morph.standard}()},
+\code{\link{vis.symmetric.data.on.subject}()}
 }
 \concept{visualization functions}

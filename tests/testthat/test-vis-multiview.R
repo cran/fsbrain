@@ -1,8 +1,11 @@
 # These tests are to be run manually and interactively, they are therefore skipped by default.
 # You can run them by copying & pasting the code into an R session. Treat them as examples.
 
+# A note on the plot size for all of the vis functions:
+# You may want to set a globale default for windowrect, e.g.: `library('rgl'); r3dDefaults$windowRect <- c(50,50, 800, 800);`
+
 test_that("We can visualize morphometry data in multiview.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
 
     fsbrain::download_optional_data();
 
@@ -18,7 +21,7 @@ test_that("We can visualize morphometry data in multiview.", {
     coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si', 't4', 't9'), rgloptions=rgloptions, rglactions=rglactions);
     coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si'));
 
-    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t4'), rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t4.png"));
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t4'), draw_colorbar =TRUE, rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t4.png"));
     vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t9'), rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t9.png"));
 
     vis.subject.annot(subjects_dir, subject_id, 'aparc', 'both', views=c('t4'), rgloptions = rgloptions, rglactions = list("snapshot_png"="~/annot_t4.png"));
@@ -49,11 +52,13 @@ test_that("We can visualize morphometry data in multiview.", {
         }
     }
 
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+
 })
 
 
 test_that("We can visualize p values or other arbitrary data, one value per atlas region.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     fsbrain::download_optional_data();
 
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
@@ -71,7 +76,7 @@ test_that("We can visualize p values or other arbitrary data, one value per atla
 
 
     if(dir.exists(file.path(subjects_dir, subject))) {
-        rgloptions=list("windowRect"=c(80,80,1200,1200), mar=c(0,0,0,0));
+        rgloptions=list("windowRect"=c(80,80,1000,1000));
         rglactions = list("snapshot_png"="~/fsbrain_pvalues_fsavg.png");
         vis.region.values.on.subject(subjects_dir, subject, atlas, lh_region_value_list, rh_region_value_list, rgloptions=rgloptions, rglactions=rglactions);
     } else {
@@ -81,11 +86,11 @@ test_that("We can visualize p values or other arbitrary data, one value per atla
 
 
 test_that("We can visualize data on fsaverage if available", {
-    skip("This test has to be run manually and interactively.");
-    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
+    subjects_dir = testdatapath.subjectsdir.full.subject1();
 
     #fsaverage_dir = file.path(Sys.getenv('FREESURFER_HOME'), 'subjects');
-    fsaverage_dir = subjects_dir;
+    fsaverage_dir = find.subjectsdir.of("fsaverage")$found_at;
 
     rgloptions=list("windowRect"=c(50,50,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
     rglactions = list("snapshot_png"="~/fsbrain_t4_fsavg.png");
@@ -100,7 +105,7 @@ test_that("We can visualize data on fsaverage if available", {
 
 
 test_that("We can record a gif movie of a rotating brain.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(run.extralong.tests(), "This test takes ages.");
 
     fsbrain::download_optional_data();
 
@@ -138,7 +143,7 @@ test_that("We can record a gif movie of a rotating brain.", {
 
 
 test_that("A label can be visualized.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(box.has.x11display(), "This test requires X11.");
 
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
@@ -148,10 +153,13 @@ test_that("A label can be visualized.", {
     label = 'cortex.label';
 
     vis.subject.label(subjects_dir, subject_id, label, hemi);
+
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
 })
 
 test_that("A region from an atlas can be converted to a label and visualized.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
+    subjects_dir = testdatapath.subjectsdir.full.subject1();
 
     fsbrain::download_optional_data();
 
@@ -180,17 +188,20 @@ test_that("A region from an atlas can be converted to a label and visualized.", 
     rh_mask2 = mask.from.labeldata.for.hemi(rh_label2, length(rh_annot$vertices), existing_mask = rh_mask);
     # Visualize the mask:
     vis.mask.on.subject(subjects_dir, subject_id, lh_mask2, rh_mask2);
+
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
 })
 
 
 test_that("We can visualize label data or arbitrary sets of vertices.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
+    subjects_dir = testdatapath.subjectsdir.full.subject1();
+
     fsbrain::download_optional_data();
     subject_id = 'subject1';
-    surface = 'white';  # If possible, use the 'inflated' surface instead: it is much easier to find the vertices on it. We do not
+    surface = 'inflated';  # If possible, use the 'inflated' surface instead: it is much easier to find the vertices on it. We do not
     #  use it here because the inflated surface is not shipped with the example data for this package to reduce download size.
 
-    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 
     # For the left hemi, we just specify 3 vertices. They are very small in the high-resolution mesh and may be hard to spot.
     lh_labeldata = c(1000, 1001, 1002);
@@ -203,15 +214,17 @@ test_that("We can visualize label data or arbitrary sets of vertices.", {
 
     # Hint: Check the area around the visual cortex when searching for the vertices in interactive mode.
     vis.labeldata.on.subject(subjects_dir, subject_id, lh_labeldata, rh_labeldata_neighborhood$vertices, views=c('si'), surface=surface);
+
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
 })
 
 
 test_that("We can combine an output view with a separate colormap.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(run.extralong.tests(), "This test requires the full test data and X11, and takes ages.");
+    subjects_dir = testdatapath.subjectsdir.full.subject1();
 
     fsbrain::download_optional_data();
 
-    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     subject_id = 'subject1';
     measure = 'jacobian_white';
     measure_legend_text = "Jacobian white";
@@ -242,6 +255,8 @@ test_that("We can combine an output view with a separate colormap.", {
 
     combine.colorbar.with.brainview.animation(output_main_movie, output_cbar_image, "~/anim_with_cbar.gif");
 
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+
 
     ## The following are some ideas on how to combine the colorbar and another image using imagemagick.
     ## The colorbar shouldis displayed below the full image here.
@@ -266,7 +281,7 @@ test_that("We can combine an output view with a separate colormap.", {
     # convert fsbrain_img_cbar_min.png fsbrain_img_cbar_min.gif
 
     ## Split the animated gif into frames:
-    # convert fsbrain_mov_main.gif -coalesce frames-%03d.gif
+    # convert fsbrain_mov_main.gif -coalesce frames-%03d.png
     ## We may want to crop a bit from the frames as well.
     ## In this example, we remove the 40 px at the bottom.
     # for FRAME in frames*; do convert $FRAME -gravity South -chop 1x40 $FRAME; done
@@ -283,8 +298,8 @@ test_that("We can combine an output view with a separate colormap.", {
 
 ### Some ideas for creating an MP4 movie from the frames of the GIF animation (on the OS command line): ###
 #
-# 1) split the GIF into frames: convert anim_with_cbar.gif -coalesce frames-%03d.png -y
-# 2) encode to MP4 using ffmpeg with libx264 codec: ffmpeg -framerate 20 -i frames-%03d.png -c:v libx264 -crf 18 -pix_fmt yuv420p brain_once.mp4
+# 1) split the GIF into frames: convert anim_with_cbar.gif -coalesce frames-%03d.png
+# 2) encode to MP4 using ffmpeg with libx264 codec: ffmpeg -framerate 20 -i frames-%03d.png -c:v libx264 -crf 18 -pix_fmt yuv420p brain_once.mp4 -y
 # It may be better to make the video loop 3 times, so the user has more time to view it:
 # 3a) for i in {1..3}; do printf "file '%s'\n" brain_once.mp4 >> vidlist.txt; done
 # 3b) ffmpeg -f concat -i vidlist.txt -c copy brain_looped.mp4 -y
@@ -293,17 +308,17 @@ test_that("We can combine an output view with a separate colormap.", {
 
 
 test_that("We can construct a tight layout image by merging several sd views.", {
-    skip("This test has to be run manually and interactively.");
+    skip_if_not(box.can.run.all.tests(), "This test requires X11 and imagemagick.");
 
     fsbrain::download_optional_data();
 
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 
-        views = get.view.angle.names(angle_set = "t9");
+    view_angles = get.view.angle.names(angle_set = "t9");
     merged_img = "~/fsbrain_merged_brainviews.png";
-    rgloptions=list("windowRect"=c(80,80,500,500));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+    rgloptions=list("windowRect"=c(80,80,1000,1000));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
 
     coloredmeshes = vis.subject.morph.native(subjects_dir, "subject1", "thickness", cortex_only=TRUE, rglactions=list("clip_data"=c(0.05, 0.95)), views=NULL);
-    vislayout.from.coloredmeshes(coloredmeshes);
+    vislayout.from.coloredmeshes(coloredmeshes, view_angles=view_angles);
 })
 

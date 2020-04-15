@@ -4,8 +4,14 @@
 \alias{group.concat.measures.standard}
 \title{Concatenate standard space data for a group of subjects.}
 \usage{
-group.concat.measures.standard(subjects_dir, subjects_list, measures, hemi,
-  fwhm_per_measure)
+group.concat.measures.standard(
+  subjects_dir,
+  subjects_list,
+  measures,
+  hemi,
+  fwhm_per_measure,
+  cortex_only = FALSE
+)
 }
 \arguments{
 \item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
@@ -17,6 +23,8 @@ group.concat.measures.standard(subjects_dir, subjects_list, measures, hemi,
 \item{hemi, }{string, one of 'lh', 'rh' or 'both'. The hemisphere name. Used to construct the names of the annotation and morphometry data files to be loaded.}
 
 \item{fwhm_per_measure, }{vector of strings. The fwhm settings to use, for each measure. If this is a string instead of a vector of strings, the same fwhm will be used for all measures.}
+
+\item{cortex_only}{logical, whether to set non-cortex data to NA}
 }
 \value{
 dataframe with concatenated vertex values. Each column contains the values for one measure, concatenated for all subjects. The column names are a concatination of the measure, "_fwhm", and the fwhm for that measure. WARNING: This dataframe can get large if you have many subjects.
@@ -35,6 +43,7 @@ A measure is something like 'thickness' or 'area'. This function concatenates th
 
 }
 \seealso{
-Other concatination functions: \code{\link{group.concat.measures.native}}
+Other concatination functions: 
+\code{\link{group.concat.measures.native}()}
 }
 \concept{concatination functions}

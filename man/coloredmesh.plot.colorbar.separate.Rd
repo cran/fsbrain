@@ -4,23 +4,24 @@
 \alias{coloredmesh.plot.colorbar.separate}
 \title{Draw colorbar for coloredmeshes in separate 2D plot.}
 \usage{
-coloredmesh.plot.colorbar.separate(coloredmeshes, show = TRUE,
-  makecmap_extra_options = list(n = 128),
+coloredmesh.plot.colorbar.separate(
+  coloredmeshes,
+  show = TRUE,
   image.plot_extra_options = list(horizontal = TRUE),
-  png_options = NULL, silent = FALSE)
+  png_options = NULL,
+  silent = FALSE
+)
 }
 \arguments{
 \item{coloredmeshes}{list of coloredmeshes. A coloredmesh is a named list as returned by the `coloredmesh.from` functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh. The `vis*` functions (like \code{\link[fsbrain]{vis.subject.morph.native}}) all return a list of coloredmeshes.}
 
-\item{show}{logical, Whether to open the resulting plot. Defaults to TRUE.}
-
-\item{makecmap_extra_options}{named list of extra optins to pass to \code{\link[squash]{makecmap}}. This can be used to overwrite the colormap function, explicitely set the color for NA data values, or whatever. The first mandatory data argument is passed in from the coloredmesh data already and "colFn" is also set based on the coloredmeshes, so there is no need to pass these. Your list will be merged with the internal options, so you could overwrite named arguments if needed.}
+\item{show}{logical, Whether to open the resulting plot. Defaults to `TRUE`.}
 
 \item{image.plot_extra_options}{named list of extra optins to pass to \code{\link[fields]{image.plot}}. This can be used to add a legend to the colorbar, rotate the colorbar, or whatever. The options "legend_only", "zlim", and "col" are computed and set for you  by this function, so there is no need to pass these. Your list will be merged with the internal options, so you could overwrite named arguments if needed.}
 
 \item{png_options}{Options to pass to \code{\link[grDevices]{png}}, see the docs of that function for details. Allow you to save the plot as a png bitmap image. Example: \code{png_options = list("filename"="outfile.png", "width"=800)}. Defaults to NULL, which will not save anything.}
 
-\item{silent}{logical, whether to suppress messages. Defaults to FALSE.}
+\item{silent}{logical, whether to suppress messages. Defaults to `FALSE`.}
 }
 \value{
 named list with the following entries: "full_data": the combined data from all coloredmeshes (can be NULL if they have no data). "colormap": the colormap function from the coloredmeshes (can be NULL if they have none).
@@ -44,7 +45,8 @@ Draw a colorbar for the coloredmeshes to a separate 2D plot. Due to the suboptim
 
 }
 \seealso{
-Other colorbar functions: \code{\link{combine.colorbar.with.brainview.animation}},
-  \code{\link{combine.colorbar.with.brainview.image}}
+Other colorbar functions: 
+\code{\link{combine.colorbar.with.brainview.animation}()},
+\code{\link{combine.colorbar.with.brainview.image}()}
 }
 \concept{colorbar functions}

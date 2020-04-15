@@ -4,9 +4,16 @@
 \alias{group.morph.standard}
 \title{Retrieve standard space morphometry data for a group of subjects.}
 \usage{
-group.morph.standard(subjects_dir, subjects_list, measure, hemi,
-  fwhm = "10", template_subject = "fsaverage", format = "mgh",
-  cortex_only = FALSE)
+group.morph.standard(
+  subjects_dir,
+  subjects_list,
+  measure,
+  hemi,
+  fwhm = "10",
+  template_subject = "fsaverage",
+  format = "mgh",
+  cortex_only = FALSE
+)
 }
 \arguments{
 \item{subjects_dir, }{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
@@ -32,7 +39,7 @@ named list with standard space morph data, the names are the subject identifiers
 Load standard space morphometry data (like 'surf/lh.area') for a group of subjects from disk. Uses knowledge about the FreeSurfer directory structure to load the correct file.
 }
 \examples{
-\donttest{
+\dontrun{
    fsbrain::download_optional_data();
    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
    subjects_list = c("subject1", "subject2");
@@ -40,16 +47,17 @@ Load standard space morphometry data (like 'surf/lh.area') for a group of subjec
    mean(fulldata$subject1);
 
    cortexdata = group.morph.standard(subjects_dir, subjects_list, "thickness",
-    "lh", fwhm='10', cortex_only=TRUE);
+    "lh", fwhm='10', cortex_only=FALSE);
    mean(cortexdata$subject1, na.rm=TRUE);
 }
 
 }
 \seealso{
-Other morphometry data functions: \code{\link{apply.label.to.morphdata}},
-  \code{\link{apply.labeldata.to.morphdata}},
-  \code{\link{group.morph.native}},
-  \code{\link{subject.morph.native}},
-  \code{\link{subject.morph.standard}}
+Other morphometry data functions: 
+\code{\link{apply.label.to.morphdata}()},
+\code{\link{apply.labeldata.to.morphdata}()},
+\code{\link{group.morph.native}()},
+\code{\link{subject.morph.native}()},
+\code{\link{subject.morph.standard}()}
 }
 \concept{morphometry data functions}

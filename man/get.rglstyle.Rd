@@ -7,9 +7,15 @@
 get.rglstyle(style)
 }
 \arguments{
-\item{style, }{string. A style name. Available styles are one of: "default", "shiny".}
+\item{style}{string. A style name. Available styles are one of: "default", "shiny", "semitransparent".}
+}
+\value{
+a style, resolved to a parameter list compatible with \code{\link[rgl]{material3d}}.
 }
 \description{
-Get the default visualization style parameters as a named list.
+Run \code{\link[rgl]{material3d}} without arguments to see valid style keywords to create new styles.
+}
+\seealso{
+\code{\link[rgl]{shade3d}} can use the returned style
 }
 \keyword{internal}

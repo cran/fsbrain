@@ -26,5 +26,40 @@ test_that("The neigborhood of a vertex is computed correctly", {
   source_vertices = c(1);
   n = mesh.vertex.neighbors(surface, source_vertices);
   expect_equal(n$faces, c(1,3,5))
-  expect_equal(n$vertices, matrix(c(1,2,6,1,97,2,1,6,97), nrow=3, byrow=TRUE));
+  expect_equal(n$vertices, c(1,2,97,6));
 })
+
+
+test_that("A hemi list can be unwrapped", {
+  data = rep(42L, 10L);
+  hemi_list = list("lh"=data);
+
+  unwrapped_no_hemi_arg = hemilist.unwrap(hemi_list);
+  unwrapped_with_hemi_arg = hemilist.unwrap(hemi_list, 'lh');
+
+  expect_equal(unwrapped_no_hemi_arg, data);
+  expect_equal(unwrapped_with_hemi_arg, data);
+
+  # test with incorrect hemi args
+  expect_true(is.null(hemilist.unwrap(hemi_list, 'rh')));    # not in this list
+  expect_error(hemilist.unwrap(hemi_list, 'invalid_hemi'));  # never valid
+})
+
+
+test_that("Data can be wrapped into a hemi list", {
+  data = rep(42L, 10L);
+
+  hemi_list_lh = hemilist.wrap(data, 'lh');
+  expect_true(is.list(hemi_list_lh));
+  expect_equal(length(hemi_list_lh), 1L);
+  expect_equal(hemi_list_lh$lh, data);
+
+  hemi_list_rh = hemilist.wrap(data, 'rh');
+  expect_true(is.list(hemi_list_rh));
+  expect_equal(length(hemi_list_rh), 1L);
+  expect_equal(hemi_list_rh$rh, data);
+
+  # test with incorrect hemi args
+  expect_error(hemilist.wrap(data, 'invalid_hemi'));  # never valid
+})
+

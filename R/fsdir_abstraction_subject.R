@@ -18,7 +18,9 @@
 #'
 #' @param cortex_only logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subject. Defaults to FALSE.
 #'
-#' @return vector with native space morph data
+#' @param split_by_hemi logical, whether the returned data should be encapsulated in a named list, where the names are from 'lh' and 'rh', and the values are the respective data.
+#'
+#' @return vector with native space morph data, as returned by \code{\link[freesurferformats]{read.fs.morph}}.
 #'
 #' @family morphometry data functions
 #'
@@ -39,7 +41,7 @@
 #' }
 #'
 #' @export
-subject.morph.native <- function(subjects_dir, subject_id, measure, hemi, format='curv', cortex_only=FALSE) {
+subject.morph.native <- function(subjects_dir, subject_id, measure, hemi, format='curv', cortex_only=FALSE, split_by_hemi=FALSE) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
@@ -52,13 +54,17 @@ subject.morph.native <- function(subjects_dir, subject_id, measure, hemi, format
             lh_morph_data = apply.label.to.morphdata(lh_morph_data, subjects_dir, subject_id, "lh", 'cortex');
         }
 
-        rh_curvfile = lh_curvfile = subject.filepath.morph.native(subjects_dir, subject_id, measure, "rh", error_if_nonexistent=TRUE);
+        rh_curvfile = subject.filepath.morph.native(subjects_dir, subject_id, measure, "rh", error_if_nonexistent=TRUE);
         rh_morph_data = freesurferformats::read.fs.morph(rh_curvfile);
         if(cortex_only) {
             rh_morph_data = apply.label.to.morphdata(rh_morph_data, subjects_dir, subject_id, "rh", 'cortex');
         }
 
-        merged_morph_data = c(lh_morph_data, rh_morph_data);
+        if(split_by_hemi) {
+            merged_morph_data = list("lh"=lh_morph_data, "rh"=rh_morph_data);
+        } else {
+            merged_morph_data = c(lh_morph_data, rh_morph_data);
+        }
         return(merged_morph_data);
 
     } else {
@@ -67,9 +73,96 @@ subject.morph.native <- function(subjects_dir, subject_id, measure, hemi, format
         if(cortex_only) {
             morph_data = apply.label.to.morphdata(morph_data, subjects_dir, subject_id, hemi, 'cortex');
         }
-        return(morph_data);
+
+        if(split_by_hemi) {
+            return(hemilist.wrap(morph_data, hemi));
+        } else {
+            return(morph_data);
+        }
     }
 }
+
+
+#' @title Compute a mask for a subject.
+#'
+#' @description Compute a binary vertex mask for the surface vertices of a subject. By defaults, the medial wall is masked.
+#'
+#' @param subjects_dir string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.
+#'
+#' @param subject_id string. The subject identifier
+#'
+#' @param hemi string, one of 'lh', 'rh' or 'both'. The hemisphere name. Used to construct the names of the annotation and morphometry data files to be loaded.
+#'
+#' @param from_label string, the label file to use. Defaults to 'cortex', which will result in a mask of the medial wall versus cortex vertices.
+#'
+#' @param surf_num_verts string or integer. If an integer, interpreted as the number of vertices in the respective surface (lh or rh). If a character string, interpreted as a surface name, (e.g.,`white` or `pial`), and the respective surface will be loaded to determine the number of vertices in it. If parameter `hemi` is set to `both` and you supply the vertex count as an integer, this can be a vector of length 2 if the surfaces have different vertex counts (the first entry for `lh`, the second for `rh`).
+#'
+#' @param invert_mask logical, whether to invert the mask. E.g., when the mask is loaded from the cortex labels, if this is set to FALSE, the cortex would be masked (set to 0 in the final mask). If you want **everything but the cortex** to be masked (set to 0), you should set this to `TRUE`. Defaults to `TRUE`.
+#'
+#' @return the mask, a logical vector with the length of the vertices in the surface. If parameter `hemi` is set to `both`, a named list with entries `lh` and `rh` is returned, and the values of are the respective masks.
+#'
+#' @family label functions
+#'
+#' @examples
+#' \donttest{
+#'    # Generate a binary mask of the medial wall. Wall vertices will
+#'    #  be set to 0, cortex vertices will be set to 1.
+#'    fsbrain::download_optional_data();
+#'    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#'    mask = subject.mask(subjects_dir, "subject1");
+#'    # Print some information on the mask:
+#'    #cat(sprintf("lh: %d verts, %d in cortex, %d medial wall.\n", length(mask$lh),
+#'    # sum(mask$lh), (length(mask$lh)- sum(mask$lh))))
+#'    # Output: lh: 149244 verts, 140891 in cortex, 8353 medial wall.
+#'    # Now visualize the mask to illustrate that it is correct:
+#'    vis.mask.on.subject(subjects_dir, "subject1", mask$lh, mask$rh);
+#' }
+#'
+#' @export
+subject.mask <- function(subjects_dir, subject_id, hemi="both", from_label="cortex", surf_num_verts="white", invert_mask = TRUE) {
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
+    }
+
+    if(hemi == "both") {
+        labels = subject.label(subjects_dir, subject_id, from_label, hemi);
+
+        if(is.numeric(surf_num_verts) & length(surf_num_verts) == 1) {
+            surf_num_verts = rep(surf_num_verts, 2L);
+        }
+
+        if(is.character(surf_num_verts)) { # Load the surfaces and retrieve vertex count.
+            if(length(surf_num_verts) > 1) {
+                surf_num_verts = surf_num_verts[1];
+                warning(sprintf("Using first entry '%s' of parameter 'surf_num_verts' for both hemispheres. Ignoring others.\n", surf_num_verts));
+            }
+            surfaces = subject.surface(subjects_dir, subject_id, surf_num_verts, hemi);
+            surf_num_verts = c(nrow(surfaces$lh$vertices), nrow(surfaces$rh$vertices));
+        }
+
+        ret_list = list();
+        ret_list$lh = mask.from.labeldata.for.hemi(labels$lh, surf_num_verts[1], invert_labels = invert_mask);
+        ret_list$rh = mask.from.labeldata.for.hemi(labels$rh, surf_num_verts[2], invert_labels = invert_mask);
+        return(ret_list);
+
+    } else {
+        label = subject.label(subjects_dir, subject_id, from_label, hemi);
+
+        if(length(surf_num_verts) > 1) {
+            surf_num_verts = surf_num_verts[1];
+            warning(sprintf("Using first entry of parameter 'surf_num_verts' only: single hemisphere requested. Ignoring others.\n"));
+        }
+
+        if(is.character(surf_num_verts)) { # Load the surface and retrieve vertex count.
+            surface = subject.surface(subjects_dir, subject_id, surf_num_verts, hemi);
+            surf_num_verts = nrow(surface$vertices);
+        }
+
+        return(mask.from.labeldata.for.hemi(label, surf_num_verts, invert_labels = invert_mask));
+    }
+
+}
+
 
 #' @title Load a label from file and apply it to morphometry data.
 #'
@@ -83,7 +176,7 @@ subject.morph.native <- function(subjects_dir, subject_id, measure, hemi, format
 #'
 #' @param hemi string, one of 'lh', 'rh' or 'both'. The hemisphere name. Used to construct the names of the annotation and morphometry data files to be loaded.
 #'
-#' @param label string. Name of the label file, without the hemi part (if any), optionally including the '.label' suffix. E.g., 'cortex.label' or 'cortex' for '?h.cortex.label'.
+#' @param label string, `fs.label` instance, or label vertex data. If a string, interpreted as the file name of the label file, without the hemi part (if any), optionally including the '.label' suffix. E.g., 'cortex.label' or 'cortex' for '?h.cortex.label'.
 #'
 #' @param masked_data_value numerical, the value to set for all morphometry data values of vertices which are *not* part of the label. Defaults to NA.
 #'
@@ -99,11 +192,15 @@ apply.label.to.morphdata <- function(morphdata, subjects_dir, subject_id, hemi, 
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
 
-    if(! is.character(label)) {
-        stop("Parameter 'label' must be a character string,: the filename of the label file.");
+    if(is.character(label)) {
+        labeldata = subject.label(subjects_dir, subject_id, label, hemi);
+    } else if (freesurferformats::is.fs.label(label)) {
+        labeldata = label$vertexdata;
+    } else {
+        labeldata = label;
     }
 
-    labeldata = subject.label(subjects_dir, subject_id, label, hemi);
+
     return(apply.labeldata.to.morphdata(morphdata, labeldata, masked_data_value=masked_data_value));
 }
 
@@ -114,7 +211,7 @@ apply.label.to.morphdata <- function(morphdata, subjects_dir, subject_id, hemi, 
 #'
 #' @param morphdata numerical vector, the morphometry data for one hemisphere
 #'
-#' @param labeldata integer vector. A label as returned by [subject.label()].
+#' @param labeldata integer vector or `fs.label` instance. A label as returned by \code{\link[fsbrain]{subject.label}}.
 #'
 #' @param masked_data_value numerical, the value to set for all morphometry data values of vertices which are *not* part of the label. Defaults to NA.
 #'
@@ -125,6 +222,10 @@ apply.label.to.morphdata <- function(morphdata, subjects_dir, subject_id, hemi, 
 #'
 #' @export
 apply.labeldata.to.morphdata <- function(morphdata, labeldata, masked_data_value=NA) {
+
+    if(freesurferformats::is.fs.label(labeldata)) {
+        labeldata = labeldata$vertexdata;
+    }
 
     if(max(labeldata) > length(morphdata)) {
         stop(sprintf("The largest vertex index in the labeldata is %d, but the morphdata contains only %d entries. Label does not fit to morpometry data.\n", max(labeldata), length(morphdata)));
@@ -156,6 +257,8 @@ apply.labeldata.to.morphdata <- function(morphdata, labeldata, masked_data_value
 #'
 #' @param cortex_only logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the template subject. Defaults to FALSE.
 #'
+#' @param split_by_hemi logical, whether the returned data should be encapsulated in a named list, where the names are from 'lh' and 'rh', and the values are the respective data.
+#'
 #' @return vector with standard space morph data
 #'
 #' @examples
@@ -168,7 +271,7 @@ apply.labeldata.to.morphdata <- function(morphdata, labeldata, masked_data_value
 #' @family morphometry data functions
 #'
 #' @export
-subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm='10', template_subject='fsaverage', format='mgh', cortex_only=FALSE) {
+subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm='10', template_subject='fsaverage', format='mgh', cortex_only=FALSE, split_by_hemi=FALSE) {
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
     }
@@ -186,7 +289,11 @@ subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm
             rh_morph_data = apply.label.to.morphdata(rh_morph_data, subjects_dir, template_subject, "rh", 'cortex');
         }
 
-        merged_morph_data = c(lh_morph_data, rh_morph_data);
+        if(split_by_hemi) {
+            merged_morph_data = list("lh"=lh_morph_data, "rh"=rh_morph_data);
+        } else {
+            merged_morph_data = c(lh_morph_data, rh_morph_data);
+        }
         return(merged_morph_data);
 
     } else {
@@ -195,7 +302,14 @@ subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm
         if(cortex_only) {
             morph_data = apply.label.to.morphdata(morph_data, subjects_dir, template_subject, hemi, 'cortex');
         }
-        return(morph_data);
+
+        if(split_by_hemi) {
+            ret_list = list();
+            ret_list[[hemi]] = morph_data;
+            return(ret_list);
+        } else {
+            return(morph_data);
+        }
     }
 }
 
@@ -286,7 +400,7 @@ subject.filepath.morph.native <- function(subjects_dir, subject_id, measure, hem
     curvfile = file.path(subjects_dir, subject_id, "surf", sprintf("%s.%s%s", hemi, measure, freesurferformats::fs.get.morph.file.ext.for.format(format)));
 
     if(!file.exists(curvfile)) {
-        msg = sprintf("Standard space morphometry file '%s' for subject '%s' measure '%s' hemi '%s' cannot be accessed.\n", curvfile, subject_id, measure, hemi);
+        msg = sprintf("Native space morphometry file '%s' for subject '%s' measure '%s' hemi '%s' cannot be accessed.\n", curvfile, subject_id, measure, hemi);
         if((warn_if_nonexistent)) {
             warning(msg);
         }
@@ -302,11 +416,11 @@ subject.filepath.morph.native <- function(subjects_dir, subject_id, measure, hem
 
 #' @title Construct filepath of any freesurfer file.
 #'
-#' @param subjects_dir string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.
+#' @param subjects_dir character string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.
 #'
-#' @param subject_id string. The subject identifier
+#' @param subject_id character string. The subject identifier.
 #'
-#' @param relative_path_parts vector of strings. THe path to the file, e.g., c("surf", "lh.area").
+#' @param relative_path_parts vector of strings. The path to the file, e.g., c("surf", "lh.area").
 #'
 #' @param hemi string, one of 'lh', 'rh', or NULL. Defaults to NULL. If a hemisphere name is given, it is added as a prefix to the last entry in relative_path_parts, separated by a dot.
 #'
@@ -359,11 +473,11 @@ subject.filepath.any <- function(subjects_dir, subject_id, relative_path_parts, 
 #'
 #' @param label string. Name of the label file, without the hemi part (if any), but including the '.label' suffix. E.g., 'cortex.label' for '?h.cortex.label'. You can also pass just the label (e.g., 'cortex'): if the string does not end with the suffix '.label', that suffix gets added auomatically.
 #'
-#' @param hemi string, one of 'lh' or 'rh'. The hemisphere name. Used to construct the names of the label data files to be loaded.
+#' @param hemi string, one of 'lh', 'rh', or 'both'. The hemisphere name. Used to construct the names of the label data files to be loaded. For 'both', see the information on the return value.
 #'
 #' @param return_one_based_indices logical. Whether the indices should be 1-based. Indices are stored zero-based in the file, but R uses 1-based indices. Defaults to TRUE, which means that 1 will be added to all indices read from the file before returning them.
 #'
-#' @return integer vector with label data: the list of vertex indices in the label. See 'return_one_based_indices' for important information.
+#' @return integer vector with label data: the list of vertex indices in the label. See 'return_one_based_indices' for important information. If parameter `hemi` is set to `both`, a named list with entries `lh` and `rh` is returned, and the values of are the respective labels.
 #'
 #' @family label data functions
 #'
@@ -377,8 +491,15 @@ subject.filepath.any <- function(subjects_dir, subject_id, relative_path_parts, 
 #' @export
 subject.label <- function(subjects_dir, subject_id, label, hemi, return_one_based_indices=TRUE) {
 
-    if(!(hemi %in% c("lh", "rh"))) {
-        stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh', or 'both' but is '%s'.\n", hemi));
+    }
+
+    if(hemi == "both") {
+        ret_list = list();
+        ret_list$lh = subject.label(subjects_dir, subject_id, label, 'lh', return_one_based_indices=return_one_based_indices);
+        ret_list$rh = subject.label(subjects_dir, subject_id, label, 'rh', return_one_based_indices=return_one_based_indices);
+        return(ret_list);
     }
 
     if(! is.character(label)) {
@@ -397,7 +518,7 @@ subject.label <- function(subjects_dir, subject_id, label, hemi, return_one_base
 #'
 #' @description Create a binary mask for the data of a single hemisphere from one or more labels. A label contains the vertex indices which are part of it, but often having a mask in more convenient.
 #'
-#' @param labels list of labels. A label is just a vector of vertex indices. It can be created manually, but is typically loaded from a label file using [fsbrain::subject.label].
+#' @param labels list of labels. A label is just a vector of vertex indices. It can be created manually, but is typically loaded from a label file using \code{\link[fsbrain]{subject.label}}.
 #'
 #' @param num_vertices_in_hemi integer. The number of vertices of the surface for which the mask is created. This must be for a single hemisphere.
 #'
@@ -465,7 +586,7 @@ mask.from.labeldata.for.hemi <- function(labels, num_vertices_in_hemi, invert_la
 
 #' @title Create labeldata from a mask.
 #'
-#' @description Create labeldata from a mask. This function is trivial and only calls [base::which] after performing basic sanity checks.
+#' @description Create labeldata from a mask. This function is trivial and only calls \code{\link[base]{which}} after performing basic sanity checks.
 #'
 #' @param mask a logical vector
 #'
@@ -496,7 +617,7 @@ labeldata.from.mask <- function(mask, invert=FALSE) {
 #'
 #' @param atlas string. The atlas name. E.g., "aparc", "aparc.2009s", or "aparc.DKTatlas". Used to construct the name of the annotation file to be loaded.
 #'
-#' @return the annotation, as returned by [freesurferformats::read.fs.annot()]. It is a named list, enties are: "vertices" vector of n vertex indices, starting with 0. "label_codes": vector of n integers, each entry is a color code, i.e., a value from the 5th column in the table structure included in the "colortable" entry (see below). "label_names": the n brain structure names for the vertices, already retrieved from the colortable using the code. "hex_colors_rgb": Vector of hex color for each vertex.
+#' @return the annotation, as returned by \code{\link[freesurferformats]{read.fs.annot}}. It is a named list, enties are: "vertices" vector of n vertex indices, starting with 0. "label_codes": vector of n integers, each entry is a color code, i.e., a value from the 5th column in the table structure included in the "colortable" entry (see below). "label_names": the n brain structure names for the vertices, already retrieved from the colortable using the code. "hex_colors_rgb": Vector of hex color for each vertex.
 #'      The "colortable" is another named list with 3 entries: "num_entries": int, number of brain structures. "struct_names": vector of strings, the brain structure names. "table": numeric matrix with num_entries rows and 5 colums. The 5 columns are: 1 = color red channel, 2=color blue channel, 3=color green channel, 4=color alpha channel, 5=unique color code. "colortable_df": The same information as a dataframe. Contains the extra columns "hex_color_string_rgb" and "hex_color_string_rgba" that hold the color as an RGB(A) hex string, like "#rrggbbaa".
 #'
 #' @examples
@@ -537,7 +658,7 @@ subject.annot <- function(subjects_dir, subject_id, hemi, atlas) {
 
 #' @title Load a surface for a subject.
 #'
-#' @description Load a brain surface for a subject.
+#' @description Load a brain surface mesh for a subject.
 #'
 #' @param subjects_dir string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.
 #'
@@ -545,9 +666,9 @@ subject.annot <- function(subjects_dir, subject_id, hemi, atlas) {
 #'
 #' @param surface string. The surface name. E.g., "white", or "pial". Used to construct the name of the surface file to be loaded.
 #'
-#' @param hemi string, one of 'lh' or 'rh'. The hemisphere name. Used to construct the names of the surface file to be loaded.
+#' @param hemi string, one of 'lh', 'rh', or 'both'. The hemisphere name. Used to construct the names of the surface file to be loaded. For 'both', see the information on the return value.
 #'
-#' @return the surface, as returned by freesurferformats::read.fs.surface(). A named list containing entries 'vertices' and 'faces'.
+#' @return the `fs.surface` instance, as returned by \code{\link[freesurferformats]{read.fs.surface}}. If parameter `hemi` is set to `both`, a named list with entries `lh` and `rh` is returned, and the values of are the respective surfaces. The mesh data structure used in `fs.surface` is a *face index set*.
 #'
 #' @examples
 #' \donttest{
@@ -561,8 +682,15 @@ subject.annot <- function(subjects_dir, subject_id, hemi, atlas) {
 #' @export
 subject.surface <- function(subjects_dir, subject_id, surface, hemi) {
 
-    if(!(hemi %in% c("lh", "rh"))) {
-        stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
+    }
+
+    if(hemi == "both") {
+        ret_list = list();
+        ret_list$lh = subject.surface(subjects_dir, subject_id, surface, 'lh');
+        ret_list$rh = subject.surface(subjects_dir, subject_id, surface, 'rh');
+        return(ret_list);
     }
 
     surface_file = file.path(subjects_dir, subject_id, "surf", sprintf("%s.%s", hemi, surface));

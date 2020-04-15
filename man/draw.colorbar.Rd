@@ -4,16 +4,16 @@
 \alias{draw.colorbar}
 \title{Draw coloredbar into background of current plot.}
 \usage{
-draw.colorbar(coloredmeshes, horizontal = TRUE, num_steps = 100)
+draw.colorbar(coloredmeshes, horizontal = FALSE, ...)
 }
 \arguments{
-\item{coloredmeshes}{list of coloredmeshes. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.}
+\item{horizontal}{logical, whether the colorbar should be drawn in horizontal orientation. Defaults to `TRUE`.}
 
-\item{horizontal}{logical, whether the colorbar should be drawn in horizontal oritentation. Defaults to TRUE.}
+\item{...}{extra params passed to \code{\link[fields]{image.plot}}}
 
-\item{num_steps}{integer, number of steps to use for the colorbar. Defaults to 100.}
+\item{coloredmesh}{fs.coloredmesh as returned by the coloredmesh.from.* functions.}
 }
 \description{
-Requires a rgl 3d visualisation to be open that already contains a rendered object. Uses [rgl::bgplot3d()] to add a colorbar in the background of the plot. Experimental.
+Requires a rgl 3d visualisation to be open that already contains a rendered object. Uses \code{\link[rgl]{bgplot3d}} to add a colorbar in the background of the plot using \code{\link[fields]{image.plot}}. Experimental.
 }
 \keyword{internal}

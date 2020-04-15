@@ -178,7 +178,7 @@ group.agg.atlas.native <- function(subjects_dir, subjects_list, measure, hemi, a
 #' @return dataframe with aggregated values for all regions and subjects, with n columns and m rows, where n is the number of subjects and m is the number of regions.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'    fsbrain::download_optional_data();
 #'    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 #'    agg = group.agg.atlas.standard(subjects_dir, c('subject1', 'subject2'),
@@ -542,13 +542,13 @@ spread.values.over.subject <- function(subjects_dir, subject_id, atlas, lh_regio
 #'
 #' @param region_value_list, named list. A list in which the names are atlas regions, and the values are the value to write to all vertices of that region.
 #'
-#' @param output_file, string or NULL. Path of the output file, including file name and extension. The format is determined from the (absence of a) file extension. If NULL, no file will be written.
+#' @param output_file, string or `NULL`. Path of the output file, including file name and extension. The format is determined from the (absence of a) file extension. If NULL, no file will be written.
 #'
 #' @param template_subject string, template subject name. Defaults to 'fsaverage'.
 #'
-#' @param template_subjects_dir string, the path to the subjects directory containing the template subject directory. If this is NULL, the function will try to find it using the environment, see the function [find.subjectsdir.of()] for details. Defaults to NULL.
+#' @param template_subjects_dir string, the path to the subjects directory containing the template subject directory. If this is `NULL`, the function will try to find it using the environment, see the function \code{\link[fsbrain]{find.subjectsdir.of}} for details. Defaults to NULL.
 #'
-#' @param show_freeview_tip logical, whether to print the freeview command on howto use the overlay to the console. (Only happens if the output_file is not NULL.)
+#' @param show_freeview_tip logical, whether to print the freeview command on howto use the overlay to the console. (Only happens if the output_file is not `NULL`.)
 #'
 #' @param value_for_unlisted_regions, numeric scalar. The value to assign to vertices which are part of atlas regions that are not listed in region_value_list. Defaults to NaN.
 #'
@@ -584,59 +584,6 @@ write.region.values.fsaverage <- function(hemi, atlas, region_value_list, output
   return_list$data = morph_data;
   return(return_list);
 }
-
-#' @title Find the subject directory containing the fsaverage subject (or others) on disk.
-#'
-#' @description Try to find directory containing the fsaverage subject (or any other subject) by checking in the following places and returning the first path where it is found: first, the directory given by the environment variable SUBJECTS_DIR, then in the subir 'subjects' of the directory given by the environment variable FREESURFER_HOME, and finally the base dir of the package cache. See the function [fsbrain::download_fsaverage()] if you want to download fsaverage to your package cache and ensure it always gets found, no matter whether the environment variables are set or not.
-#'
-#' @param subject_id string, the subject id of the subject. Defaults to 'fsaverage'.
-#'
-#' @param mustWork logical. Whether the function should with an error stop if the directory cannot be found. If this is TRUE, the return value will be only the 'found_at' entry of the list (i.e., only the path of the subjects dir).
-#'
-#' @return named list with the following entries: "found": logical, whether it was found. "found_at": Only set if found=TRUE, the path to the fsaverage directory (NOT including the fsaverage dir itself). See mustWork for important information.
-#'
-#' @export
-find.subjectsdir.of <- function(subject_id='fsaverage', mustWork=FALSE) {
-  ret = list();
-  ret$found = FALSE;
-
-  subj_dir=Sys.getenv("SUBJECTS_DIR");
-  if(nchar(subj_dir) > 0) {
-    guessed_path = file.path(subj_dir, subject_id);
-    if(dir.exists(guessed_path)) {
-      ret$found = TRUE;
-      ret$found_at = subj_dir;
-    }
-  }
-
-  fs_home=Sys.getenv("FREESURFER_HOME");
-  if(nchar(fs_home) > 0) {
-    guessed_path = file.path(fs_home, "subjects", subject_id);
-    if(dir.exists(guessed_path)) {
-        ret$found = TRUE;
-        ret$found_at = file.path(fs_home, "subjects");
-    }
-  }
-
-  guessed_path = get_optional_data_filepath(file.path("subjects_dir", "fsaverage"));
-  if(dir.exists(guessed_path)) {
-    ret$found = TRUE;
-    ret$found_at = get_optional_data_filepath(file.path("subjects_dir"));
-  }
-
-
-  if(mustWork) {
-    if(ret$found) {
-      return(ret$found_at);
-    } else {
-      stop(sprintf("Could not find subjects dir containing subject '%s' and parameter 'mustWork' is TRUE. Checked for directories given by environment variables FREESURFER_HOME and SUBJECTS_DIR and in package cache. Please set the environment variables by installing and configuring FreeSurfer.\n Or, if you want to download fsaverage without installing FreeSurfer, have a look at the 'download_fsaverage' function in this package.\n", subject_id));
-    }
-  }
-
-  return(ret);
-}
-
-
 
 
 #'@title Merge the annotations from two hemispheres into one annot.

@@ -1,26 +1,26 @@
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  library("fsbrain");
 #  fsbrain::download_optional_data();
 #  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 #  subjects_list = c("subject1", "subject2");
 #  subject_id = 'subject1';       # for function which use one subject only
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  groupdata_nat = group.morph.native(subjects_dir, subjects_list, "thickness", "lh");
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  subject_id = 'subject1';
 #  cat(sprintf("Subject '%s' has %d vertices and the mean cortical thickness of the left hemi is %f.\n", subject_id, length(groupdata_nat[[subject_id]]), mean(groupdata_nat[[subject_id]])));
 #  # Output: Subject 'subject1' has 149244 vertices and the mean cortical thickness of the left hemi is 2.437466.
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  groupdata_std = group.morph.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm="10");
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  cat(sprintf("Data length is %d for subject1, %d for subject2.\n", length(groupdata_std$subject1), length(groupdata_std$subject2)));
 #  # output: Data length is 163842 for subject1, 163842 for subject2.
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # Load the full hemisphere data, including media wall:
 #  fulldata = group.morph.native(subjects_dir, subjects_list, "thickness", "lh");
 #  mean(fulldata$subject1);
@@ -29,12 +29,12 @@
 #  cortexdata = group.morph.native(subjects_dir, subjects_list, "thickness", "lh", cortex_only=TRUE);
 #  mean(cortexdata$subject1, na.rm=TRUE);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  grouplabels = group.label(subjects_dir, subjects_list, "cortex.label", hemi='lh');
 #  cat(sprintf("The left hemisphere cortex label of subject1 includes %d vertices.\n", length(grouplabels$subject1)));
 #  # output: The left hemisphere cortex label of subject1 includes 140891 vertices.
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  surface = 'white';
 #  hemi = 'both';
 #  atlas = 'aparc';
@@ -57,12 +57,12 @@
 #  rh_mask2 = mask.from.labeldata.for.hemi(rh_label2, length(rh_annot$vertices),
 #    existing_mask = rh_mask);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  groupannot = group.annot(subjects_dir, subjects_list, 'lh', 'aparc');
 #  cat(sprintf("The left hemi of subject2 has %d vertices, and vertex 10 is in region '%s'.\n", length(groupannot$subject2$vertices), groupannot$subject2$label_names[10]));
 #  # output: The left hemi of subject2 has 149244 vertices, and vertex 10 is in region 'lateraloccipital'.
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  mean_thickness_lh_native = group.morph.agg.native(subjects_dir, subjects_list, "thickness", "lh", agg_fun=mean);
 #  mean_thickness_lh_native;
 #  # output:
@@ -70,7 +70,7 @@
 #  #1   subject1   lh    thickness      2.437466
 #  #2   subject2   lh    thickness      2.437466
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  mean_thickness_lh_std = group.morph.agg.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm="10", agg_fun=mean);
 #  mean_thickness_lh_std;
 #  # output:
@@ -78,7 +78,7 @@
 #  1   subject1   lh    thickness       2.32443
 #  2   subject2   lh    thickness       2.32443
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  agg_nat = group.multimorph.agg.native(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), agg_fun = mean);
 #  head(agg_nat);
 #  # output:
@@ -90,7 +90,7 @@
 #  #5   subject1   rh    thickness     2.4143047
 #  #6   subject2   rh    thickness     2.4143047
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  agg_nat2 = group.multimorph.agg.native(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), agg_fun = mean, cast=FALSE);
 #  head(agg_nat2);
 #  # output:
@@ -98,7 +98,7 @@
 #  #1   subject1     2.437466 0.6690556     2.414305 0.6607554
 #  #2   subject2     2.437466 0.6690556     2.414305 0.6607554
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  data_std = group.multimorph.agg.standard(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), fwhm='10', agg_fun = mean);
 #  head(data_std);
 #  # output:
@@ -110,11 +110,11 @@
 #  #5   subject1   rh    thickness     2.2926377
 #  #6   subject2   rh    thickness     2.2926377
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  data_std_cortex = group.multimorph.agg.standard(subjects_dir, subjects_list, c("thickness", "area"), c("lh", "rh"), fwhm='10', agg_fun = mean, cortex_only=TRUE,  agg_fun_extra_params=list("na.rm"=TRUE));
 #  head(data_std_cortex);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  atlas = 'aparc';         # or 'aparc.a2009s', or 'aparc.DKTatlas'.
 #  measure = 'thickness';
 #  region_means_native = group.agg.atlas.native(subjects_dir, subjects_list, measure, "lh", atlas, agg_fun = mean);
@@ -124,7 +124,7 @@
 #  #subject1 subject1 2.485596                 2.70373            2.591197 1.986978   3.702725
 #  #subject2 subject2 2.485596                 2.70373            2.591197 1.986978   3.702725
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  region_means_std = group.agg.atlas.standard(subjects_dir, subjects_list, measure, "lh", atlas, fwhm = '10', agg_fun = mean);
 #  head(region_means_std[1:5]);
 #  # output:
@@ -132,7 +132,7 @@
 #  #subject1 subject1 2.583408                2.780666            2.594696 2.018783
 #  #subject2 subject2 2.583408                2.780666            2.594696 2.018783
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  surface = 'white';
 #  hemi = 'both';
 #  atlas = 'aparc';
@@ -144,7 +144,7 @@
 #  lh_label = label.from.annotdata(lh_annot, region);
 #  rh_label = label.from.annotdata(rh_annot, region);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  hemi = "lh"               # 'lh' or 'rh'
 #  atlas = "aparc"           # an atlas, e.g., 'aparc', 'aparc.a2009s', 'aparc.DKTatlas'
 #  
@@ -158,25 +158,25 @@
 #  # To visualize these region values, try:
 #  #  freeview -f ${FREESURFER_HOME}/subjects/fsaverage/surf/lh.white:overlay=/tmp/lh_spread.mgz:overlay_method=linearopaque:overlay_threshold=0,100,percentile
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  vis.subject.annot(subjects_dir, 'subject1', 'aparc', 'both', views=c('si'));
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  vis.subject.morph.native(subjects_dir, 'subject', 'thickness', hemi='both', views=c('si'))
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  morph_data_lh = subject.morph.native(subjects_dir, 'subject1', 'thickness', 'lh');
 #  morph_data_rh = subject.morph.native(subjects_dir, 'subject1', 'thickness', 'rh');
 #  # Do something with the morph_data here.
 #  vis.data.on.subject(subjects_dir, 'subject1', morph_data_lh, morph_data_rh, views=c('si'));
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  surface = 'white';
 #  hemi = 'both';
 #  label = 'cortex.label';
 #  vis.subject.label(subjects_dir, subject_id, label, hemi);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  surface = 'white';  # If possible, use the 'inflated' surface instead: it is much easier to find the vertices on it. We do not
 #  #  use it here because the inflated surface is not shipped with the example data for this package to reduce download size.
 #  
@@ -194,7 +194,7 @@
 #  # Hint: Check the area around the visual cortex when searching for the vertices in interactive mode.
 #  vis.labeldata.on.subject(subjects_dir, subject_id, lh_labeldata, rh_labeldata_neighborhood$vertices, views=c('si'), surface=surface);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  surface = 'white';
 #  hemi = 'both';
 #  atlas = 'aparc';
@@ -211,7 +211,7 @@
 #  # visualize it
 #  vis.mask.on.subject(subjects_dir, subject_id, lh_mask, rh_mask);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  atlas = 'aparc';
 #  template_subject = 'fsaverage';
 #  # Some directory where we can find the template_subject. This can be omitted if FREESURFER_HOME or SUBJECTS_DIR is set and the template subject is in one of them. In that case, the function will find fsaverage in there by default. Also see the function download_fsaverage().
@@ -233,17 +233,47 @@
 #  # Now we have region_value_lists for both hemispheres. Time to visualize them:
 #  vis.region.values.on.subject(template_subjects_dir, template_subject, atlas, lh_region_value_list, rh_region_value_list);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
+#  # load mean curv data
+#  meancurv = subject.morph.native(subjects_dir, subject_id, "curv", "both", split_by_hemi = TRUE);
+#  
+#  # curvature data is noisy, clip it for better visualization (optional).
+#  meancurv = lapply(meancurv, clip.data);
+#  
+#  # desaturate colors for left hemisphere
+#  cl$lh = desaturate(cl$lh);
+#  
+#  # visualize it
+#  vis.color.on.subject(subjects_dir, subject_id, cl$lh, cl$rh);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  library('rgl');
+#  r3dDefaults$windowRect=c(50, 50, 1200, 1200);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  rgloptions = list('windowRect'=c(50, 50, 1200, 1200));
+
+## ---- eval = FALSE------------------------------------------------------------
 #  vis.subject.morph.native(subjects_dir, 'subject', 'thickness', hemi='both', views=c('t4', 't9'))
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  vis.subject.morph.native(subjects_dir, 'subject', 'thickness', hemi='both', views=c('si'), surface='inflated')
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  rgloptions = list("windowRect"=c(50, 50, 1000, 1000));
 #  vis.subject.morph.native(subjects_dir, 'subject', 'thickness', hemi='both', views=c('si'), rgloptions=rgloptions)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
+#  subjects_dir = find.subjectsdir.of("fsaverage")$found_at;
+#  subject_id = 'fsaverage';
+#  
+#  lh_demo_cluster_file = system.file("extdata", "lh.clusters_fsaverage.mgz", package = "fsbrain", mustWork = TRUE);
+#  rh_demo_cluster_file = system.file("extdata", "rh.clusters_fsaverage.mgz", package = "fsbrain", mustWork = TRUE);
+#  lh_clust = freesurferformats::read.fs.morph(lh_demo_cluster_file);   # contains a single positive cluster
+#  rh_clust = freesurferformats::read.fs.morph(rh_demo_cluster_file);   # contains two negative clusters
+#  vis.symmetric.data.on.subject(subjects_dir, subject_id, lh_clust, rh_clust, bg="sulc");
+
+## ---- eval = FALSE------------------------------------------------------------
 #  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 #  subject_id = 'subject1';
 #  rgloptions=list("windowRect"=c(50, 50, 600, 600));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
@@ -254,7 +284,7 @@
 #  # Creating a movie requires the rotating view ('sr' for 'single rotating'). The action will be silently ignored in all other views.
 #  vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('sr'), rgloptions=rgloptions, rglactions=rglactions);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 #  subject_id = 'subject1';
 #  rgloptions=list("windowRect"=c(50, 50, 1000, 1000));     # larger plot
@@ -262,8 +292,8 @@
 #  measure = 'thickness';
 #  vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si'), rgloptions=rgloptions, draw_colorbar = TRUE);
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
-#  coloredmeshes = vis.subject.morph.native(subjects_dir, 'subject1', 'thickness', 'lh', views=c('t4'), colormap=squash::jet);
+#  coloredmeshes = vis.subject.morph.native(subjects_dir, 'subject1', 'thickness', 'lh', views=c('t4'), makecmap_options=list('colFn'=squash::jet));
 #  coloredmesh.plot.colorbar.separate(coloredmeshes, horizontal=TRUE);
 

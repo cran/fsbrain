@@ -4,10 +4,15 @@
 \alias{combine.colorbar.with.brainview.animation}
 \title{Combine a colorbar and a brain animation in gif format into a new animation.}
 \usage{
-combine.colorbar.with.brainview.animation(brain_animation, colorbar_img,
-  output_animation, offset = "+0+0",
-  extend_brainview_img_height_by = 0L, silent = FALSE,
-  allow_colorbar_shrink = TRUE)
+combine.colorbar.with.brainview.animation(
+  brain_animation,
+  colorbar_img,
+  output_animation,
+  offset = "+0+0",
+  extend_brainview_img_height_by = 0L,
+  silent = FALSE,
+  allow_colorbar_shrink = TRUE
+)
 }
 \arguments{
 \item{brain_animation}{path to the brain animation in gif format}
@@ -16,7 +21,7 @@ combine.colorbar.with.brainview.animation(brain_animation, colorbar_img,
 
 \item{output_animation}{path to output image in gif format, must include the '.gif' file extension}
 
-\item{offset}{offset string passed to [magick::image_composite()]. Allows you to shift the location of the colorbar in the final image.}
+\item{offset}{offset string passed to \code{\link[magick]{image_composite}}. Allows you to shift the location of the colorbar in the final image.}
 
 \item{extend_brainview_img_height_by}{integer value in pixels, the size of the lower border to add to the brainview_img. Use this if the lower part of the colorbar is off the image canvas.}
 
@@ -28,7 +33,8 @@ combine.colorbar.with.brainview.animation(brain_animation, colorbar_img,
 Combine a colorbar and a brain animation in gif format into a new animation.
 }
 \seealso{
-Other colorbar functions: \code{\link{coloredmesh.plot.colorbar.separate}},
-  \code{\link{combine.colorbar.with.brainview.image}}
+Other colorbar functions: 
+\code{\link{coloredmesh.plot.colorbar.separate}()},
+\code{\link{combine.colorbar.with.brainview.image}()}
 }
 \concept{colorbar functions}
