@@ -15,7 +15,7 @@ vis.subject.label(
   rgloptions = list(),
   rglactions = list(),
   draw_colorbar = FALSE,
-  makecmap_options = list(colFn = squash::rainbow2, col.na = "#FFFFFF00"),
+  makecmap_options = list(colFn = label.colFn.inv, col.na = "#FFFFFF00"),
   map_to_NA = 0L,
   bg = NULL
 )
@@ -31,15 +31,15 @@ vis.subject.label(
 
 \item{surface}{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
 
-\item{colormap}{a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead.}
+\item{colormap}{a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead, like this: \code{makecmap_options=list('colFn'=terrain.colors)}.}
 
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
 \item{rgloptions}{option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
 
-\item{rglactions}{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.}
+\item{rglactions}{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action. The following example clips outliers in the data before plotting and writes a screenshot in PNG format: \code{rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95))}.}
 
-\item{draw_colorbar}{logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE. See  \code{\link[fsbrain]{coloredmesh.plot.colorbar.separate}} for an alternative.}
+\item{draw_colorbar}{logical or one of the character strings 'vertical' or 'horizontal', whether to draw a colorbar. Notice: the colorbar is drawn to a separate subplot, and this only works if there is enough space for it, i.e., the plot resolution must be high enough. You may have to increase the plot size for the colorbar to show up, see the vignette for instructions. Defaults to `FALSE`. See  \code{\link[fsbrain]{coloredmesh.plot.colorbar.separate}} for an alternative.}
 
 \item{makecmap_options}{named list of parameters to pass to \code{\link[squash]{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'. Should include at least a colormap function as name 'colFn'.}
 
@@ -52,6 +52,9 @@ list of coloredmeshes. The coloredmeshes used for the visualization.
 }
 \description{
 Visualize a label for a subject. A label is just a logical vector with one entry for each vertex in the mesh. Each vertex may additionally be associated with a scalar value, but this function ignored that.
+}
+\note{
+Drawing a colorbar for label data makes limited sense, use a legend instead. The colorbar can give a rough overview of the relative number of label and non-label vertices though, so it is possible to request one.
 }
 \examples{
 \donttest{
@@ -82,6 +85,7 @@ Other visualization functions:
 Other label functions: 
 \code{\link{apply.label.to.morphdata}()},
 \code{\link{apply.labeldata.to.morphdata}()},
+\code{\link{subject.lobes}()},
 \code{\link{subject.mask}()},
 \code{\link{vis.labeldata.on.subject}()}
 }

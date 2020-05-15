@@ -18,8 +18,8 @@
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  brain = subject.volume(subjects_dir, subject_id, 'brain');
-#  threshold = 1L;
+#  threshold = 5L;
 #  brain[which(brain <= threshold, arr.ind = TRUE)] = NA;  # mark background
-#  brain_hull = vol.hull(brain); # remove inner triangles
+#  brain_hull = vol.hull(brain);                           # remove inner triangles, optional but recommended
 #  volvis.voxels(brain_hull);
 

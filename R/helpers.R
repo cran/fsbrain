@@ -122,22 +122,68 @@ mesh.vertex.included.faces <- function(surface_mesh, source_vertices) {
 #'
 #' @param expand_inwards integer, additional thickness of the borders. Increases computation time, defaults to 0L.
 #'
+#' @param outline_color NULL or a color string (like 'black' or '#000000'), the color to use for the borders. If left at the default value `NULL`, the colors from the annotation color lookup table will be used.
+#'
+#' @param limit_to_regions vector of character strings or NULL, a list of regions for which to draw the outline (see \code{\link[fsbrain]{get.atlas.region.names}}). If NULL, all regions will be used. If (and only if) this parameter is used, the 'outline_color' parameter can be a vector of color strings, one color per region.
+#'
 #' @return vector of colors, one color for each mesh vertex
 #'
+#' @note Sorry for the computational time, the mesh datastructure is not ideal for neighborhood search.
+#'
 #' @export
-annot.outline <- function(annotdata, surface_mesh, background="white", silent=TRUE, expand_inwards=0L) {
+annot.outline <- function(annotdata, surface_mesh, background="white", silent=TRUE, expand_inwards=0L, outline_color=NULL, limit_to_regions=NULL) {
+
+    if(! freesurferformats::is.fs.annot(annotdata)) {
+      stop("Parameter 'annotdata' must be an fs.annot instance.");
+    }
+
+    if(! freesurferformats::is.fs.surface(surface_mesh)) {
+      stop("Parameter 'surface_mesh' must be an fs.surface instance.");
+    }
+
     if(length(annotdata$vertices) != nrow(surface_mesh$vertices)) {
         stop(sprintf("Annotation is for %d vertices but mesh contains %d, vertex counts must match.\n", length(annotdata$vertices), nrow(surface_mesh$vertices)));
     }
     col = rep(background, length(annotdata$vertices));
     for(region_idx in seq_len(annotdata$colortable$num_entries)) {
         region_name = annotdata$colortable$struct_names[[region_idx]];
+
+        region_index_in_limit_to_regions_parameter = NULL;
+
+        if(! is.null(limit_to_regions)) {
+          if(! is.character(limit_to_regions)) {
+            stop("Parameter 'limit_to_regions' must be NULL or a vector of character strings.");
+          }
+          if(! region_name %in% limit_to_regions) {
+            next;
+          } else {
+            region_index_in_limit_to_regions_parameter = which(limit_to_regions == region_name);
+            if(length(region_index_in_limit_to_regions_parameter) != 1L) {
+              stop("Regions in parameter 'limit_to_regions' must be unique.");
+            }
+          }
+        }
+
         if(!silent) {
           message(sprintf("Computing outline for region %d of %d: '%s'\n", region_idx, annotdata$colortable$num_entries, region_name));
         }
         label_vertices = label.from.annotdata(annotdata, region_name, error_on_invalid_region = FALSE);
         label_border = label.border(surface_mesh, label_vertices, expand_inwards=expand_inwards);
-        col[label_border$vertices] = as.character(annotdata$colortable_df$hex_color_string_rgba[[region_idx]]);
+
+        if(is.null(outline_color)) {
+          col[label_border$vertices] = as.character(annotdata$colortable_df$hex_color_string_rgba[[region_idx]]);
+        } else {
+          if(length(outline_color) > 1L) {
+            if(length(outline_color) != length(limit_to_regions)) {
+              stop(sprintf("Number of colors in parameter 'outline_color' must be 1 or exactly the number of regions in parameter 'limit_to_regions' (%d), but is %d.\n", length(limit_to_regions), length(outline_color)));
+            }
+            if(! is.null(region_index_in_limit_to_regions_parameter)) {
+              col[label_border$vertices] = outline_color[region_index_in_limit_to_regions_parameter];
+            }
+          } else {
+            col[label_border$vertices] = outline_color;
+          }
+        }
     }
     return(col);
 }
@@ -219,7 +265,7 @@ label.border <- function(surface_mesh, label, inner_only=TRUE, expand_inwards=0L
         return(list("vertices"=c(), "edges"=c(), "faces"=c()));
     }
 
-    label_edges_sorted = t(apply(label_edges, 1, sort)) %>%  as.data.frame();    # Sort start and target vertex within edge to count edges (u,v) and (v,u) as 2 occurrences of same edge later.
+    label_edges_sorted = as.data.frame(t(apply(label_edges, 1, sort)));    # Sort start and target vertex within edge to count edges (u,v) and (v,u) as 2 occurrences of same edge later.
     #print(head(label_edges_sorted));
     edge_dt = data.table::as.data.table(label_edges_sorted);
     edgecount_dt = edge_dt[, .N, by = names(edge_dt)]; # add column 'N' which contains the counts (i.e., how often each edge occurs over all faces).
@@ -483,7 +529,7 @@ makecmakeopts.merge <- function(makecmap_options, colormap, default_colormap=squ
 
   if(is.null(makecmap_options$colFn)) {
     if(is.null(colormap)) {
-      warning("No valid colormap function found in parameters 'makecmap_options' or 'colormap', using the default colormap.");
+      #warning("No valid colormap function defined in parameters 'makecmap_options$colFn' or 'colormap', using the default colormap.");
       makecmap_options$colFn = default_colormap;
     } else {
       makecmap_options$colFn = colormap;

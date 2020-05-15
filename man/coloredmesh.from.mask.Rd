@@ -28,7 +28,7 @@ coloredmesh.from.mask(
 
 \item{colormap}{a colormap function. See the squash package for some colormaps. Defaults to \code{\link[squash]{jet}}.}
 
-\item{surface_data}{optional surface object, as returned by \code{\link[fsbrain]{subject.surface}}. If given, used instead of loading the surface data from disk (which users of this function may already have done). Defaults to NULL.}
+\item{surface_data}{optional surface mesh object, as returned by \code{\link[fsbrain]{subject.surface}}. If given, used instead of loading the surface data from disk (which users of this function may already have done). Defaults to NULL.}
 
 \item{makecmap_options}{named list of parameters to pass to \code{\link[squash]{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'.}
 }
@@ -42,5 +42,14 @@ Create a coloredmesh from a mask.
 Other mask functions: 
 \code{\link{mask.from.labeldata.for.hemi}()},
 \code{\link{vis.mask.on.subject}()}
+
+Other coloredmesh functions: 
+\code{\link{coloredmesh.from.annot}()},
+\code{\link{coloredmesh.from.label}()},
+\code{\link{coloredmesh.from.morph.native}()},
+\code{\link{coloredmesh.from.morph.standard}()},
+\code{\link{coloredmesh.from.morphdata}()},
+\code{\link{coloredmeshes.from.color}()}
 }
+\concept{coloredmesh functions}
 \concept{mask functions}

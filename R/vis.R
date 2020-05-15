@@ -15,15 +15,15 @@
 #'
 #' @param surface string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".
 #'
-#' @param colormap a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead.
+#' @param colormap a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead, like this: \code{makecmap_options=list('colFn'=terrain.colors)}.
 #'
 #' @param views list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.
 #'
 #' @param rgloptions option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.
 #'
-#' @param rglactions named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
+#' @param rglactions named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action. The following example clips outliers in the data before plotting and writes a screenshot in PNG format: \code{rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95))}.
 #'
-#' @param draw_colorbar logical, whether to draw a colorbar. WARNING: The colorbar is drawn to a subplot, and this only works if there is enough space for it. You will have to increase the plot size using the 'rlgoptions' parameter for the colorbar to show up. Defaults to FALSE. See  \code{\link[fsbrain]{coloredmesh.plot.colorbar.separate}} for an alternative.
+#' @param draw_colorbar logical or one of the character strings 'vertical' or 'horizontal', whether to draw a colorbar. Notice: the colorbar is drawn to a separate subplot, and this only works if there is enough space for it, i.e., the plot resolution must be high enough. You may have to increase the plot size for the colorbar to show up, see the vignette for instructions. Defaults to `FALSE`. See  \code{\link[fsbrain]{coloredmesh.plot.colorbar.separate}} for an alternative.
 #'
 #' @param cortex_only logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subject. Defaults to FALSE.
 #'
@@ -62,20 +62,17 @@ vis.subject.morph.native <- function(subjects_dir, subject_id, measure, hemi="bo
         measure_data = subject.morph.native(subjects_dir, subject_id, measure, hemi, cortex_only=cortex_only, split_by_hemi=TRUE);
     }
 
-    if(rglactions.has.key(rglactions, 'clip_data')) {
-        clip_range = rglactions$clip_data;
-        measure_data = clip.data(measure_data, lower=clip_range[1], upper=clip_range[2]);
-    }
+    measure_data = rglactions.transform(measure_data, rglactions); # apply transform or data clipping
 
-    both_hemi_colors = collayer.from.morphlike.data(measure_data$lh, measure_data$rh, makecmap_options=makecmap_options, return_map=TRUE);
-    map = both_hemi_colors$map;
-    both_hemi_colors$map = NULL;
+    both_hemi_colors = collayer.from.morphlike.data(measure_data$lh, measure_data$rh, makecmap_options=makecmap_options, return_metadata=TRUE);
+    metadata = both_hemi_colors$metadata;
+    both_hemi_colors$metadata = NULL;
     if(!is.null(bg)) {
         background = collayer.bg(subjects_dir, subject_id, bg, hemi=hemi);
         both_hemi_colors = collayers.merge(list("fg"=both_hemi_colors, "bg"=background));
     }
 
-    coloredmeshes = coloredmeshes.from.color(subjects_dir, subject_id, both_hemi_colors, hemi, surface=surface, metadata=list('src_data'=measure_data, 'map'=map, 'makecmap_options'=makecmap_options));
+    coloredmeshes = coloredmeshes.from.color(subjects_dir, subject_id, both_hemi_colors, hemi, surface=surface, metadata=list('src_data'=measure_data, 'map'=metadata$map, 'map_sorted'=metadata$map_sorted, 'col_sorted'=metadata$col_sorted, 'makecmap_options'=makecmap_options));
 
     return(invisible(brainviews(views, coloredmeshes, rgloptions = rgloptions, rglactions = rglactions, draw_colorbar = draw_colorbar, style = style)));
 }
@@ -135,22 +132,40 @@ vis.subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi="
         measure_data = subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm=fwhm, template_subject=template_subject, cortex_only=cortex_only, split_by_hemi=TRUE);
     }
 
-    if(rglactions.has.key(rglactions, 'clip_data')) {
-        clip_range = rglactions$clip_data;
-        measure_data = clip.data(measure_data, lower=clip_range[1], upper=clip_range[2]);
-    }
+    measure_data = rglactions.transform(measure_data, rglactions);
 
-    both_hemi_colors = collayer.from.morphlike.data(measure_data$lh, measure_data$rh, makecmap_options=makecmap_options, return_map = TRUE);
-    map = both_hemi_colors$map;
-    both_hemi_colors$map = NULL;
+    both_hemi_colors = collayer.from.morphlike.data(measure_data$lh, measure_data$rh, makecmap_options=makecmap_options, return_metadata = TRUE);
+    metadata = both_hemi_colors$metadata;
+    both_hemi_colors$metadata = NULL;
     if(!is.null(bg)) {
         background = collayer.bg(subjects_dir, subject_id, bg, hemi=hemi);
         both_hemi_colors = collayers.merge(list("fg"=both_hemi_colors, "bg"=background));
     }
 
-    coloredmeshes = coloredmeshes.from.color(template_subjects_dir, template_subject, both_hemi_colors, hemi, surface=surface, metadata=list("src_data"=measure_data, "map"=map, "makecmap_options"=makecmap_options));
+    coloredmeshes = coloredmeshes.from.color(template_subjects_dir, template_subject, both_hemi_colors, hemi, surface=surface, metadata=list("src_data"=measure_data, "map"=metadata$map, "map_sorted"=metadata$map_sorted, "col_sorted"=metadata$col_sorted, "makecmap_options"=makecmap_options));
 
     return(invisible(brainviews(views, coloredmeshes, rgloptions = rgloptions, rglactions = rglactions, draw_colorbar = draw_colorbar)));
+}
+
+rglactions.transform <- function(measure_data, rglactions) {
+    if(is.null(rglactions)) {
+        return(measure_data);
+    }
+    if(is.hemilist(measure_data)) {
+        return(lapply(measure_data, rglactions.transform, rglactions=rglactions));
+    }
+    if(hasIn(rglactions, list('clip_data'))) {
+        clip_range = rglactions$clip_data;
+        measure_data = clip.data(measure_data, lower=clip_range[1], upper=clip_range[2]);
+    }
+    if(hasIn(rglactions, list('trans_fun'))) {
+        trans_fun = rglactions$trans_fun;
+        if(! is.function(trans_fun)) {
+            stop("The value of rglactions entry 'trans_fun' must be a function.");
+        }
+        measure_data = trans_fun(measure_data);
+    }
+    return(measure_data);
 }
 
 
@@ -165,6 +180,8 @@ vis.subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi="
 #' @param map_to_NA the value or value range that should **not** be considered part of the label, and should thus be plotted as background color. Only used if 'bg' is not `NULL`. If a single value, only excatly this value is used (typically 0). If two values, they are interpreted as a range, and a values between them are mapped to NA. If you prefer to map the data to NA yourself before using this function, pass `NULL`.
 #'
 #' @return list of coloredmeshes. The coloredmeshes used for the visualization.
+#'
+#' @note Drawing a colorbar for label data makes limited sense, use a legend instead. The colorbar can give a rough overview of the relative number of label and non-label vertices though, so it is possible to request one.
 #'
 #' @examples
 #' \donttest{
@@ -182,7 +199,7 @@ vis.subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi="
 #'
 #' @importFrom squash rainbow2
 #' @export
-vis.subject.label <- function(subjects_dir, subject_id, label, hemi, surface="white", colormap=NULL, views=c("t4"), rgloptions = list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=squash::rainbow2, 'col.na'='#FFFFFF00'), map_to_NA=0L, bg=NULL) {
+vis.subject.label <- function(subjects_dir, subject_id, label, hemi, surface="white", colormap=NULL, views=c("t4"), rgloptions = list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=label.colFn.inv, 'col.na'='#FFFFFF00'), map_to_NA=0L, bg=NULL) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
@@ -210,14 +227,20 @@ vis.subject.label <- function(subjects_dir, subject_id, label, hemi, surface="wh
         mask_data$rh = rh_mask;
     }
 
+    mask_data = lapply(mask_data, as.integer);
 
-    both_hemi_colors = collayer.from.mask.data(mask_data$lh, mask_data$rh, makecmap_options=makecmap_options);
+
+    #both_hemi_colors = collayer.from.mask.data(mask_data$lh, mask_data$rh, makecmap_options=makecmap_options);
+
+    both_hemi_colors = collayer.from.morphlike.data(mask_data$lh, mask_data$rh, makecmap_options=makecmap_options, return_metadata = TRUE);
+    metadata = both_hemi_colors$metadata;
+    both_hemi_colors$metadata = NULL;
     if(!is.null(bg)) {
         background = collayer.bg(subjects_dir, subject_id, bg, hemi=hemi);
         both_hemi_colors = collayers.merge(list("fg"=both_hemi_colors, "bg"=background));
     }
 
-    coloredmeshes = coloredmeshes.from.color(subjects_dir, subject_id, both_hemi_colors, hemi, surface=surface);
+    coloredmeshes = coloredmeshes.from.color(subjects_dir, subject_id, both_hemi_colors, hemi, surface=surface, metadata=list("src_data"=mask_data, "map"=metadata$map, "map_sorted"=metadata$map_sorted, "col_sorted"=metadata$col_sorted, "makecmap_options"=makecmap_options));
     return(invisible(brainviews(views, coloredmeshes, rgloptions = rgloptions, rglactions = rglactions, draw_colorbar = draw_colorbar)));
 }
 
@@ -395,6 +418,8 @@ vis.color.on.subject <- function(subjects_dir, vis_subject_id, color_lh, color_r
 #'
 #' @return list of coloredmeshes. The coloredmeshes used for the visualization.
 #'
+#' @note Drawing a colorbar for label data makes limited sense, use a legend instead. The colorbar can give a rough overview of the relative number of label and non-label vertices though, so it is possible to request one.
+#'
 #' @examples
 #' \donttest{
 #'    fsbrain::download_optional_data();
@@ -432,7 +457,7 @@ vis.color.on.subject <- function(subjects_dir, vis_subject_id, color_lh, color_r
 #'
 #' @importFrom squash rainbow2
 #' @export
-vis.mask.on.subject <- function(subjects_dir, vis_subject_id, mask_lh, mask_rh, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=squash::rainbow2)) {
+vis.mask.on.subject <- function(subjects_dir, vis_subject_id, mask_lh, mask_rh, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=label.colFn.inv)) {
 
     if(is.null(mask_lh) && is.null(mask_rh)) {
         stop(sprintf("Only one of mask_lh or mask_rh can be NULL.\n"));
@@ -485,12 +510,14 @@ vis.mask.on.subject <- function(subjects_dir, vis_subject_id, mask_lh, mask_rh, 
 #'    rh_labeldata_neighborhood$vertices, surface=surface, views=c('si'));
 #' }
 #'
+#' @note Drawing a colorbar for label data makes limited sense, use a legend instead. The colorbar can give a rough overview of the relative number of label and non-label vertices though, so it is possible to request one.
+#'
 #' @family label functions
 #' @family visualization functions
 #'
 #' @importFrom squash rainbow2
 #' @export
-vis.labeldata.on.subject <- function(subjects_dir, vis_subject_id, lh_labeldata, rh_labeldata, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=squash::rainbow2)) {
+vis.labeldata.on.subject <- function(subjects_dir, vis_subject_id, lh_labeldata, rh_labeldata, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=label.colFn.inv)) {
 
     if(is.null(lh_labeldata) && is.null(rh_labeldata)) {
         stop(sprintf("Only one of lh_labeldata or rh_labeldata can be NULL.\n"));
@@ -545,9 +572,9 @@ vis.data.on.fsaverage <- function(subjects_dir=NULL, vis_subject_id="fsaverage",
 #'
 #' @inheritParams vis.subject.morph.native
 #'
-#' @param atlas string. The atlas name. E.g., "aparc", "aparc.2009s", or "aparc.DKTatlas". Used to construct the name of the annotation file to be loaded.
+#' @param atlas string. The atlas name. E.g., "aparc", "aparc.2009s", or "aparc.DKTatlas". Used to construct the name of the annotation file to be loaded. Can also be a hemilist of already loaded annotations.
 #'
-#' @param outline logical, whether to draw an outline only instead of filling the regions. Defaults to FALSE.
+#' @param outline logical, whether to draw an outline only instead of filling the regions. Defaults to `FALSE`. Instead of passing `TRUE`, one can also pass a list of extra parameters to pass to \code{\link[fsbrain]{annot.outline}}, e.g., \code{outline=list('outline_color'='#000000')}. Using this increases computation time dramatically, sorry for the performance.
 #'
 #' @return list of coloredmeshes. The coloredmeshes used for the visualization.
 #'
@@ -626,6 +653,4 @@ vis.region.values.on.subject <- function(subjects_dir, subject_id, atlas, lh_reg
     morph_like_data = spread.values.over.subject(subjects_dir, subject_id, atlas, lh_region_value_list, rh_region_value_list, value_for_unlisted_regions = value_for_unlisted_regions);
     return(invisible(vis.data.on.subject(subjects_dir, subject_id, morph_like_data$lh, morph_like_data$rh, surface=surface, views=views, rgloptions=rgloptions, rglactions=rglactions, draw_colorbar = draw_colorbar, makecmap_options=makecmap_options, bg=bg)));
 }
-
-
 

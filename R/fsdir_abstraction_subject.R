@@ -471,7 +471,7 @@ subject.filepath.any <- function(subjects_dir, subject_id, relative_path_parts, 
 #'
 #' @param subject_id string. The subject identifier
 #'
-#' @param label string. Name of the label file, without the hemi part (if any), but including the '.label' suffix. E.g., 'cortex.label' for '?h.cortex.label'. You can also pass just the label (e.g., 'cortex'): if the string does not end with the suffix '.label', that suffix gets added auomatically.
+#' @param label string. Name of the label file, without the hemi part. You can include the '.label' suffix. E.g., 'cortex.label' for '?h.cortex.label'. You can also pass just the label (e.g., 'cortex'): if the string does not end with the suffix '.label', that suffix gets added auomatically.
 #'
 #' @param hemi string, one of 'lh', 'rh', or 'both'. The hemisphere name. Used to construct the names of the label data files to be loaded. For 'both', see the information on the return value.
 #'
@@ -698,6 +698,85 @@ subject.surface <- function(subjects_dir, subject_id, surface, hemi) {
         stop(sprintf("Surface file '%s' for subject '%s' surface '%s' hemi '%s' cannot be accessed.\n", surface_file, subject_id, surface, hemi));
     }
     return(freesurferformats::read.fs.surface(surface_file));
+}
+
+
+#' @title Load labels representing brain lobes.
+#'
+#' @description This gives you labels that represent brain lobes for a subject. The lobe definition is based on the Desikan-Killiany atlas (Desikan *et al.*, 2010) as suggested on the FreeSurfer website at https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation.
+#'
+#' @inheritParams subject.surface
+#'
+#' @param include_cingulate logical, whether to include the vertices of the cingulate in the lobes
+#'
+#' @param as_annot return a hemilist of annotations instead of the return value described in the *value* section
+#'
+#' @return hemilist of integer vectors, the vectors represent vertex indices of the hemispheres, and each vertex is assigned one of the following values: `0`=no_lobe, `1`=frontal, `2`=parietal, `3`=temporal, `4`=occipital.
+#'
+#' @family atlas functions
+#' @family label functions
+#'
+#' @export
+subject.lobes <- function(subjects_dir, subject_id, hemi='both', include_cingulate=TRUE, as_annot=FALSE) {
+
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
+    }
+
+    ret_list = list();
+
+    if(hemi %in% c("lh", "both")) {
+        ret_list$lh = hemi.lobe.labels(subjects_dir, subject_id, 'lh', include_cingulate=include_cingulate, as_annot=as_annot);
+    }
+    if(hemi %in% c("rh", "both")) {
+        ret_list$rh = hemi.lobe.labels(subjects_dir, subject_id, 'rh', include_cingulate=include_cingulate, as_annot=as_annot);
+    }
+    return(ret_list);
+}
+
+
+#' @title Compute lobe labels for a single hemi from aparc atlas.
+#'
+#' @inheritParams subject.lobes
+#'
+#' @param hemi string, one of 'lh' or 'rh'. The hemisphere name.
+#'
+#' @note See \code{\link[fsbrain]{subject.lobes}} for details.
+#'
+#' @keywords internal
+hemi.lobe.labels <- function(subjects_dir, subject_id, hemi, include_cingulate=TRUE, as_annot=FALSE) {
+
+    if(!(hemi %in% c("lh", "rh"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
+    }
+
+    atlas = 'aparc';
+    annot = subject.annot(subjects_dir, subject_id, hemi, atlas);
+
+    frontal_lobe_regions = c('superiorfrontal', 'rostralmiddlefrontal', 'caudalmiddlefrontal' , 'parstriangularis', 'parsopercularis', 'parsorbitalis', 'lateralorbitofrontal', 'medialorbitofrontal', 'paracentral', 'precentral', 'frontalpole');
+    parietal_lobe_regions = c('superiorparietal', 'inferiorparietal', 'supramarginal', 'postcentral', 'precuneus');
+    temporal_lobe_regions = c('superiortemporal', 'inferiortemporal', 'middletemporal', 'bankssts', 'fusiform', 'transversetemporal', 'entorhinal', 'parahippocampal', 'temporalpole');
+    occipital_lobe_regions = c('lateraloccipital', 'lingual', 'cuneus', 'pericalcarine');
+
+    if(include_cingulate) {
+        frontal_lobe_regions = c(frontal_lobe_regions, 'caudalanteriorcingulate', 'rostralanteriorcingulate');
+        parietal_lobe_regions = c(parietal_lobe_regions, 'posteriorcingulate', 'isthmuscingulate');
+    }
+
+    lobe_indices = rep(0L, length(annot$vertices));
+    lobe_indices[annot$label_names %in% frontal_lobe_regions] = 1L;
+    lobe_indices[annot$label_names %in% parietal_lobe_regions] = 2L;
+    lobe_indices[annot$label_names %in% temporal_lobe_regions] = 3L;
+    lobe_indices[annot$label_names %in% occipital_lobe_regions] = 4L;
+
+    if(as_annot) {
+        num_vertices_in_surface = length(annot$vertices);
+        label_vertices_by_region = list('unknown2'=which(lobe_indices==0L), 'frontal'=which(lobe_indices==1L), 'parietal'=which(lobe_indices==2L), 'temporal'=which(lobe_indices==3L), 'occipetal'=which(lobe_indices==4L));
+        output_annot = label.to.annot(label_vertices_by_region, num_vertices_in_surface);
+        return(output_annot);
+    } else {
+        return(lobe_indices);
+    }
 }
 
 

@@ -150,9 +150,9 @@ collayer.bg.sulc <- function(subjects_dir, subject_id, hemi="both", cortex_only=
 #'
 #' @param grayscale logical, whether to convert the atlas colors to grayscale
 #'
-#' @param outline logical or integer, whether to draw the atlas regions as outlines only. If an integer, it is interpreted as the outline thickness. The value `TRUE` is equivalent to the integer value `1L` and leads to a thin border. The value `2L` will expand the border by 1. If this is active, the surface mesh of the subject must exist.
+#' @param outline logical, whether to draw an outline only instead of filling the regions. Defaults to `FALSE`. Instead of passing `TRUE`, one can also pass a list of extra parameters to pass to \code{\link[fsbrain]{annot.outline}}, e.g., \code{outline=list('outline_color'='#000000')}.
 #'
-#' @param outline_surface character string, the surface to load. Only relevant when 'outline' is used.
+#' @param outline_surface character string, the surface to load. Only relevant when 'outline' is used. (In that case the surface mesh is needed to compute the vertices forming the region borders.)
 #'
 #' @return a color layer, i.e., vector of color strings in a hemilist
 #'
@@ -161,20 +161,41 @@ collayer.bg.sulc <- function(subjects_dir, subject_id, hemi="both", cortex_only=
 #' @note Using 'outline' mode is quite slow, and increasing the border thickness makes it even slower.
 #'
 #' @family surface color layer
+#' @importFrom utils modifyList
 #' @export
-collayer.bg.atlas <- function(subjects_dir, subject_id, hemi="both", atlas="aparc", grayscale=!outline, outline=FALSE, outline_surface = "white") {
+collayer.bg.atlas <- function(subjects_dir, subject_id, hemi="both", atlas="aparc", grayscale=FALSE, outline=FALSE, outline_surface = "white") {
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
     }
 
-    outline = as.integer(outline);
-    if(outline >= 1L) {
+    if(is.list(outline)) {
+        annot_outline_extra_options = outline;
+        #annot_outline_full_options = utils::modifyList(list(annot, surface_mesh), annot_outline_extra_options);
+        #col = do.call(annot.outline, annot_outline_full_options);
+    } else if(outline == TRUE) {
+        annot_outline_extra_options = list('background' = '#FFFFFFFF');
+    } else if(is.integer(outline)) {
+        annot_outline_extra_options = list('background' = '#FFFFFFFF', 'expand_inwards' = outline - 1L);
+    } else {
+        annot_outline_extra_options = NULL; # do not use outline mode
+    }
+
+    use_outline_mode = ! is.null(annot_outline_extra_options);
+
+    if(use_outline_mode) {
         annot_layer = list();
         if(hemi %in% c("lh", "both")) {
-            annot_layer$lh = annot.outline(subject.annot(subjects_dir, subject_id, 'lh', atlas), subject.surface(subjects_dir, subject_id, outline_surface, 'lh'), background = '#FFFFFFFF', expand_inwards = outline - 1L);
+            annot = subject.annot(subjects_dir, subject_id, 'lh', atlas);
+            surface_mesh = subject.surface(subjects_dir, subject_id, outline_surface, 'lh');
+            annot_outline_full_options = utils::modifyList(list(annot, surface_mesh), annot_outline_extra_options);
+            annot_layer$lh = do.call(annot.outline, annot_outline_full_options);
         }
         if(hemi %in% c("rh", "both")) {
-            annot_layer$rh = annot.outline(subject.annot(subjects_dir, subject_id, 'rh', atlas), subject.surface(subjects_dir, subject_id, outline_surface, 'rh'), background = '#FFFFFFFF', expand_inwards = outline - 1L);
+            annot = subject.annot(subjects_dir, subject_id, 'rh', atlas);
+            surface_mesh = subject.surface(subjects_dir, subject_id, outline_surface, 'rh');
+            annot_outline_full_options = utils::modifyList(list(annot, surface_mesh), annot_outline_extra_options);
+            annot_layer$rh = do.call(annot.outline, annot_outline_full_options);
+            #annot_layer$rh = annot.outline(subject.annot(subjects_dir, subject_id, 'rh', atlas), subject.surface(subjects_dir, subject_id, outline_surface, 'rh'), background = '#FFFFFFFF', expand_inwards = outline - 1L);
         }
     } else {
         annot_layer = collayer.from.annot(subjects_dir, subject_id, hemi, atlas);
@@ -195,7 +216,7 @@ collayer.bg.atlas <- function(subjects_dir, subject_id, hemi="both", atlas="apar
 #'
 #' @param makecmap_options named list of parameters to pass to \code{\link[squash]{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'.
 #'
-#' @param return_map logical, whether to add the colormap as entry 'map' in the returned list
+#' @param return_metadata logical, whether to return additional metadata as entry 'metadata' in the returned list
 #'
 #' @return named hemi list, each entry is a vector of color strings, one color per surface vertex. The coloring represents the morph data.
 #'
@@ -205,7 +226,7 @@ collayer.bg.atlas <- function(subjects_dir, subject_id, hemi="both", atlas="apar
 #' @importFrom utils modifyList
 #' @importFrom squash cmap makecmap jet
 #' @export
-collayer.from.morphlike.data <- function(lh_morph_data=NULL, rh_morph_data=NULL, makecmap_options=list('colFn'=squash::jet), return_map=FALSE) {
+collayer.from.morphlike.data <- function(lh_morph_data=NULL, rh_morph_data=NULL, makecmap_options=list('colFn'=squash::jet), return_metadata=FALSE) {
     if(is.null(lh_morph_data) | is.null(rh_morph_data)) {
 
         if(is.null(lh_morph_data) & is.null(rh_morph_data)) {
@@ -221,15 +242,22 @@ collayer.from.morphlike.data <- function(lh_morph_data=NULL, rh_morph_data=NULL,
             morph_data = lh_morph_data;
         }
 
+        if(! 'colFn' %in% makecmap_options) {
+            warning("No colFn given");
+        }
+
         map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
         single_hemi_color_layer = squash::cmap(morph_data, map = map);
         collayer = hemilist.wrap(single_hemi_color_layer, hemi);
-        if(return_map) {
-            collayer$map = map;
+        if(return_metadata) {
+            map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
+            col_sorted = squash::cmap(sort(morph_data), map = map_sorted);
+            collayer$metadata = list('map'=map, 'map_sorted'=map_sorted, 'col_sorted'=col_sorted);
         }
         return(collayer);
     } else {
         merged_morph_data = c(lh_morph_data, rh_morph_data);
+
         common_cmap = do.call(squash::makecmap, utils::modifyList(list(merged_morph_data), makecmap_options));
         if(is.numeric(lh_morph_data)) {
             lh_layer = squash::cmap(lh_morph_data, map = common_cmap);
@@ -242,8 +270,10 @@ collayer.from.morphlike.data <- function(lh_morph_data=NULL, rh_morph_data=NULL,
             rh_layer = NULL;
         }
         collayer = list("lh"=lh_layer, "rh"=rh_layer);
-        if(return_map) {
-            collayer$map = common_cmap;
+        if(return_metadata) {
+            common_cmap_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(merged_morph_data)), makecmap_options));
+            col_sorted = squash::cmap(sort(merged_morph_data), map = common_cmap_sorted);
+            collayer$metadata = list('map'=common_cmap, 'map_sorted'=common_cmap_sorted, 'col_sorted'=col_sorted);
         }
         return(collayer);
     }
@@ -252,7 +282,7 @@ collayer.from.morphlike.data <- function(lh_morph_data=NULL, rh_morph_data=NULL,
 
 #' @title Compute surface color layer from morph-like data.
 #'
-#' @param lh_data integer vector,  can be NULL
+#' @param lh_data integer vector, can be NULL
 #'
 #' @param rh_data numerical vector, can be NULL
 #'
@@ -266,7 +296,7 @@ collayer.from.morphlike.data <- function(lh_morph_data=NULL, rh_morph_data=NULL,
 #' @importFrom utils modifyList
 #' @importFrom squash cmap makecmap rainbow2
 #' @export
-collayer.from.mask.data <- function(lh_data=NULL, rh_data=NULL, makecmap_options=list('colFn'=squash::rainbow2)) {
+collayer.from.mask.data <- function(lh_data=NULL, rh_data=NULL, makecmap_options=list('colFn'=label.colFn)) {
     if(is.null(lh_data) | is.null(rh_data)) {
 
         if(is.null(lh_data) & is.null(rh_data)) {
@@ -312,6 +342,55 @@ collayer.from.mask.data <- function(lh_data=NULL, rh_data=NULL, makecmap_options
 }
 
 
+#' @title A simple colormap function for binary colors.
+#'
+#' @description Useful for plotting labels.
+#'
+#' @param n positive integer, the number of colors. Must be 1 or 2 for this function.
+#'
+#' @param col_a color string, the foreground color
+#'
+#' @param col_b color string, the background color
+#'
+#' @return vector of 'n' RGB colorstrings
+#'
+#' @export
+label.colFn <- function(n=2L, col_a='#228B22', col_b="#FFFFFF") {
+    n = as.integer(n);
+    if(n < 1) {
+        stop(sprintf("Parameter 'n' must be >= 1L but is '%d'.\n", n));
+    }
+    if(n == 1L) {
+        return();
+    } else if(n==2L) {
+        return(c(col_b, col_a));
+    } else {
+        n_half = as.integer(ceiling(n/2.0));
+        col = rep(col_a, n);
+        col[1:n_half] = col_b;
+        return(col);
+    }
+}
+
+
+#' @title A simple colormap function for binary colors.
+#'
+#' @description Useful for plotting labels.
+#'
+#' @param n positive integer, the number of colors. Must be 1 or 2 for this function.
+#'
+#' @param col_a color string, the foreground color
+#'
+#' @param col_b color string, the background color
+#'
+#' @return vector of 'n' RGB colorstrings
+#'
+#' @export
+label.colFn.inv <- function(n=2L, col_a='#228B22', col_b="#FFFFFF") {
+    return(label.colFn(n=n, col_a=col_b, col_b=col_a));
+}
+
+
 #' @title Compute surface color layer from annotation or atlas data.
 #'
 #' @param lh_annotdata loaded annotation data for left hemi, as returned by \code{\link[fsbrain]{subject.annot}}
@@ -321,7 +400,6 @@ collayer.from.mask.data <- function(lh_data=NULL, rh_data=NULL, makecmap_options
 #' @return named hemi list, each entry is a vector of color strings, one color per surface vertex. The coloring represents the atlas data.
 #'
 #' @seealso You can plot the return value using \code{\link[fsbrain]{vis.color.on.subject}}.
-#'
 #' @family surface color layer
 #' @export
 collayer.from.annotdata <- function(lh_annotdata=NULL, rh_annotdata=NULL) {

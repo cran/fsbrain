@@ -1,37 +1,5 @@
-# Functions for generating coloredmeshes from data and managing their colormaps.
+# Functions for generating coloredmeshes from data.
 
-#' @keywords internal
-coloredmeshes.combined.colors <- function(coloredmeshes) {
-    combined_colors = c();
-    for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('col'))) {
-            combined_colors = c(combined_colors, cmesh$col);
-        }
-    }
-    return(combined_colors);
-}
-
-#' @keywords internal
-coloredmeshes.combined.cmap <- function(coloredmeshes) {
-    # If any of the coloredmeshes has a map, it is the correct one: when there are 2 meshes, they share a map. Otherwise it is the map for that mesh.
-    for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('metadata', 'map'))) {
-            return(cmesh$metadata$map);
-        }
-    }
-    return(NULL);
-}
-
-#' @keywords internal
-coloredmeshes.combined.data.range <- function(coloredmeshes) {
-    combined_data = c();
-    for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('metadata', 'src_data'))) {
-            combined_data = c(combined_data, cmesh$metadata$src_data);
-        }
-    }
-    return(range(combined_data, finite=TRUE));
-}
 
 #' @title Create a coloredmesh from native space morphometry data.
 #'
@@ -54,6 +22,8 @@ coloredmeshes.combined.data.range <- function(coloredmeshes) {
 #' @param makecmap_options named list of parameters to pass to \code{\link[squash]{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'.
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
+#'
+#' @family coloredmesh functions
 #'
 #' @export
 #' @importFrom squash cmap makecmap jet
@@ -82,6 +52,11 @@ coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hem
 
     if(freesurferformats::is.fs.surface(surface)) {
         surface_mesh = surface;
+    } else if(is.hemilist(surface)) {
+        surface_mesh = surface[[hemi]];
+        if(! freesurferformats::is.fs.surface(surface_mesh)) {
+            stop(sprintf("Hemilist in parameter 'surface' does not contain an fs.surface instance for hemi '%s'.\n", hemi));
+        }
     } else {
         surface_mesh = subject.surface(subjects_dir, subject_id, surface, hemi);
     }
@@ -93,8 +68,10 @@ coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hem
     mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
     map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
     col = squash::cmap(morph_data, map=map);
+    map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
+    col_sorted = squash::cmap(morph_data, map=map_sorted);
 
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "map"=map, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "map"=map, "col_sorted"=col_sorted, "map_sorted"=map_sorted, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
 }
 
 
@@ -110,7 +87,7 @@ coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hem
 #'
 #' @keywords internal
 #' @importFrom rgl tmesh3d rgl.open wire3d
-coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=NULL) {
+coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=list()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
@@ -118,6 +95,11 @@ coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, s
 
     if(freesurferformats::is.fs.surface(surface)) {
         surface_mesh = surface;
+    } else if(is.hemilist(surface)) {
+        surface_mesh = surface[[hemi]];
+        if(! freesurferformats::is.fs.surface(surface_mesh)) {
+            stop(sprintf("Hemilist in parameter 'surface' does not contain an fs.surface instance for hemi '%s'.\n", hemi));
+        }
     } else {
         surface_mesh = subject.surface(subjects_dir, subject_id, surface, hemi);
     }
@@ -130,6 +112,8 @@ coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, s
             warning(sprintf("Data mismatch: surface has %d vertices, but %d color values passed in argument 'color_data'.\n", nrow(surface_mesh$vertices), length(color_data)));
         }
     }
+
+    metadata$fs_mesh = surface_mesh;
 
     return(fs.coloredmesh(mesh, color_data, hemi, metadata=metadata));
 }
@@ -145,7 +129,10 @@ coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, s
 #'
 #' @return named list of coloredmeshes. Each entry is a named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
-coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=NULL) {
+#' @family coloredmesh functions
+#'
+#' @export
+coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=list()) {
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh', or 'both' but is '%s'.\n", hemi));
     }
@@ -179,7 +166,9 @@ coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi,
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
-#' @keywords internal
+#' @family coloredmesh functions
+#'
+#' @export
 #' @importFrom squash cmap makecmap jet
 #' @importFrom rgl tmesh3d rgl.open wire3d
 coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm, surface="white", template_subject='fsaverage', template_subjects_dir=NULL, colormap=NULL, clip = NULL, cortex_only=FALSE, makecmap_options=list('colFn'=squash::jet)) {
@@ -210,6 +199,11 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
 
     if(freesurferformats::is.fs.surface(surface)) {
         surface_mesh = surface;
+    } else if(is.hemilist(surface)) {
+        surface_mesh = surface[[hemi]];
+        if(! freesurferformats::is.fs.surface(surface_mesh)) {
+            stop(sprintf("Hemilist in parameter 'surface' does not contain an fs.surface instance for hemi '%s'.\n", hemi));
+        }
     } else {
         surface_mesh = subject.surface(template_subjects_dir, template_subject, surface, hemi);
     }
@@ -223,11 +217,15 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
     if(is.null(morph_data)) {
         col = 'white';
         map = NULL;
+        map_sorted = NULL;
+        col_sorted = NULL;
     } else {
         map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
         col = squash::cmap(morph_data, map=map);
+        map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
+        col_sorted = squash::cmap(morph_data, map=map_sorted);
     }
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "map"=map, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "col_sorted"=col_sorted, "map"=map, "map_sorted"=map_sorted, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
 }
 
 
@@ -241,11 +239,13 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
-#' @keywords internal
+#' @family coloredmesh functions
+#'
+#' @export
 #' @importFrom squash cmap makecmap jet
 #' @importFrom rgl tmesh3d rgl.open wire3d
 #' @importFrom utils modifyList
-coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data, hemi, surface="white", colormap=NULL, all_nan_backup_value = 0.0, makecmap_options=list('colFn'=squash::jet)) {
+coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data, hemi, surface="white", colormap=NULL, makecmap_options=list('colFn'=squash::jet)) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
@@ -254,28 +254,24 @@ coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data,
     makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(freesurferformats::is.fs.surface(surface)) {
-        surface_data = surface;
+        surface_mesh = surface;
     } else {
-        surface_data = subject.surface(subjects_dir, vis_subject_id, surface, hemi);
+        surface_mesh = subject.surface(subjects_dir, vis_subject_id, surface, hemi);
     }
 
-    num_verts = nrow(surface_data$vertices);
+    num_verts = nrow(surface_mesh$vertices);
     if(length(morph_data) != num_verts) {
         warning(sprintf("Received %d data values, but the hemi '%s' '%s' surface of visualization subject '%s' in dir '%s' has %d vertices. Counts must match.\n", length(morph_data), hemi, surface, vis_subject_id, subjects_dir, num_verts));
     }
 
-    mesh = rgl::tmesh3d(c(t(surface_data$vertices)), c(t(surface_data$faces)), homogeneous=FALSE);
-
-    # If all values are NaN, the following call to squash::cmap fails with an error. We reset the data here to avoid that.
-    #render = TRUE;
-    #if(all(is.na(morph_data))) {
-    #    render = FALSE;
-    #}
+    mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
 
     map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
     col = squash::cmap(morph_data, map = map);
+    map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
+    col_sorted = squash::cmap(morph_data, map=map_sorted);
 
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("morph_data"=morph_data, "map"=map, "data_range"=range(morph_data, finite=TRUE), "cmap_fun"=makecmap_options$colFn)));
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "col_sorted"=col_sorted, "map"=map, "map_sorted"=map_sorted, "data_range"=range(morph_data, finite=TRUE), "cmap_fun"=makecmap_options$colFn)));
 }
 
 
@@ -290,9 +286,12 @@ coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data,
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
-#' @keywords internal
+#' @family coloredmesh functions
+#'
+#' @export
 #' @importFrom squash cmap makecmap jet
 #' @importFrom rgl tmesh3d rgl.open wire3d
+#' @importFrom utils modifyList
 coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surface="white", outline=FALSE) {
 
     if(!(hemi %in% c("lh", "rh"))) {
@@ -307,11 +306,20 @@ coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surfac
 
     if(is.character(atlas)) {
         annot = subject.annot(subjects_dir, subject_id, hemi, atlas);
-    } else {
+    } else if (freesurferformats::is.fs.annot(atlas)) {
         annot = atlas;
+    } else if(is.hemilist(atlas)) {
+        annot = atlas[[hemi]];
+    } else {
+        stop("Parameter 'atlas' has invalid type.");
     }
     mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
-    if(outline) {
+
+    if(is.list(outline)) {
+        annot_outline_extra_options = outline;
+        annot_outline_full_options = utils::modifyList(list(annot, surface_mesh), annot_outline_extra_options);
+        col = do.call(annot.outline, annot_outline_full_options);
+    } else if(outline == TRUE) {
         col = annot.outline(annot, surface_mesh);
     } else {
         col = annot$hex_colors_rgb;
@@ -321,7 +329,7 @@ coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surfac
         warning(sprintf("Data mismatch: surface has %d vertices, but %d color values received from annotation.\n", nrow(surface_mesh$vertices), length(col)));
     }
 
-    return(fs.coloredmesh(mesh, col, hemi));
+    return(fs.coloredmesh(mesh, col, hemi, metadata = list('fs_mesh'=surface_mesh)));
 }
 
 
@@ -334,7 +342,9 @@ coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surfac
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
-#' @keywords internal
+#' @family coloredmesh functions
+#'
+#' @export
 #' @importFrom squash cmap makecmap rainbow2
 #' @importFrom rgl tmesh3d rgl.open wire3d
 coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surface="white", colormap=NULL, makecmap_options=list('colFn'=squash::rainbow2)) {
@@ -346,9 +356,9 @@ coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surfac
     makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(freesurferformats::is.fs.surface(surface)) {
-        surface_data = surface;
+        surface_mesh = surface;
     } else {
-        surface_data = subject.surface(subjects_dir, subject_id, surface, hemi);
+        surface_mesh = subject.surface(subjects_dir, subject_id, surface, hemi);
     }
 
     if(is.character(label)) {
@@ -357,8 +367,8 @@ coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surfac
         label_data = label;
     }
 
-    mask = mask.from.labeldata.for.hemi(list(label_data), nrow(surface_data$vertices));
-    return(coloredmesh.from.mask(subjects_dir, subject_id, mask, hemi, surface=surface, makecmap_options=makecmap_options, surface_data=surface_data));
+    mask = mask.from.labeldata.for.hemi(list(label_data), nrow(surface_mesh$vertices));
+    return(coloredmesh.from.mask(subjects_dir, subject_id, mask, hemi, surface=surface, makecmap_options=makecmap_options, surface_data=surface_mesh));
 }
 
 
@@ -369,11 +379,12 @@ coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surfac
 #'
 #' @param mask logical vector, contains one logical value per vertex.
 #'
-#' @param surface_data optional surface object, as returned by \code{\link[fsbrain]{subject.surface}}. If given, used instead of loading the surface data from disk (which users of this function may already have done). Defaults to NULL.
+#' @param surface_data optional surface mesh object, as returned by \code{\link[fsbrain]{subject.surface}}. If given, used instead of loading the surface data from disk (which users of this function may already have done). Defaults to NULL.
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
 #' @family mask functions
+#' @family coloredmesh functions
 #' @export
 coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface="white", colormap=NULL, surface_data=NULL, makecmap_options=list('colFn'=squash::rainbow2)) {
 
@@ -406,7 +417,9 @@ coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface=
     mesh = rgl::tmesh3d(c(t(surface_data$vertices)), c(t(surface_data$faces)), homogeneous=FALSE);
     map = do.call(squash::makecmap, utils::modifyList(list(morph_like_data), makecmap_options));
     col = squash::cmap(morph_like_data, map = map);
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_like_data, "map"=map, "data_range"=range(morph_like_data, finite=TRUE), "makecmap_options"=makecmap_options)));
+    map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_like_data)), makecmap_options));
+    col_sorted = squash::cmap(morph_like_data, map=map_sorted);
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_like_data, "fs_mesh"=surface_data, "col_sorted"=col_sorted, "map"=map, "map_sorted"=map_sorted, "data_range"=range(morph_like_data, finite=TRUE), "makecmap_options"=makecmap_options)));
 }
 
 
@@ -477,8 +490,8 @@ fs.coloredmesh <- function(mesh, col, hemi, render=TRUE, metadata=NULL) {
 
     md_entries = names(metadata);
     for (mde in md_entries) {
-        if(! mde %in% c("src_data", "data_range", "makecmap_options", "map")) {
-            stop(sprintf("Untypical metadata entry '%s' found in colormesh metadata.\n", mde));
+        if(! mde %in% c("src_data", "fs_mesh", "data_range", "makecmap_options", "map", "map_sorted", "col_sorted")) {
+            warning(sprintf("Untypical metadata entry '%s' found in colormesh metadata.\n", mde));
         }
     }
 

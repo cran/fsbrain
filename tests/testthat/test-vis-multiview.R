@@ -5,6 +5,7 @@
 # You may want to set a globale default for windowrect, e.g.: `library('rgl'); r3dDefaults$windowRect <- c(50,50, 800, 800);`
 
 test_that("We can visualize morphometry data in multiview.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
 
     fsbrain::download_optional_data();
@@ -14,12 +15,12 @@ test_that("We can visualize morphometry data in multiview.", {
     measure = 'thickness';
     surface = 'white';
 
-    rgloptions=list("windowRect"=c(80,80,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+    rgloptions=list("windowRect"=c(80,80,900,900));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
     rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95));
     rglactionsmovie = list("snapshot_png"="~/fsbrain.png", "movie"="brain_rot");
 
     coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si', 't4', 't9'), rgloptions=rgloptions, rglactions=rglactions);
-    coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si'));
+    #coloredmeshes = vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('si'));
 
     vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t4'), draw_colorbar =TRUE, rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t4.png"));
     vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', views=c('t9'), rgloptions = rgloptions, rglactions = list("snapshot_png"="~/brain_t9.png"));
@@ -45,7 +46,7 @@ test_that("We can visualize morphometry data in multiview.", {
             for(phi in c(0, 90, -90)) {
                 for(rotation_angle in c(0, pi, pi/2)) {
                     label_text = sprintf("[%d %d %d] theta=%d, phi=%d, a=%f", ax, ay, az, theta, phi, rotation_angle);
-                    open3d(); shade3d(rotate3d(cmesh$mesh, rotation_angle, ax, ay, az), col=cmesh$col); rgl.viewpoint(theta, phi, fov=0, interactive=FALSE, type="modelviewpoint"); text3d(0, -150, 100, label_text);
+                    rgl::open3d(); rgl::shade3d(rgl::rotate3d(cmesh$mesh, rotation_angle, ax, ay, az), col=cmesh$col); rgl::rgl.viewpoint(theta, phi, fov=0, interactive=FALSE, type="modelviewpoint"); rgl::text3d(0, -150, 100, label_text);
 
                 }
             }
@@ -58,6 +59,7 @@ test_that("We can visualize morphometry data in multiview.", {
 
 
 test_that("We can visualize p values or other arbitrary data, one value per atlas region.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     fsbrain::download_optional_data();
 
@@ -86,6 +88,7 @@ test_that("We can visualize p values or other arbitrary data, one value per atla
 
 
 test_that("We can visualize data on fsaverage if available", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
 
@@ -94,9 +97,10 @@ test_that("We can visualize data on fsaverage if available", {
 
     rgloptions=list("windowRect"=c(50,50,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
     rglactions = list("snapshot_png"="~/fsbrain_t4_fsavg.png");
+    makecmap_options = list('colFn'=grDevices::terrain.colors);
 
     if(dir.exists(fsaverage_dir)) {
-         vis.subject.morph.standard(subjects_dir, 'subject1', 'thickness', 'both', '10', template_subjects_dir=fsaverage_dir, rgloptions=rgloptions, rglactions=rglactions);
+         vis.subject.morph.standard(subjects_dir, 'subject1', 'thickness', 'both', '10', template_subjects_dir=fsaverage_dir, rgloptions=rgloptions, rglactions=rglactions, draw_colorbar=T);
     } else {
         message("No fsaverage found.");
     }
@@ -105,6 +109,7 @@ test_that("We can visualize data on fsaverage if available", {
 
 
 test_that("We can record a gif movie of a rotating brain.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(run.extralong.tests(), "This test takes ages.");
 
     fsbrain::download_optional_data();
@@ -143,6 +148,7 @@ test_that("We can record a gif movie of a rotating brain.", {
 
 
 test_that("A label can be visualized.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.has.x11display(), "This test requires X11.");
 
     fsbrain::download_optional_data();
@@ -158,6 +164,7 @@ test_that("A label can be visualized.", {
 })
 
 test_that("A region from an atlas can be converted to a label and visualized.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
 
@@ -194,6 +201,7 @@ test_that("A region from an atlas can be converted to a label and visualized.", 
 
 
 test_that("We can visualize label data or arbitrary sets of vertices.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
 
@@ -220,6 +228,7 @@ test_that("We can visualize label data or arbitrary sets of vertices.", {
 
 
 test_that("We can combine an output view with a separate colormap.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(run.extralong.tests(), "This test requires the full test data and X11, and takes ages.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
 
@@ -308,6 +317,7 @@ test_that("We can combine an output view with a separate colormap.", {
 
 
 test_that("We can construct a tight layout image by merging several sd views.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11 and imagemagick.");
 
     fsbrain::download_optional_data();

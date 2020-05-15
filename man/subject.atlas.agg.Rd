@@ -54,7 +54,8 @@ Other atlas functions:
 \code{\link{spread.values.over.hemi}()},
 \code{\link{spread.values.over.subject}()},
 \code{\link{subject.annot}()},
-\code{\link{subject.label.from.annot}()}
+\code{\link{subject.label.from.annot}()},
+\code{\link{subject.lobes}()}
 }
 \concept{aggregation functions}
 \concept{atlas functions}

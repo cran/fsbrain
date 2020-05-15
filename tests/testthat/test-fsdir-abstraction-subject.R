@@ -1,4 +1,7 @@
 test_that("Loading of native space whole brain morph data on subject level works", {
+
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -12,6 +15,7 @@ test_that("Loading of native space whole brain morph data on subject level works
 
 
 test_that("Loading of native space whole brain morph data on subject level works for both hemis", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -27,6 +31,7 @@ test_that("Loading of native space whole brain morph data on subject level works
 
 
 test_that("Loading of native space whole brain morph data on subject level, limited to the cortex, works", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -44,6 +49,7 @@ test_that("Loading of native space whole brain morph data on subject level, limi
 
 
 test_that("Standard space morphometry data can be read on subject level", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -57,6 +63,7 @@ test_that("Standard space morphometry data can be read on subject level", {
 
 
 test_that("Standard space morphometry data can be read on subject level for both hemis", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -71,6 +78,7 @@ test_that("Standard space morphometry data can be read on subject level for both
 
 
 test_that("Label data can be read on subject level", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -87,6 +95,7 @@ test_that("Label data can be read on subject level", {
 
 
 test_that("Surface data can be read on subject level", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
@@ -142,6 +151,7 @@ test_that("An existing mask can be modified by applying more inverted labels", {
 
 
 test_that("We can build a mask from an atlas region and edit it", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
 
     # Define the data to use:
@@ -171,6 +181,7 @@ test_that("We can build a mask from an atlas region and edit it", {
 
 
 test_that("We can compute the medial mask for a subject", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
 
     # Define the data to use:
@@ -189,15 +200,38 @@ test_that("We can compute the medial mask for a subject", {
 
     expect_equal(sum(mask$lh), num_cortex_verts_subject1_lh); # number of cortex vertices
     expect_equal(sum(mask$rh), num_cortex_verts_subject1_rh); # number of cortex vertices
-
-    # ## has been fixed there already, but will only be in the next release 0.1.8.
-    # lh_mask_file = tempfile(fileext = ".mgz");
-    # freesurferformats::write.fs.morph(lh_mask_file, as.integer(mask$lh));
-    #
-    # lh_mask_reread = freesurferformats::read.fs.morph(lh_mask_file);
-    # expect_equal(length(lh_mask_reread), num_verts_subject1_lh);
-    # expect_equal(sum(lh_mask_reread), num_cortex_verts_subject1_lh); # number of cortex vertices
 })
 
 
+test_that("We can compute the lobes for a subject based on the aparc atlas", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    fsbrain::download_optional_data();
+
+    # Define the data to use:
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+
+    labeled_verts = subject.lobes(subjects_dir, subject_id);
+    vis.data.on.subject(subjects_dir, subject_id, labeled_verts$lh, labeled_verts$rh);
+
+    expect_equal(1L, 1L);  # without expects, the test will be skipped
+})
+
+
+test_that("We can compute the lobes for a subject and get an annotation returned", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    fsbrain::download_optional_data();
+
+    # Define the data to use:
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+
+    # We have the function return an annotation this time
+    annot_hemilist = subject.lobes(subjects_dir, subject_id, as_annot = TRUE);
+
+    # the vis.subject.annot function now works with hemilists of pre-loaded annotation data
+    vis.subject.annot(subjects_dir, subject_id, annot_hemilist);
+
+    expect_equal(1L, 1L);  # without expects, the test will be skipped
+})
 

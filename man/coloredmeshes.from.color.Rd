@@ -10,7 +10,7 @@ coloredmeshes.from.color(
   color_data,
   hemi,
   surface = "white",
-  metadata = NULL
+  metadata = list()
 )
 }
 \arguments{
@@ -32,3 +32,13 @@ named list of coloredmeshes. Each entry is a named list with entries: "mesh" the
 \description{
 Create coloredmeshes for both hemis using pre-defined colors.
 }
+\seealso{
+Other coloredmesh functions: 
+\code{\link{coloredmesh.from.annot}()},
+\code{\link{coloredmesh.from.label}()},
+\code{\link{coloredmesh.from.mask}()},
+\code{\link{coloredmesh.from.morph.native}()},
+\code{\link{coloredmesh.from.morph.standard}()},
+\code{\link{coloredmesh.from.morphdata}()}
+}
+\concept{coloredmesh functions}

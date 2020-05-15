@@ -135,7 +135,7 @@
 ## ---- eval = FALSE------------------------------------------------------------
 #  surface = 'white';
 #  hemi = 'both';
-#  atlas = 'aparc';
+#  atlas = 'aparc';  # one of 'aparc', 'aparc.a2009s', or 'aparc.DKTatlas40'.
 #  region = 'bankssts';
 #  
 #  # Create a label from a region of an annotation or atlas:
