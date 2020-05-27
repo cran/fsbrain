@@ -16,34 +16,54 @@
 #  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rglactions=rgla);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  mkc = list('colFn'=viridis::viridis);
-#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=mkc);
+#  makecmap_options = list('colFn'=viridis::viridis);
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=makecmap_options);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  install.packages('viridis');
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  colFn_many_blues = colorRampPalette(RColorBrewer::brewer.pal(9, name="Blues"));
-#  mkc = list('colFn'=colFn_many_blues);
-#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=mkc);
+#  makecmap_options = list('colFn'=colFn_many_blues);
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=makecmap_options);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  mkc = list('n'=100L);
+#  colFn_sequential = viridis::viridis;
+#  colFn_qualitative = function(n) { RColorBrewer::brewer.pal(n, name="Set2"); } # n <= 11
+#  colFn_diverging = grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, name="RdBu"));
+
+## ---- eval = FALSE------------------------------------------------------------
+#  colFn_sequential = function(n) { grDevices::hcl.colors(n, palette = "viridis"); }
+#  colFn_qualitative = function(n) { grDevices::hcl.colors(n, palette = "Dark 3"); }
+#  colFn_diverging = function(n) { grDevices::hcl.colors(n, palette = "Blue-Red 3"); }
+
+## ---- eval = FALSE------------------------------------------------------------
+#  colFn_sequential_heat = function(n) { grDevices::hcl.colors(n, "YlOrRd"); }
+
+## ---- eval = FALSE------------------------------------------------------------
+#  makecmap_options = list('colFn'=colFn_diverging, 'symm'=TRUE);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  mkc = list('n'=200L);
 #  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=mkc);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  # To get coloredmeshes return value only, ignore the visualization:
-#  cm = vis.subject.morph.native(sjd, sj, 'thickness', makecmap_options = list('n'=100), cortex_only = T);
+#  cm = vis.subject.morph.native(sjd, sj, 'thickness', makecmap_options = list('n'=200), cortex_only = T);
 #  # Produce high quality tight layout:
 #  vislayout.from.coloredmeshes(cm);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  output_brain_img = "~/fig1_brain.png";
+#  output_brain_img = "fsbrain_arranged.png";
 #  vislayout.from.coloredmeshes(cm, view_angles = get.view.angle.names(angle_set='t9'), output_img = output_brain_img);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  output_cbar_img = "~/fig1_colorbar.png";
-#  output_final_img = "~/fig1.png";
+#  output_cbar_img = "fsbrain_cbar.png";
+#  output_final_img = "fsbrain_merged.png";
 #  coloredmesh.plot.colorbar.separate(cm, image.plot_extra_options = list('horizontal' = TRUE), png_options = list('filename'=output_cbar_img, 'width'=1800));
 #  combine.colorbar.with.brainview.image(output_brain_img, output_cbar_img, output_final_img);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  Error in par(new = TRUE, pty = "m", plt = smallplot, err = -1) :
+#    invalid value specified for graphical parameter "plt"
 

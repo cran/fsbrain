@@ -10,7 +10,7 @@
 #'
 #' @param ... extra params passed to \code{\link[fields]{image.plot}}
 #'
-#' @note To adapt or change the colormap, you should use the makecmap_options parameter of the vis function used to construct the coloremeshes.
+#' @note To adapt or change the colormap, you should use the 'makecmap_options' parameter of the vis.* function used to construct the coloredmeshes (e.g., \code{\link[fsbrain]{vis.subject.morph.native}}).
 #'
 #' @importFrom rgl bgplot3d
 #' @importFrom graphics par
@@ -27,65 +27,22 @@ draw.colorbar <- function(coloredmeshes, horizontal=FALSE, ...) {
         return(invisible(NULL));
     }
 
-    colorbar_type = getOption('fsbrain.colorbartype', 'fields'); # 'fields' or 'squash' or 'plain'
-    # Both colorbar functions are not optimal:
-    #  - the squash::hkey/vkey one changes its size depending on the number of colors, it seems usable for about 10 colors. It is also ugly as hell.
-    #  - when using fields::imageplot, sometimes the colorbar is empty (i.e., it is completely white instead of showing the colors). Also sometimes
-    #     the ordering of colors in the bar is incorrect.
+    combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+    makecmap_options = coloredmeshes.get.md(coloredmeshes, 'makecmap_options');
 
-    if(colorbar_type == "fields") {
-
-        combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
-        combined_colors = coloredmeshes.combined.colors(coloredmeshes);
-        combined_colors_sorted = coloredmeshes.combined.colors.sorted(coloredmeshes);
-
-        if(is.null(combined_data_range) | is.null(combined_colors_sorted)) {
-            warning("Requested to draw colorbar, but meshes do not contain the required metadata. Skipping.");
+    if(can.plot.colorbar(combined_data_range, makecmap_options)) {
+        is_symmetric = ifelse(is.null(makecmap_options$symm), FALSE, makecmap_options$symm);
+        if(is_symmetric) {
+            zlim = symmrange(combined_data_range)
         } else {
-            rgl::bgplot3d({op = graphics::par(mar = rep(0.1, 4)); plot.new(); fields::image.plot(add=T, legend.only = TRUE, zlim = combined_data_range, col = combined_colors_sorted, horizontal = horizontal, ...); graphics::par(op);});
+            zlim = combined_data_range;
         }
-    } else if(colorbar_type == "squash" | colorbar_type == 'plain') {
-        cmap = coloredmeshes.combined.cmap.sorted(coloredmeshes);
-        if(is.null(cmap)) {
-            warning("Requested to draw colorbar, but meshes do not contain the required metadata. Skipping.");
-        } else {
-            if(colorbar_type == "plain") {
-                rgl::bgplot3d({op = graphics::par(mar = rep(0.1, 4)); plot.new(); plot.fsbrain.colorbar(cmap$colors, horizontal = horizontal); graphics::par(op); });
-            } else {
-                # squash
-                if(horizontal) {
-                    rgl::bgplot3d({op = graphics::par(mar = rep(0.1, 4)); plot.new(); squash::hkey(cmap, skip=2L, stretch = 3, x=0, y=0); graphics::par(op);});
-                } else {
-                    rgl::bgplot3d({op = graphics::par(mar = rep(0.1, 4)); plot.new(); squash::vkey(cmap, skip=2L, stretch = 3, x=0, y=0); graphics::par(op);});
-                }
-            }
-        }
+        num_col = ifelse(is.null(makecmap_options$n), 100L, makecmap_options$n);
+        rgl::bgplot3d({op = graphics::par(mar = rep(0.1, 4)); plot.new(); fields::image.plot(add=T, legend.only = TRUE, zlim = zlim, col = makecmap_options$colFn(num_col), horizontal = horizontal, ...); graphics::par(op);});
     } else {
-        warning("Invalid colormap type, skipping.");
+        warning("Requested to draw colorbar, but meshes do not contain the required metadata. Skipping.");
     }
 }
-
-
-
-#' @title Draw a simple colorbar from colors.
-#'
-#' @param colors vector of colors, no special ordering is assumed
-#'
-#' @param horizontal logical, whether the colorbar should be plotted horizontally (or vertically).
-#'
-#' @note This function assumes that there is an open plot, use \code{plot.new()} to create one before calling this function if that is not the case.
-#'
-#' @importFrom graphics plot box
-#' @importFrom grDevices as.raster
-#' @keywords internal
-plot.fsbrain.colorbar <- function(colors, horizontal=FALSE) {
-    if(horizontal) {
-        graphics::plot(t(grDevices::as.raster(colors)));
-    } else {
-        graphics::plot(grDevices::as.raster(colors));
-    }
-}
-
 
 
 #' @title Draw colorbar for coloredmeshes in separate 2D plot.
@@ -98,11 +55,13 @@ plot.fsbrain.colorbar <- function(colors, horizontal=FALSE) {
 #'
 #' @param image.plot_extra_options named list of extra optins to pass to \code{\link[fields]{image.plot}}. This can be used to add a legend to the colorbar, rotate the colorbar, or whatever. The options "legend_only", "zlim", and "col" are computed and set for you  by this function, so there is no need to pass these. Your list will be merged with the internal options, so you could overwrite named arguments if needed.
 #'
-#' @param png_options Options to pass to \code{\link[grDevices]{png}}, see the docs of that function for details. Allow you to save the plot as a png bitmap image. Example: \code{png_options = list("filename"="outfile.png", "width"=800)}. Defaults to NULL, which will not save anything.
+#' @param png_options Options to pass to \code{\link[grDevices]{png}}, see the docs of that function for details. Allow you to save the plot as a png bitmap image. Example: \code{png_options = list("filename"="fsbrain_cbar.png", "width"=800)}. Defaults to NULL, which will not save anything.
 #'
 #' @param silent logical, whether to suppress messages. Defaults to `FALSE`.
 #'
-#' @return named list with the following entries: "full_data": the combined data from all coloredmeshes (can be NULL if they have no data). "colormap": the colormap function from the coloredmeshes (can be NULL if they have none).
+#' @param trim_png logical, whether to trim the output PNG image using image magick, i.e., remove everything but the foreground. Ignored unless an output PNG image is actually written (see 'png_options') and the 'magick' package is installed.
+#'
+#' @note If you increase the output resolution of the colorbar (using 'png_options'), you will have to increase the font sizes as well (using 'image.plot_extra_options'), otherwise the axis and legend labels will be hard to read.
 #'
 #' @examples
 #' \donttest{
@@ -126,34 +85,39 @@ plot.fsbrain.colorbar <- function(colors, horizontal=FALSE) {
 #' @importFrom grDevices png pdf dev.off
 #' @importFrom utils modifyList
 #' @export
-coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=TRUE, image.plot_extra_options = list("horizontal"=TRUE), png_options=NULL, silent=FALSE) {
-
-    ret_list = list("full_data"=NULL, "colormap"=NULL);
+coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=FALSE, image.plot_extra_options = list(horizontal=FALSE, 'legend.cex'=1.8, 'legend.width'=2, 'legend.mar' = 12, 'axis.args'=list('cex.axis'=5.0)), png_options=list('filename'='fsbrain_cbar.png', 'width'=1400, 'height'=1400, 'bg'='#FFFFFF00'), silent=FALSE, trim_png=TRUE) {
 
     if(length(coloredmeshes) < 1) {
         message("Requested to draw separate colorbar, but mesh list is empty. Skipping.");
-        return(invisible(ret_list));
+        return(invisible(NULL));
     }
 
+    combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+    makecmap_options = coloredmeshes.get.md(coloredmeshes, 'makecmap_options');
 
-    col = coloredmeshes.combined.colors(coloredmeshes);
-    col_sorted = coloredmeshes.combined.colors.sorted(coloredmeshes);
-    data_range = coloredmeshes.combined.data.range(coloredmeshes);
-
-    if(is.null(col) | is.null(col_sorted) | is.null(data_range)) {
-        warning("Requested to draw a colorbar based on meshes, but they do not contain the required metadata, skipping. Make sure the meshes contain colors and a data range.");
-        return(ret_list);
+    if(! can.plot.colorbar(combined_data_range, makecmap_options)) {
+        warning("Requested to draw a colorbar based on meshes, but they do not contain the required metadata, skipping.");
+        return(invisible(NULL));
     }
 
-    ret_list$col = col;
-    ret_list$col_sorted = col_sorted;
+    is_symmetric = ifelse(is.null(makecmap_options$symm), FALSE, makecmap_options$symm);
+    if(is_symmetric) {
+        zlim = symmrange(combined_data_range)
+    } else {
+        zlim = combined_data_range;
+    }
+    num_col = ifelse(is.null(makecmap_options$n), 100L, makecmap_options$n);
 
-    ret_list$data_range = data_range;
-    image.plot_options_internal = list(legend.only=TRUE, zlim=data_range, col = col_sorted, add=TRUE, graphics.reset=TRUE);
+    image.plot_options_internal = list(legend.only=TRUE, zlim = zlim, col = makecmap_options$colFn(num_col), add=TRUE, graphics.reset=TRUE);
     image.plot_options = modifyList(image.plot_options_internal, image.plot_extra_options);
     if(show) {
         plot.new();
         do.call(fields::image.plot, image.plot_options);
+    }
+
+    is_horizontal = FALSE;
+    if('horizontal' %in% names(image.plot_options)) {
+        is_horizontal = image.plot_options$horizontal;
     }
 
     if(! is.null(png_options)) {
@@ -163,75 +127,38 @@ coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=TRUE, image.p
         dev.off();
         if(! is.null(png_options$filename)) {
             if(! silent) {
-                message(sprintf("Colorbar image written to file '%s'.\n", png_options$filename));
+                orientation_string = ifelse(is_horizontal, 'Horizontal', 'Vertical');
+                message(sprintf("%s colorbar image written to file '%s'.\n", orientation_string, png_options$filename));
+            }
+            if(trim_png) {
+                if (requireNamespace("magick", quietly = TRUE)) {
+                    cbar_img = magick::image_read(png_options$filename);
+                    cbar_img_trimmed = magick::image_trim(cbar_img);
+                    magick::image_write(cbar_img_trimmed, path = png_options$filename);
+                } else {
+                    warning("Ignored request to trim colorbar image: this functionality requires the 'magick' package.");
+                }
             }
         }
     }
 
-
-    return(invisible(ret_list));
+    return(invisible(NULL));
 }
 
 
-#' @title Retrieve combined colors range from hemilist of coloredmeshes.
+#' @title Retrieve metadata from hemilist of coloredmeshes.
 #'
 #' @param coloredmeshes hemilist of coloredmeshes
 #'
-#' @return vector of colors, the combined vertex colors. Note that this is not sorted, and not unique.
+#' @param mdname the key in the named metadata list
+#'
+#' @return the metadata value at the given key/mdname
 #'
 #' @keywords internal
-coloredmeshes.combined.colors <- function(coloredmeshes) {
-    combined_colors = c();
+coloredmeshes.get.md <- function(coloredmeshes, mdname) {
     for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('col'))) {
-            combined_colors = c(combined_colors, cmesh$col);
-        }
-    }
-    return(combined_colors);
-}
-
-
-#' @keywords internal
-coloredmeshes.combined.colors.sorted <- function(coloredmeshes) {
-    for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('metadata', 'col_sorted'))) {
-            return(cmesh$metadata$col_sorted);
-        }
-    }
-    return(NULL);
-}
-
-
-#' @title Retrieve combined cmap from hemilist of coloredmeshes.
-#'
-#' @inheritParams coloredmeshes.combined.colors
-#'
-#' @return the colormap, generated by \code{\link[squash]{makecmap}}
-#'
-#' @keywords internal
-coloredmeshes.combined.cmap <- function(coloredmeshes) {
-    # If any of the coloredmeshes has a map, it is the correct one: when there are 2 meshes, they share a map. Otherwise it is the map for that mesh.
-    for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('metadata', 'map'))) {
-            return(cmesh$metadata$map);
-        }
-    }
-    return(NULL);
-}
-
-
-#' @title Retrieve combined sorted cmap from hemilist of coloredmeshes.
-#'
-#' @inheritParams coloredmeshes.combined.colors
-#'
-#' @return the colormap, generated by \code{\link[squash]{makecmap}} with colors sorted according to the data values
-#'
-#' @keywords internal
-coloredmeshes.combined.cmap.sorted <- function(coloredmeshes) {
-    # If any of the coloredmeshes has a map, it is the correct one: when there are 2 meshes, they share a map. Otherwise it is the map for that mesh.
-    for(cmesh in coloredmeshes) {
-        if(hasIn(cmesh, c('metadata', 'map_sorted'))) {
-            return(cmesh$metadata$map_sorted);
+        if(hasIn(cmesh, c('metadata', mdname))) {
+            return(cmesh$metadata[[mdname]]);
         }
     }
     return(NULL);
@@ -240,7 +167,7 @@ coloredmeshes.combined.cmap.sorted <- function(coloredmeshes) {
 
 #' @title Retrieve combined data range from hemilist of coloredmeshes.
 #'
-#' @inheritParams coloredmeshes.combined.colors
+#' @inheritParams coloredmeshes.get.md
 #'
 #' @return numeric vector of length 2, the finite data range
 #'
@@ -316,3 +243,189 @@ vis.colortable.legend <- function(colortable, ncols=1L, plot_struct_index=TRUE) 
     }
 }
 
+
+
+
+#' @title Determine whether colorbar can be plotted with given metadata.
+#'
+#' @return logical
+#'
+#' @keywords internal
+can.plot.colorbar <- function(combined_data_range, makecmap_options) {
+    if(is.null(combined_data_range) | is.null(makecmap_options)) {
+        return(FALSE);
+    }
+    if( ! is.function(makecmap_options$colFn)) {
+        return(FALSE);
+    }
+    return(TRUE);
+}
+
+
+#' @title Given data, compute symmetric range around zero.
+#'
+#' @param x the data, could be a range of course.
+#'
+#' @keywords internal
+symmrange <- function(x) {
+    dmin = min(x, na.rm = T);
+    dmax = max(x, na.rm = T);
+    abs_max = max(abs(dmin), abs(dmax));
+    return(c(-abs_max, abs_max));
+}
+
+
+#' @title Draw a simple colorbar from colors.
+#'
+#' @param colors vector of colors, no special ordering is assumed
+#'
+#' @param horizontal logical, whether the colorbar should be plotted horizontally (or vertically).
+#'
+#' @note This function assumes that there is an open plot, use \code{plot.new()} to create one before calling this function if that is not the case.
+#'
+#' @importFrom graphics plot box
+#' @importFrom grDevices as.raster
+#' @keywords internal
+plot.fsbrain.colorbar <- function(colors, horizontal=FALSE) {
+    if(horizontal) {
+        graphics::plot(t(grDevices::as.raster(colors)));
+    } else {
+        graphics::plot(grDevices::as.raster(colors));
+    }
+}
+
+
+#' @title Return the standard fsbrain sequential colormap.
+#'
+#' @param report logical, whether to print a message with a name of the chosen colormap, in format \code{package::function#palette}.
+#'
+#' @note This returns a sequential, multi-hue palette.
+#'
+#' @importFrom squash jet
+#' @export
+cm.seq <- function(report=FALSE) {
+    if(requireNamespace('grDevices', quietly = TRUE)) {
+        if(exists('hcl.colors')) {
+            if(report) { message('grDevices::hcl.colors#viridis'); }
+            return(function(n) { grDevices::hcl.colors(n, palette = "viridis"); });
+        }
+    }
+    if(requireNamespace('viridis', quietly = TRUE)) {
+        if(report) { message('viridis::viridis#viridis'); }
+        return(viridis::viridis);
+    }
+    if(requireNamespace('RColorBrewer', quietly = TRUE)) {
+        if(report) { message('RColorBrewer::brewer.pal#YlGn'); }
+        return(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, name="YlGn")));
+    }
+    if(report) { message('squash::jet#jet'); }
+    return(squash::jet); # ahem.
+}
+
+
+#' @title Return the standard fsbrain heat colormap.
+#'
+#' @inheritParams cm.seq
+#'
+#' @note The heat palette is a sequential, single-hue palette.
+#'
+#' @export
+cm.heat <- function(report=FALSE) {
+    if(requireNamespace('grDevices', quietly = TRUE)) {
+        if(exists('hcl.colors')) {
+            if(report) { message('grDevices::hcl.colors#YlOrRd'); }
+            return(function(n) { grDevices::hcl.colors(n, palette = "YlOrRd"); });
+        }
+    }
+    if(report) { message('grDevices::heat.colors#heat.colors'); }
+    return(grDevices::heat.colors);
+}
+
+
+#' @title Return the standard fsbrain diverging colormap.
+#'
+#' @inheritParams cm.seq
+#'
+#' @note Returns some diverging palette, suitable for visualizing data that is centered around zero.
+#'
+#' @export
+cm.div <- function(report=FALSE) {
+    if(requireNamespace('grDevices', quietly = TRUE)) {
+        if(exists('hcl.colors')) {
+            if(report) { message('grDevices::hcl.colors#Blue-Red 3'); }
+            return(function(n) { grDevices::hcl.colors(n, palette = "Blue-Red 3"); });
+        }
+    }
+    if(requireNamespace('RColorBrewer', quietly = TRUE)) {
+        if(report) { message('RColorBrewer::brewer.pal#RdBu'); }
+        return(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, name="RdBu")));
+    }
+    if(report) { message('grDevices::cm.colors#cm.colors'); }
+    return(grDevices::cm.colors);
+}
+
+
+#' @title Return the standard fsbrain qualitative colormap.
+#'
+#' @inheritParams cm.seq
+#'
+#' @note Returns some qualitative palette, suitable for visualizing categorical data.
+#'
+#' @export
+cm.qual <- function(report=FALSE) {
+    if(requireNamespace('grDevices', quietly = TRUE)) {
+        if(exists('hcl.colors')) {
+            if(report) { message('grDevices::hcl.colors#Dark 3'); }
+            return(function(n) { grDevices::hcl.colors(n, palette = "Dark 3"); });
+        }
+    }
+    if(requireNamespace('RColorBrewer', quietly = TRUE)) {
+        if(report) { message('RColorBrewer::brewer.pal#Dark2'); }
+        return( function(n) {
+                if(n <= 11L) {
+                    return(RColorBrewer::brewer.pal(n, name="Dark2"));
+                } else {
+                    return(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11, name="Dark2")));
+                }
+            }
+        );
+    }
+    if(report) { message('grDevices::cm.colors#cm.colors'); }
+    return(grDevices::cm.colors);
+}
+
+
+#' @title Return recommended 'makecmap_options' for sequential data.
+#'
+#' @description This function returns recommended visualization settings (a colormap function and suitable other settings) for the given type of data. The return value is meant to be passed as parameter 'makecmap_options' to the vis.* functions, e.g., \code{\link[fsbrain]{vis.subject.morph.native}}.
+#'
+#' @return named list, visualization settings to be used as 'makecmap_options' for sequential data.
+#'
+#' @export
+mkco.seq <- function() {
+    return(list('colFn'=cm.seq(), 'n'=100L));
+}
+
+
+#' @title Return recommended 'makecmap_options' for sequential data with heatmap style.
+#'
+#' @description This function returns recommended visualization settings (a colormap function and suitable other settings) for the given type of data. The return value is meant to be passed as parameter 'makecmap_options' to the vis.* functions, e.g., \code{\link[fsbrain]{vis.subject.morph.native}}.
+#'
+#' @return named list, visualization settings to be used as 'makecmap_options' for sequential data with heatmap style.
+#'
+#' @export
+mkco.heat <- function() {
+    return(list('colFn'=cm.heat(), 'n'=100L));
+}
+
+
+#' @title Return recommended 'makecmap_options' for diverging data.
+#'
+#' @description This function returns recommended visualization settings (a colormap function and suitable other settings) for the given type of data. The return value is meant to be passed as parameter 'makecmap_options' to the vis.* functions, e.g., \code{\link[fsbrain]{vis.subject.morph.native}}.
+#'
+#' @return named list, visualization settings to be used as 'makecmap_options' for diverging data.
+#'
+#' @export
+mkco.div <- function() {
+    return(list('colFn'=cm.div(), 'n'=100L, 'symm'=TRUE));
+}
