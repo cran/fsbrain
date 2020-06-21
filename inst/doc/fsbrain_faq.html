@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
 
 <meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 
 
@@ -18,67 +19,41 @@
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
-}
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {  }
-@media screen {
-a.sourceLine::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 
 </style>
 <script>
@@ -105,187 +80,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
-<style type="text/css">body {
-background-color: #fff;
-margin: 1em auto;
-max-width: 700px;
-overflow: visible;
-padding-left: 2em;
-padding-right: 2em;
-font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-font-size: 14px;
-line-height: 1.35;
-}
-#TOC {
-clear: both;
-margin: 0 0 10px 10px;
-padding: 4px;
-width: 400px;
-border: 1px solid #CCCCCC;
-border-radius: 5px;
-background-color: #f6f6f6;
-font-size: 13px;
-line-height: 1.3;
-}
-#TOC .toctitle {
-font-weight: bold;
-font-size: 15px;
-margin-left: 5px;
-}
-#TOC ul {
-padding-left: 40px;
-margin-left: -1.5em;
-margin-top: 5px;
-margin-bottom: 5px;
-}
-#TOC ul ul {
-margin-left: -2em;
-}
-#TOC li {
-line-height: 16px;
-}
-table {
-margin: 1em auto;
-border-width: 1px;
-border-color: #DDDDDD;
-border-style: outset;
-border-collapse: collapse;
-}
-table th {
-border-width: 2px;
-padding: 5px;
-border-style: inset;
-}
-table td {
-border-width: 1px;
-border-style: inset;
-line-height: 18px;
-padding: 5px 5px;
-}
-table, table th, table td {
-border-left-style: none;
-border-right-style: none;
-}
-table thead, table tr.even {
-background-color: #f7f7f7;
-}
-p {
-margin: 0.5em 0;
-}
-blockquote {
-background-color: #f6f6f6;
-padding: 0.25em 0.75em;
-}
-hr {
-border-style: solid;
-border: none;
-border-top: 1px solid #777;
-margin: 28px 0;
-}
-dl {
-margin-left: 0;
-}
-dl dd {
-margin-bottom: 13px;
-margin-left: 13px;
-}
-dl dt {
-font-weight: bold;
-}
-ul {
-margin-top: 0;
-}
-ul li {
-list-style: circle outside;
-}
-ul ul {
-margin-bottom: 0;
-}
-pre, code {
-background-color: #f7f7f7;
-border-radius: 3px;
-color: #333;
-white-space: pre-wrap; 
-}
-pre {
-border-radius: 3px;
-margin: 5px 0px 10px 0px;
-padding: 10px;
-}
-pre:not([class]) {
-background-color: #f7f7f7;
-}
-code {
-font-family: Consolas, Monaco, 'Courier New', monospace;
-font-size: 85%;
-}
-p > code, li > code {
-padding: 2px 0px;
-}
-div.figure {
-text-align: center;
-}
-img {
-background-color: #FFFFFF;
-padding: 2px;
-border: 1px solid #DDDDDD;
-border-radius: 3px;
-border: 1px solid #CCCCCC;
-margin: 0 5px;
-}
-h1 {
-margin-top: 0;
-font-size: 35px;
-line-height: 40px;
-}
-h2 {
-border-bottom: 4px solid #f7f7f7;
-padding-top: 10px;
-padding-bottom: 2px;
-font-size: 145%;
-}
-h3 {
-border-bottom: 2px solid #f7f7f7;
-padding-top: 10px;
-font-size: 120%;
-}
-h4 {
-border-bottom: 1px solid #f7f7f7;
-margin-left: 8px;
-font-size: 105%;
-}
-h5, h6 {
-border-bottom: 1px solid #ccc;
-font-size: 105%;
-}
-a {
-color: #0033dd;
-text-decoration: none;
-}
-a:hover {
-color: #6666ff; }
-a:visited {
-color: #800080; }
-a:visited:hover {
-color: #BB00BB; }
-a[href^="http:"] {
-text-decoration: underline; }
-a[href^="https:"] {
-text-decoration: underline; }
-
-code > span.kw { color: #555; font-weight: bold; } 
-code > span.dt { color: #902000; } 
-code > span.dv { color: #40a070; } 
-code > span.bn { color: #d14; } 
-code > span.fl { color: #d14; } 
-code > span.ch { color: #d14; } 
-code > span.st { color: #d14; } 
-code > span.co { color: #888888; font-style: italic; } 
-code > span.ot { color: #007020; } 
-code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; } 
-code > span.er { color: #a61717; background-color: #e3d2d2; } 
-</style>
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
 
 
 
@@ -324,9 +119,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li>lh.gyrification.subject1</li>
 </ul>
 <p>Try the following to visualize the gyrification data for the left hemisphere in <em>fsbrain</em>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">lh_surf =<span class="st"> </span>freesurferformats<span class="op">::</span><span class="kw">read_nisurface</span>(<span class="st">'~/data/subject1_spm12/surf/lh.central.subject1.gii'</span>);</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">lh_gyrification =<span class="st"> </span>freesurferformats<span class="op">::</span><span class="kw">read.fs.curv</span>(<span class="st">'~/data/subject1_spm12/surf/lh.gyrification.subject1'</span>);</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">vis.data.on.subject</span>(<span class="st">'~/data/'</span>, <span class="st">'subject1_spm12'</span>, lh_gyrification, <span class="ot">NULL</span>, <span class="dt">surface=</span>lh_surf);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lh_surf =<span class="st"> </span>freesurferformats<span class="op">::</span><span class="kw">read_nisurface</span>(<span class="st">'~/data/subject1_spm12/surf/lh.central.subject1.gii'</span>);
+lh_gyrification =<span class="st"> </span>freesurferformats<span class="op">::</span><span class="kw">read.fs.curv</span>(<span class="st">'~/data/subject1_spm12/surf/lh.gyrification.subject1'</span>);
+<span class="kw">vis.data.on.subject</span>(<span class="st">'~/data/'</span>, <span class="st">'subject1_spm12'</span>, lh_gyrification, <span class="ot">NULL</span>, <span class="dt">surface=</span>lh_surf);</code></pre></div>
 <p>You should be able to load data from a number of different neuroimaging software packages with freesurferformats, as it supports the very common NIFTI and GIFTI file formats.</p>
 </div>
 </div>
@@ -335,91 +130,99 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="how-can-i-set-the-output-image-resolution" class="section level3">
 <h3>How can I set the output image resolution?</h3>
 <p>To increase the output resolution, you need to increase the size of the <em>rgl</em> rendering device. To do this globally, before you call any <em>fsbrain</em> rendering function:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">library</span>(<span class="st">'rgl'</span>);</a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">r3dDefaults<span class="op">$</span>windowRect=<span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">1800</span>, <span class="dv">1200</span>);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">'rgl'</span>);
+r3dDefaults<span class="op">$</span>windowRect=<span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">1800</span>, <span class="dv">1200</span>);</code></pre></div>
 <p>This instructs <em>rgl</em> to create new rendering devices at screen position 20, 20 (close to the upper left corner) with a size of 1800x1200 pixels.</p>
 <p>Alternatively, you can control the size when calling an <em>fsbrain</em> visualization function by passing the same information in the optional <code>rgloptions</code> parameter, like this:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">rglo =<span class="st"> </span><span class="kw">list</span>(<span class="st">'windowRect'</span>=<span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">1800</span>, <span class="dv">1200</span>));</a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">rgloptions=</span>rglo);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rglo =<span class="st"> </span><span class="kw">list</span>(<span class="st">'windowRect'</span>=<span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">1800</span>, <span class="dv">1200</span>));
+<span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">rgloptions=</span>rglo);</code></pre></div>
 </div>
 <div id="how-can-i-save-high-quality-figures-to-png-images" class="section level3">
 <h3>How can I save high quality figures to PNG images?</h3>
 <p>Note that fsbrain renders images, which means the output is pixel-based (i.e., bitmap as opposed to vector graphics). To get high quality output, you need to increase the size of the <em>rgl</em> rendering device, as explained in the last question.</p>
 <p>To save the plot to a file in PNG format, you can use an rglaction:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1">rgla =<span class="st"> </span><span class="kw">list</span>(<span class="st">'snapshot_png'</span>=<span class="st">'~/subject1_thickness.png'</span>);</a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">rglactions=</span>rgla);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rgla =<span class="st"> </span><span class="kw">list</span>(<span class="st">'snapshot_png'</span>=<span class="st">'~/subject1_thickness.png'</span>);
+<span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">rglactions=</span>rgla);</code></pre></div>
 <p>This opens the plot in a window as usual and also saves it in PNG format to the file <em>subject1_thickness.png</em> in your home directory.</p>
 </div>
 <div id="how-can-i-change-the-colormap-for-the-plots" class="section level3">
 <h3>How can I change the colormap for the plots?</h3>
 <p>Pass a colormap function to any visualization function that supports the <em>makecmap_options</em> parameter, as entry <em>colFn</em> like illustrated below:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'colFn'</span>=viridis<span class="op">::</span>viridis);</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options=</span>makecmap_options);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'colFn'</span>=viridis<span class="op">::</span>viridis);
+<span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options=</span>makecmap_options);</code></pre></div>
 <p>In that example, we used the popular <em>viridis</em> colormap. In R, it is available from the <em>viridis</em> package. If you don’t have it, you can install it with:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">install.packages</span>(<span class="st">'viridis'</span>);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">'viridis'</span>);</code></pre></div>
 <p>Of course, you can use any colormap function you want, currently the only limitation is that it should accept an integer parameter: the requested number of colors.</p>
 <p>The exact number of colors that will be requested depends on your data, and if the colormap you want only supports very few colors, you can use a wrapper function to interpolate. Here is an example for the very popular <em>RColorBrewer</em> package. Some of its colormaps have less than 10 colors, which is usually not enough for neuroimaging data. Here we wrap the ‘Blues’ palette, which has 9 colors:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">colFn_many_blues =<span class="st"> </span><span class="kw">colorRampPalette</span>(RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dv">9</span>, <span class="dt">name=</span><span class="st">&quot;Blues&quot;</span>));</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'colFn'</span>=colFn_many_blues);</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options=</span>makecmap_options);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colFn_many_blues =<span class="st"> </span><span class="kw">colorRampPalette</span>(RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dv">9</span>, <span class="dt">name=</span><span class="st">&quot;Blues&quot;</span>));
+makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'colFn'</span>=colFn_many_blues);
+<span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options=</span>makecmap_options);</code></pre></div>
 </div>
 <div id="what-are-the-best-colormaps-for-my-data" class="section level3">
 <h3>What are the best colormaps for my data?</h3>
 <p>Chosing a colormap can be a surprisingly complex question and there are many publications which discuss this topic. You may want to consider what kind of data you have and what property you want to highlight, how many colors you need, whether you want colorblind-friendly colors, how they look when printed in grayscale, whether they look pleasing to you, and maybe many more dimensions.</p>
 <p>The most important thing is to decide is whether you need a sequential, qualitative, or diverging palette for your data.</p>
 <p>I am definitely not an expert, but here are some color functions I personally like and use with fsbrain:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">colFn_sequential =<span class="st"> </span>viridis<span class="op">::</span>viridis;</a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">colFn_qualitative =<span class="st"> </span><span class="cf">function</span>(n) { RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(n, <span class="dt">name=</span><span class="st">&quot;Set2&quot;</span>); } <span class="co"># n &lt;= 11</span></a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">colFn_diverging =<span class="st"> </span>grDevices<span class="op">::</span><span class="kw">colorRampPalette</span>(RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="dt">name=</span><span class="st">&quot;RdBu&quot;</span>));</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colFn_sequential =<span class="st"> </span>viridis<span class="op">::</span>viridis;
+colFn_qualitative =<span class="st"> </span><span class="cf">function</span>(n) { RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(n, <span class="dt">name=</span><span class="st">&quot;Set2&quot;</span>); } <span class="co"># n &lt;= 11</span>
+colFn_diverging =<span class="st"> </span>grDevices<span class="op">::</span><span class="kw">colorRampPalette</span>(RColorBrewer<span class="op">::</span><span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="dt">name=</span><span class="st">&quot;RdBu&quot;</span>));</code></pre></div>
 <p>They require the <em>viridis</em> and <em>RColorBrewer</em> packages to be installed. The qualitative map is fine if you do not have more than 11 different values.</p>
 <p>If you have R &gt;= 3.6, you may not need any extra packages: have a look at the <code>grDevices::hcl.colors</code> function. Here are some suggestions:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">colFn_sequential =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="dt">palette =</span> <span class="st">&quot;viridis&quot;</span>); }</a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">colFn_qualitative =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="dt">palette =</span> <span class="st">&quot;Dark 3&quot;</span>); }</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3">colFn_diverging =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="dt">palette =</span> <span class="st">&quot;Blue-Red 3&quot;</span>); }</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colFn_sequential =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="dt">palette =</span> <span class="st">&quot;viridis&quot;</span>); }
+colFn_qualitative =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="dt">palette =</span> <span class="st">&quot;Dark 3&quot;</span>); }
+colFn_diverging =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="dt">palette =</span> <span class="st">&quot;Blue-Red 3&quot;</span>); }</code></pre></div>
 <p>If you want a heatmap-style colormap (single hue sequential, yellow/red), try:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">colFn_sequential_heat =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="st">&quot;YlOrRd&quot;</span>); }</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">colFn_sequential_heat =<span class="st"> </span><span class="cf">function</span>(n) { grDevices<span class="op">::</span><span class="kw">hcl.colors</span>(n, <span class="st">&quot;YlOrRd&quot;</span>); }</code></pre></div>
 <p>Make sure to read the next entry as well if you are using a diverging colormap.</p>
 </div>
 <div id="i-am-using-a-diverging-colormap.-when-plotting-the-colorbar-legend-the-neutral-value-is-not-at-zero.-how-to-fix-it" class="section level3">
 <h3>I am using a diverging colormap. When plotting the colorbar (legend), the neutral value is not at zero. How to fix it?</h3>
 <p>When using a diverging colormap, make sure to set the <em>symm</em> option to <em>makecmap_options</em> when using a visualization function, like this:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'colFn'</span>=colFn_diverging, <span class="st">'symm'</span>=<span class="ot">TRUE</span>);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'colFn'</span>=colFn_diverging, <span class="st">'symm'</span>=<span class="ot">TRUE</span>);</code></pre></div>
 <p>This ensures that the neutral color of the diverging colormap (usually white) is aligned with the zero mark in the colorbar/legend, by adapting the value range displayed on the colorbar.</p>
 </div>
 <div id="the-colorbar-shows-only-very-few-different-colors-why-is-that-and-how-can-i-change-it" class="section level3">
 <h3>The colorbar shows only very few different colors, why is that and how can I change it?</h3>
 <p>The impression that the numbers of colors in the colorbar is lower than in the rendered image is a consequence of the rendering process: the lighting (shadows, highlights) and the material properties (glossyness, partial transparency) have an effect on the appearance of colors in the rendered image.</p>
 <p>You can set the parameter <em>n</em> in the <em>makecmap_options</em> (see above) to request more colors, which will lead to a smooth colorbar.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">mkc =<span class="st"> </span><span class="kw">list</span>(<span class="st">'n'</span>=200L);</a>
-<a class="sourceLine" id="cb12-2" data-line-number="2"><span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options=</span>mkc);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mkc =<span class="st"> </span><span class="kw">list</span>(<span class="st">'n'</span>=200L);
+<span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options=</span>mkc);</code></pre></div>
 <p>This also means that more colors are used in the rendered image, but the effect will be less noticable.</p>
 </div>
 <div id="can-i-get-a-color-legend-when-plotting-atlas-regions-from-an-annotation-i-want-to-know-the-region-names-for-the-colors." class="section level3">
 <h3>Can I get a color legend when plotting atlas regions from an annotation? I want to know the region names for the colors.</h3>
 <p>Yes, see the answer to the next question for details.</p>
 </div>
-<div id="can-i-get-a-color-legend-when-plotting-a-segmentation-based-on-a-color-lookup-table-like-the-freesurfercolorlut.txt-file" class="section level3">
-<h3>Can I get a color legend when plotting a segmentation, based on a color lookup table (like the <em>FreeSurferColorLUT.txt</em> file)?</h3>
+<div id="can-i-get-a-color-legend-when-plotting-a-segmentationparcellation-different-brain-regions-based-on-a-color-lookup-table-like-the-freesurfercolorlut.txt-file" class="section level3">
+<h3>Can I get a color legend when plotting a segmentation/parcellation (different brain regions), based on a color lookup table (like the <em>FreeSurferColorLUT.txt</em> file)?</h3>
 <p>Yes, use the <code>vis.colortable.legend</code> function. You can pass an annotation or a color lookup table, and it will create a plot that shows the colors and the structure (or region) names. The output will be a separate plot, so you can use standard R methods to save it in vector formats like PDF for best quality.</p>
 <p>Hint: you can load a color lookup table with <code>freesurferformats::read.fs.colortable</code>.</p>
 </div>
 <div id="there-is-too-much-whitespace-between-the-different-views-of-the-brain.-how-can-i-reduce-it" class="section level3">
 <h3>There is too much whitespace between the different views of the brain. How can I reduce it?</h3>
 <p>While this is not possible in <code>rgl</code>, fsbrain provides the <code>vislayout.from.coloredmeshes</code> function to achieve this using Image Magick. You need to have the suggested ‘magick’ package installed for this to work. The function renders separate images, crops the output figures to remove the background, then merges the seperate cropped images into a final output image and saves it as a PNG file. Here is a usage example:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="co"># To get coloredmeshes return value only, ignore the visualization:</span></a>
-<a class="sourceLine" id="cb13-2" data-line-number="2">cm =<span class="st"> </span><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'thickness'</span>, <span class="dt">makecmap_options =</span> <span class="kw">list</span>(<span class="st">'n'</span>=<span class="dv">200</span>), <span class="dt">cortex_only =</span> T);</a>
-<a class="sourceLine" id="cb13-3" data-line-number="3"><span class="co"># Produce high quality tight layout:</span></a>
-<a class="sourceLine" id="cb13-4" data-line-number="4"><span class="kw">vislayout.from.coloredmeshes</span>(cm);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># To get coloredmeshes return value only, ignore the visualization:</span>
+cm =<span class="st"> </span><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'thickness'</span>, <span class="dt">makecmap_options =</span> <span class="kw">list</span>(<span class="st">'n'</span>=<span class="dv">200</span>), <span class="dt">cortex_only =</span> T);
+<span class="co"># Produce high quality tight layout:</span>
+<span class="kw">vislayout.from.coloredmeshes</span>(cm);</code></pre></div>
 <p>Note that your output resolution settings (see question above) now count for each of the single images. This means that you will get quite high resolution output in combination with the tight layout. This makes the function ideal for producing plots for publications.</p>
 <p>You can adjust various settings, e.g., change the rendering stlyle, select different views, and save it to a custom file name in your home directory:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">output_brain_img =<span class="st"> &quot;fsbrain_arranged.png&quot;</span>;</a>
-<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="kw">vislayout.from.coloredmeshes</span>(cm, <span class="dt">view_angles =</span> <span class="kw">get.view.angle.names</span>(<span class="dt">angle_set=</span><span class="st">'t9'</span>), <span class="dt">output_img =</span> output_brain_img);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output_brain_img =<span class="st"> &quot;fsbrain_arranged.png&quot;</span>;
+<span class="kw">vislayout.from.coloredmeshes</span>(cm, <span class="dt">view_angles =</span> <span class="kw">get.view.angle.names</span>(<span class="dt">angle_set=</span><span class="st">'t9'</span>), <span class="dt">output_img =</span> output_brain_img);</code></pre></div>
 <p>It is also possible to plot a separate colorbar image and combine that with the tight layout brainview image. Note that the settings for the colorbar are stored in the coloredmeshes, and can be adjusted by altering the initial call to <code>vis.subject.morph.native</code> (or whatever visualization function you use) above.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">output_cbar_img =<span class="st"> &quot;fsbrain_cbar.png&quot;</span>;</a>
-<a class="sourceLine" id="cb15-2" data-line-number="2">output_final_img =<span class="st"> &quot;fsbrain_merged.png&quot;</span>;</a>
-<a class="sourceLine" id="cb15-3" data-line-number="3"><span class="kw">coloredmesh.plot.colorbar.separate</span>(cm, <span class="dt">image.plot_extra_options =</span> <span class="kw">list</span>(<span class="st">'horizontal'</span> =<span class="st"> </span><span class="ot">TRUE</span>), <span class="dt">png_options =</span> <span class="kw">list</span>(<span class="st">'filename'</span>=output_cbar_img, <span class="st">'width'</span>=<span class="dv">1800</span>));</a>
-<a class="sourceLine" id="cb15-4" data-line-number="4"><span class="kw">combine.colorbar.with.brainview.image</span>(output_brain_img, output_cbar_img, output_final_img);</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output_cbar_img =<span class="st"> &quot;fsbrain_cbar.png&quot;</span>;
+output_final_img =<span class="st"> &quot;fsbrain_merged.png&quot;</span>;
+<span class="kw">coloredmesh.plot.colorbar.separate</span>(cm, <span class="dt">image.plot_extra_options =</span> <span class="kw">list</span>(<span class="st">'horizontal'</span> =<span class="st"> </span><span class="ot">TRUE</span>), <span class="dt">png_options =</span> <span class="kw">list</span>(<span class="st">'filename'</span>=output_cbar_img, <span class="st">'width'</span>=<span class="dv">1800</span>));
+<span class="kw">combine.colorbar.with.brainview.image</span>(output_brain_img, output_cbar_img, output_final_img);</code></pre></div>
 <p>You may have to play a bit with the resolution settings of your brain images and the colorbar to get this right (the background cropping makes it hard to compute the exact values in advance).</p>
+</div>
+<div id="when-visualizing-data-on-the-inflated-surface-the-left-and-right-hemisphere-overlap-and-look-garbled.-how-to-fix-that" class="section level3">
+<h3>When visualizing data on the inflated surface, the left and right hemisphere overlap and look garbled. How to fix that?</h3>
+<p>This happens due to the inflation. One can use the <code>rglactions</code> parameter to push the hemis apart. By default, it pushes them apart by the amount they overlap:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'thickness'</span>, <span class="dt">rglactions =</span> <span class="kw">list</span>(<span class="st">'shift_hemis_apart'</span>=<span class="ot">TRUE</span>), <span class="dt">surface=</span><span class="st">'inflated'</span>, <span class="dt">views=</span><span class="st">'si'</span>);</code></pre></div>
+<p>You can also set a distance manually:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'thickness'</span>, <span class="dt">rglactions =</span> <span class="kw">list</span>(<span class="st">'shift_hemis_apart'</span>=<span class="kw">list</span>(<span class="st">'min_dist'</span>=<span class="dv">20</span>)), <span class="dt">surface=</span><span class="st">'inflated'</span>, <span class="dt">views=</span><span class="st">'si'</span>);</code></pre></div>
+<p>If you need more customization options, have a look at the <code>shift.hemis.apart</code> function. If you pass a named list in the rglactions for ‘shift_hemis_apart’ (like in the previous example), the entries are passed on to that function.</p>
 </div>
 </div>
 <div id="various-topics" class="section level2">
@@ -428,15 +231,38 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h3>Can I integrate the plots produced by <em>fsbrain</em> into an R Markdown document (the R equivalent of a Python Jupyter notebook)?</h3>
 <p>Yes, see the example notebook files in the directory <a href="https://github.com/dfsp-spirit/fsbrain/tree/master/web/Rmd_web_examples">web</a> of the <em>fsbrain</em> repository. The Rmd files are actually notebooks in R markdown format.</p>
 </div>
+<div id="can-i-use-fsbrain-to-visualize-arbitrary-triangular-meshes-in-r" class="section level3">
+<h3>Can I use fsbrain to visualize arbitrary triangular meshes in R?</h3>
+<p>Yes, <em>fsbrain</em> is not limited to brain surface meshes, and a wide array of mesh file formats are supported. Keep in mind though that fsbrain works with triangular meshes. To visualize a mesh from a file, the easiest way is to use <code>vis.fs.surface</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vis.fs.surface</span>(<span class="st">'~/Documents/my_mesh.ply'</span>);</code></pre></div>
+</div>
 </div>
 <div id="technical-problems" class="section level2">
 <h2>Technical problems</h2>
 <div id="i-am-getting-the-error-invalid-value-specified-for-graphical-parameter-plt-why" class="section level3">
 <h3>I am getting the error ‘invalid value specified for graphical parameter plt’, why?</h3>
 <p>The full error most likely looks like this, or similar:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">Error <span class="cf">in</span> <span class="kw">par</span>(<span class="dt">new =</span> <span class="ot">TRUE</span>, <span class="dt">pty =</span> <span class="st">&quot;m&quot;</span>, <span class="dt">plt =</span> smallplot, <span class="dt">err =</span> <span class="dv">-1</span>) <span class="op">:</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"><span class="st">  </span>invalid value specified <span class="cf">for</span> graphical parameter <span class="st">&quot;plt&quot;</span></a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Error <span class="cf">in</span> <span class="kw">par</span>(<span class="dt">new =</span> <span class="ot">TRUE</span>, <span class="dt">pty =</span> <span class="st">&quot;m&quot;</span>, <span class="dt">plt =</span> smallplot, <span class="dt">err =</span> <span class="dv">-1</span>) <span class="op">:</span><span class="st"> </span>
+<span class="st">  </span>invalid value specified <span class="cf">for</span> graphical parameter <span class="st">&quot;plt&quot;</span></code></pre></div>
 <p>If you experience this error, it most likely happened when you tried to plot something with a colorbar, and did not increase the device size (image resolution). The error occurs if there is no space for the colorbar plot, and the solution is to increase the resolution as explained in the answer to the question ‘How can I set the output image resolution?’ above.</p>
+</div>
+<div id="i-am-getting-the-error-error-in-squashcmap-found-x-values-outside-map-range" class="section level3">
+<h3>I am getting the error ‘Error in squash::cmap, found x values outside map range’</h3>
+<p>This can happen when visualizing morphometry data with function like <code>vis.subject.morph.native</code>. The full error most likely looks like this, or similar:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'your_measure_here'</span>)
+Error <span class="cf">in</span> squash<span class="op">::</span><span class="kw">cmap</span>(lh_morph_data, <span class="dt">map =</span> common_cmap) <span class="op">:</span><span class="st"> </span>
+<span class="st">  </span>Found <span class="dv">2193</span> values outside map range.</code></pre></div>
+<p>Most likely you have <code>Inf</code> values in your data, most likely in the medial wall, just try plotting without it:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'your_measure_here'</span>, <span class="dt">cortex_only =</span> T)</code></pre></div>
+<p>If this does not help, load the data and inspect it manually.</p>
+</div>
+<div id="i-am-getting-the-warning-rgl-unable-to-open-x11-display-when-loading-fsbrain" class="section level3">
+<h3>I am getting the warning ‘RGL: unable to open X11 display’ when loading fsbrain</h3>
+<p>The full message most likely looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Warning messages<span class="op">:</span>
+<span class="dv">1</span><span class="op">:</span><span class="st"> </span>In <span class="kw">rgl.init</span>(initValue, onlyNULL) <span class="op">:</span><span class="st"> </span>RGL<span class="op">:</span><span class="st"> </span>unable to open X11 display
+<span class="dv">2</span><span class="op">:</span><span class="st"> 'rgl.init'</span> failed, running with <span class="st">'rgl.useNULL = TRUE'</span>.</code></pre></div>
+<p>This happens if you do not have X11, or no window can be opened. Possible reasons include that you are running R on a remote host using an SSH connection without X11 forwarding, or that you do not have XQuartz installed under MacOS.</p>
 </div>
 </div>
 

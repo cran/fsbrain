@@ -2,7 +2,7 @@
 % Please edit documentation in R/vis.R
 \name{vis.subject.morph.standard}
 \alias{vis.subject.morph.standard}
-\title{Visualize native space morphometry data for a subject.}
+\title{Visualize native space morphometry data for a subject or a group.}
 \usage{
 vis.subject.morph.standard(
   subjects_dir,
@@ -15,7 +15,7 @@ vis.subject.morph.standard(
   template_subjects_dir = NULL,
   colormap = NULL,
   views = c("t4"),
-  rgloptions = list(),
+  rgloptions = rglot(),
   rglactions = list(),
   draw_colorbar = FALSE,
   cortex_only = FALSE,
@@ -26,13 +26,13 @@ vis.subject.morph.standard(
 \arguments{
 \item{subjects_dir}{string. The FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.}
 
-\item{subject_id}{string. The subject identifier.}
+\item{subject_id}{character string or vector of character strings, the subject or subjects. For a single subjects, its data will be plotted. If a group of subjects is given instead, at each vertex the mean value over all the subjects will be plotted.}
 
 \item{measure}{string. The morphometry data to use. E.g., 'area' or 'thickness'. Pass NULL to render just the surface in white, without any data.}
 
 \item{hemi}{string, one of 'lh', 'rh', or 'both'. The hemisphere name. Used to construct the names of the label data files to be loaded.}
 
-\item{fwhm}{string, smoothing setting. The smoothing part of the filename, typically something like '0', '5', '10', ...,  or '25'.}
+\item{fwhm}{string, smoothing setting (full width at half maximum of the kernel). The smoothing part of the filename, typically something like '0', '5', '10', ...,  or '25'.}
 
 \item{surface}{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
 
@@ -44,7 +44,7 @@ vis.subject.morph.standard(
 
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
-\item{rgloptions}{option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
+\item{rgloptions}{option list passed to \code{\link{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
 
 \item{rglactions}{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action. The following example clips outliers in the data before plotting and writes a screenshot in PNG format: \code{rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95))}.}
 
@@ -52,7 +52,7 @@ vis.subject.morph.standard(
 
 \item{cortex_only}{logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subject. Defaults to FALSE.}
 
-\item{makecmap_options}{named list of parameters to pass to \code{\link[squash]{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'. Should include at least a colormap function as name 'colFn'.}
+\item{makecmap_options}{named list of parameters to pass to \code{\link{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'. Should include at least a colormap function as name 'colFn'.}
 
 \item{bg}{a background definition. Can be a surface color layer or a character string, see \code{\link[fsbrain]{collayer.bg}} for valid strings.}
 }
@@ -60,7 +60,7 @@ vis.subject.morph.standard(
 list of coloredmeshes. The coloredmeshes used for the visualization.
 }
 \description{
-Creates a surface mesh, applies a colormap transform the morphometry data values into colors, and renders the resulting colored mesh in an interactive window. If hemi is 'both', the data is rendered for the whole brain.
+Renders standard space morphometry data for a single subject, or the group mean for a group of subjects. The default template subject is fsaverage.
 }
 \examples{
 \donttest{

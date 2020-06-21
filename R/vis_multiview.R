@@ -5,7 +5,7 @@
 #'
 #' @param coloredmeshes list of coloredmesh or renderable. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
 #'
-#' @param rgloptions option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}
+#' @param rgloptions option list passed to \code{\link{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}
 #'
 #' @param rglactions named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
 #'
@@ -86,7 +86,7 @@ get.view.angle.names <- function(angle_set="all", add_sd_prefix=TRUE) {
 #'
 #' @param coloredmeshes, list of coloredmesh. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
 #'
-#' @param background string, background color passed to \code{\link[rgl]{bg3d}}.
+#' @param background string, background color passed to \code{\link{bg3d}}.
 #'
 #' @param skip_all_na logical, whether to skip (i.e., not render) meshes in the list that have the property 'render' set to FALSE. Defaults to TRUE. Practically, this means that a hemisphere for which the data was not given is not rendered, instead of being rendered in a single color.
 #'
@@ -94,7 +94,7 @@ get.view.angle.names <- function(angle_set="all", add_sd_prefix=TRUE) {
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
-#' @param rgloptions, named list. Parameters passed to \code{\link[rgl]{par3d}}. Defaults to the empty list.
+#' @param rgloptions, named list. Parameters passed to \code{\link{par3d}}. Defaults to the empty list.
 #'
 #' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. Defaults to the empty list.
 #'
@@ -107,6 +107,9 @@ brainview.si <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
     if(!is.list(coloredmeshes)) {
         stop("Parameter 'coloredmeshes' must be a list.");
     }
+
+    coloredmeshes = shift.hemis.rglactions(coloredmeshes, rglactions);
+
     return(invisible(vis.coloredmeshes(coloredmeshes, rgloptions = rgloptions, rglactions = rglactions, draw_colorbar = draw_colorbar, style = style)));
 }
 
@@ -115,7 +118,7 @@ brainview.si <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 #'
 #' @param coloredmeshes, list of coloredmesh. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
 #'
-#' @param background string, background color passed to \code{\link[rgl]{bg3d}}.
+#' @param background string, background color passed to \code{\link{bg3d}}.
 #'
 #' @param skip_all_na logical, whether to skip (i.e., not render) meshes in the list that have the property 'render' set to FALSE. Defaults to TRUE. Practically, this means that a hemisphere for which the data was not given is not rendered, instead of being rendered in a single color.
 #'
@@ -123,17 +126,17 @@ brainview.si <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
-#' @param x rotation x axis value, passed to \code{\link[rgl]{spin3d}}. Defaults to 0.
+#' @param x rotation x axis value, passed to \code{\link{spin3d}}. Defaults to 0.
 #'
-#' @param y rotation y axis value, passed to \code{\link[rgl]{spin3d}}. Defaults to 1.
+#' @param y rotation y axis value, passed to \code{\link{spin3d}}. Defaults to 1.
 #'
-#' @param z rotation z axis value, passed to \code{\link[rgl]{spin3d}}. Defaults to 0.
+#' @param z rotation z axis value, passed to \code{\link{spin3d}}. Defaults to 0.
 #'
-#' @param rpm rotation rpm value, passed to \code{\link[rgl]{spin3d}}. Defaults to 15.
+#' @param rpm rotation rpm value, passed to \code{\link{spin3d}}. Defaults to 15.
 #'
-#' @param duration rotation duration value, passed to \code{\link[rgl]{spin3d}}. Defaults to 20.
+#' @param duration rotation duration value, passed to \code{\link{spin3d}}. Defaults to 20.
 #'
-#' @param rgloptions, named list. Parameters passed to \code{\link[rgl]{par3d}}. Defaults to the empty list.
+#' @param rgloptions, named list. Parameters passed to \code{\link{par3d}}. Defaults to the empty list.
 #'
 #' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. Defaults to the empty list.
 #'
@@ -146,6 +149,9 @@ brainview.sr <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
     if(!is.list(coloredmeshes)) {
         stop("Parameter 'coloredmeshes' must be a list.");
     }
+
+    coloredmeshes = shift.hemis.rglactions(coloredmeshes, rglactions);
+
     return(invisible(vis.coloredmeshes.rotating(coloredmeshes, x=x, y=y, z=z, rpm=rpm, duration=duration, rgloptions = rgloptions, rglactions = rglactions, style = style)));
 }
 
@@ -181,7 +187,7 @@ get.sorted.cmeshes <- function(coloredmeshes) {
 #'
 #' @param coloredmeshes, list of coloredmesh. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
 #'
-#' @param background string, background color passed to \code{\link[rgl]{bg3d}}.
+#' @param background string, background color passed to \code{\link{bg3d}}.
 #'
 #' @param skip_all_na logical, whether to skip (i.e., not render) meshes in the list that have the property 'render' set to FALSE. Defaults to TRUE. Practically, this means that a hemisphere for which the data was not given is not rendered, instead of being rendered in a single color.
 #'
@@ -189,7 +195,7 @@ get.sorted.cmeshes <- function(coloredmeshes) {
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
-#' @param rgloptions, named list. Parameters passed to \code{\link[rgl]{par3d}}. Defaults to the empty list.
+#' @param rgloptions, named list. Parameters passed to \code{\link{par3d}}. Defaults to the empty list.
 #'
 #' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
 #'
@@ -336,7 +342,7 @@ rglactions.has.key <- function(rglactions, key) {
 #'
 #' @param coloredmeshes, list of coloredmesh. A coloredmesh is a named list as returned by the coloredmesh.from.* functions. It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh.
 #'
-#' @param background string, background color passed to \code{\link[rgl]{bg3d}}.
+#' @param background string, background color passed to \code{\link{bg3d}}.
 #'
 #' @param skip_all_na logical, whether to skip (i.e., not render) meshes in the list that have the property 'render' set to FALSE. Defaults to TRUE. Practically, this means that a hemisphere for which the data was not given is not rendered, instead of being rendered in a single color.
 #'
@@ -344,7 +350,7 @@ rglactions.has.key <- function(rglactions, key) {
 #'
 #' @param draw_labels logical, whether to draw label text for the different views that show information on the view direction and hemisphere displayed in a subplot. Defaults to FALSE.
 #'
-#' @param rgloptions, named list. Parameters passed to \code{\link[rgl]{par3d}}. Defaults to the empty list. To increase plot resolution to 2000x1600 px, try: \code{rgloptions=list("windowRect"=c(50,50,2000,1600))}.
+#' @param rgloptions, named list. Parameters passed to \code{\link{par3d}}. Defaults to the empty list. To increase plot resolution to 2000x1600 px, try: \code{rgloptions=list("windowRect"=c(50,50,2000,1600))}.
 #'
 #' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
 #'
@@ -400,6 +406,8 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
     rgl::bg3d(background);
     rgl::layout3d(layout_mat, widths=layout_column_widths, height=layout_row_heights);
 
+    coloredmeshes_potentially_shifted = shift.hemis.rglactions(coloredmeshes, rglactions);
+
 
     #  ------------------ Row 1 --------------------
 
@@ -414,7 +422,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the upper central view: draw both hemis from above (top view)
     rgl::next3d(reuse=FALSE);
-    vis.rotated.coloredmeshes(coloredmeshes, 0, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(coloredmeshes_potentially_shifted, 0, 1, 0, 0, style=style);
     rgl::rgl.viewpoint(0, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y_dorsal,0,"dorsal");
@@ -442,7 +450,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the 2nd row central view: draw both hemis from below (bottom view)
     rgl::next3d(reuse=FALSE);
-    vis.rotated.coloredmeshes(coloredmeshes, pi, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(coloredmeshes_potentially_shifted, pi, 1, 0, 0, style=style);
     rgl::rgl.viewpoint(0, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y_ventral,0,"ventral");
@@ -463,7 +471,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the bottom left view: draw only the left hemi, from the left
     rgl::next3d(reuse=FALSE);
-    vis.rotated.coloredmeshes(coloredmeshes, pi/2, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(coloredmeshes_potentially_shifted, pi/2, 1, 0, 0, style=style);
     rgl.viewpoint(0, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y,0,"rostral");
@@ -477,7 +485,7 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 
     # Create the bottom right view
     rgl::next3d(reuse=FALSE);
-    vis.rotated.coloredmeshes(coloredmeshes, pi/2, 1, 0, 0, style=style);
+    vis.rotated.coloredmeshes(coloredmeshes_potentially_shifted, pi/2, 1, 0, 0, style=style);
     rgl::rgl.viewpoint(180, 0, fov=0, interactive=FALSE);
     if(draw_labels) {
         rgl::text3d(0,label_shift_y,0,"caudal");
@@ -504,13 +512,13 @@ brainview.t9 <- function(coloredmeshes, background="white", skip_all_na=TRUE, st
 #'
 #' @param view_angle character string, the view angle. One of 'lateral_lh', 'dorsal', 'lateral_rh', 'medial_lh', 'ventral', 'medial_rh', 'rostral' or 'caudal'. See \code{\link[fsbrain]{get.view.angle.names}}.
 #'
-#' @param background string, background color passed to \code{\link[rgl]{bg3d}}.
+#' @param background string, background color passed to \code{\link{bg3d}}.
 #'
 #' @param skip_all_na logical, whether to skip (i.e., not render) meshes in the list that have the property 'render' set to FALSE. Defaults to TRUE. Practically, this means that a hemisphere for which the data was not given is not rendered, instead of being rendered in a single color.
 #'
 #' @param style, a named list of style parameters or a string specifying an available style by name (e.g., 'shiny'). Defaults to 'default', the default style.
 #'
-#' @param rgloptions, named list. Parameters passed to \code{\link[rgl]{par3d}}. Defaults to the empty list. To increase plot resolution to 2000x1600 px, try: \code{rgloptions=list("windowRect"=c(50,50,2000,1600))}.
+#' @param rgloptions, named list. Parameters passed to \code{\link{par3d}}. Defaults to the empty list. To increase plot resolution to 2000x1600 px, try: \code{rgloptions=list("windowRect"=c(50,50,2000,1600))}.
 #'
 #' @param rglactions, named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action.
 #'
@@ -603,3 +611,128 @@ brainview.sd <- function(coloredmeshes, view_angle, background="white", skip_all
     return(invisible(coloredmeshes));
 }
 
+
+#' @title Shift hemispheres apart.
+#'
+#' @description  Modify mesh coordinates of a hemilist of coloredmeshes to introduce a gap between the two hemispheres.
+#'
+#' @param coloredmeshes_hl hemilist of coloredmeshes
+#'
+#' @param shift_by numerical vector of length 2, the amount by which to shift the hemis. The first value is for the left hemi, the second for the right hemi (values can be negative). Pass `NULL` to determine the shift automatically from the mesh coordinates, and adapt 'hemi_order_on_axis' to define how that happens.
+#'
+#' @param axis positive integer, one of 1L, 2L or 3L. The axis on which to shift (x,y,z).
+#'
+#' @param hemi_order_on_axis character string, one of 'auto', 'auto_flipped', 'lr' or 'rl'. Defines how to determine the order of the hemis on the axes. This is ignored unless 'shift_by' is `NULL`. The 'auto' setting assumes that the hemisphere with the smaller minimal vertex coordinate (on the given axis) comes first. Note that if the overlap (or shift) is extreme, this may not hold anymore. Therefore, the default value is 'lr', which works for FreeSurfer data. The 'auto_flipped' setting will always return the inverse of 'auto', so if 'auto' did not work, 'auto_flipped' will.
+#'
+#' @param min_dist numerical scalar, the minimal distance of the hemispheres. Ignored unless 'shift_by' is `NULL`.
+#'
+#' @return hemilist of coloredmeshes, the shifted meshes
+#'
+#' @export
+shift.hemis.apart <- function(coloredmeshes_hl, shift_by=NULL, axis=1L, hemi_order_on_axis='lr', min_dist=0) {
+    axis = as.integer(axis);
+
+    if(axis < 1L | axis > 3L) {
+        stop("Parameter 'axis' must be 1, 2 or 3.");
+    }
+
+    if(! hemi_order_on_axis %in% c('auto', 'auto_flipped', 'lr', 'rl')) {
+        stop("Parameter 'hemi_order_on_axis' must be one of 'auto', 'auto_flipped', 'lr', or 'rl'.");
+    }
+
+    if(is.null(coloredmeshes_hl$lh) | is.null(coloredmeshes_hl$rh)) {
+        # Silently do nothing if there is only a single hemisphere to plot (avoids pointless warning below).
+        return(coloredmeshes_hl);
+    }
+
+    if(hasIn(coloredmeshes_hl, c('lh', 'metadata', 'fs_mesh')) & hasIn(coloredmeshes_hl, c('rh', 'metadata', 'fs_mesh'))) {
+        lh_src_mesh = coloredmeshes_hl$lh$metadata$fs_mesh;
+        rh_src_mesh = coloredmeshes_hl$rh$metadata$fs_mesh;
+
+        if(is.null(shift_by)) {
+            if(startsWith(hemi_order_on_axis, 'auto')) {
+                if(min(lh_src_mesh$vertices[,axis]) < min(rh_src_mesh$vertices[,axis])) {
+                    lh_is_first_on_axis = TRUE;
+                } else {
+                    lh_is_first_on_axis = FALSE;
+                }
+                if(hemi_order_on_axis == 'auto_flipped') {
+                    lh_is_first_on_axis = !(lh_is_first_on_axis);
+                }
+            } else if(hemi_order_on_axis == 'lr') {
+                lh_is_first_on_axis = TRUE;
+            } else {
+                lh_is_first_on_axis = FALSE;
+            }
+
+            if(lh_is_first_on_axis) {
+                overlap = max(lh_src_mesh$vertices[,axis]) - min(rh_src_mesh$vertices[,axis]) + min_dist;
+                #cat(sprintf("overlap=%f, min_dist=%f\n", overlap, min_dist));
+                if(overlap > 0L) {
+                    shift_by = c(-overlap/2.0, overlap/2.0);
+                } else {
+                    return(coloredmeshes_hl);
+                }
+            } else {
+                overlap = max(rh_src_mesh$vertices[,axis]) - min(lh_src_mesh$vertices[,axis]) + min_dist;
+                if(overlap > 0L) {
+                    shift_by = c(overlap/2.0, -overlap/2.0);
+                } else {
+                    return(coloredmeshes_hl);
+                }
+            }
+        }
+
+        lh_src_mesh$vertices[,axis] = lh_src_mesh$vertices[,axis] + shift_by[1];
+        lh_new_tmesh = rgl::tmesh3d(c(t(lh_src_mesh$vertices)), c(t(lh_src_mesh$faces)), homogeneous=FALSE);
+        coloredmeshes_hl$lh$mesh$vb = lh_new_tmesh$vb;
+        coloredmeshes_hl$lh$mesh$it = lh_new_tmesh$it;
+
+
+        rh_src_mesh$vertices[,axis] = rh_src_mesh$vertices[,axis] + shift_by[2];
+        rh_new_tmesh = rgl::tmesh3d(c(t(rh_src_mesh$vertices)), c(t(rh_src_mesh$faces)), homogeneous=FALSE);
+        coloredmeshes_hl$rh$mesh$vb = rh_new_tmesh$vb;
+        coloredmeshes_hl$rh$mesh$it = rh_new_tmesh$it;
+    } else {
+        warning("Missing coloredmesh metadata, ignored request to shift meshes apart");
+    }
+
+    return(coloredmeshes_hl);
+}
+
+
+#' @title Shift hemis apart if indicated in rglactions
+#'
+#' @param coloredmeshes hemilist of coloredmeshes
+#'
+#' @param rglactions the rglactions, a named list as passed to functions like vis.subject.morph.native.
+#'
+#' @return hemilist of coloredmeshes, the coordinates may or may not have been shifted, depending on the rglactions.
+#'
+#' @keywords internal
+shift.hemis.rglactions <- function(coloredmeshes, rglactions) {
+    if(rglactions.has.key(rglactions, 'shift_hemis_apart')) {
+        shift_hemis = rglactions$shift_hemis_apart;
+        if(is.logical(shift_hemis)) {
+            if(shift_hemis) {
+                return(shift.hemis.apart(coloredmeshes, hemi_order_on_axis='lr'));
+            }
+        } else if(is.list(shift_hemis)) {
+            # interprete the list as extra parameters to pass to shift.hemis.apart
+            return(do.call(shift.hemis.apart, utils::modifyList(list(coloredmeshes), shift_hemis)));
+        } else if(is.character(shift_hemis)) {
+            if(shift_hemis == 'lr' | shift_hemis == 'lhrh') {
+                return(shift.hemis.apart(coloredmeshes, hemi_order_on_axis='lr'));
+            } else if(shift_hemis == 'rl' | shift_hemis == 'rhlh') {
+                return(shift.hemis.apart(coloredmeshes, hemi_order_on_axis='rl'));
+            } else if(shift_hemis == 'auto' | shift_hemis == 'auto_flipped') {
+                return(shift.hemis.apart(coloredmeshes, hemi_order_on_axis=shift_hemis));
+            } else {
+                warning("Value in rglactions$shift_hemis_apart is not supported, ignored. Not shifting hemis.");
+            }
+        } else {
+            warning("Value in rglactions$shift_hemis_apart is not supported, ignored. Not shifting hemis.");
+        }
+    }
+    return(coloredmeshes);
+}

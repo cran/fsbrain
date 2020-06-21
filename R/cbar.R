@@ -2,7 +2,7 @@
 
 #' @title Draw coloredbar into background of current plot.
 #'
-#' @description Requires a rgl 3d visualisation to be open that already contains a rendered object. Uses \code{\link[rgl]{bgplot3d}} to add a colorbar in the background of the plot using \code{\link[fields]{image.plot}}. Experimental.
+#' @description Requires a rgl 3d visualisation to be open that already contains a rendered object. Uses \code{\link{bgplot3d}} to add a colorbar in the background of the plot using \code{\link[fields]{image.plot}}. Experimental.
 #'
 #' @param coloredmesh fs.coloredmesh as returned by the coloredmesh.from.* functions.
 #'
@@ -64,7 +64,7 @@ draw.colorbar <- function(coloredmeshes, horizontal=FALSE, ...) {
 #' @note If you increase the output resolution of the colorbar (using 'png_options'), you will have to increase the font sizes as well (using 'image.plot_extra_options'), otherwise the axis and legend labels will be hard to read.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'    fsbrain::download_optional_data();
 #'    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 #'    coloredmeshes = vis.subject.morph.native(subjects_dir, 'subject1',
@@ -342,6 +342,18 @@ cm.heat <- function(report=FALSE) {
 }
 
 
+#' @title Get cyan blue red yellow colormap function.
+#'
+#' @note Returns a diverging palette with negative values in blue/cyan and positive ones in red/yellow, suitable for visualizing data that is centered around zero. Often used for clusters in neuroscience.
+#'
+#' @export
+cm.cbry <- function() {
+    # cyan (rgb=0,1,1), blue (0,0,1), red (1,0,0), yellow (1,1,0):
+    step_colors = rgb(matrix(c(0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0), ncol = 3, byrow = FALSE));
+    return(grDevices::colorRampPalette(step_colors));
+}
+
+
 #' @title Return the standard fsbrain diverging colormap.
 #'
 #' @inheritParams cm.seq
@@ -428,4 +440,18 @@ mkco.heat <- function() {
 #' @export
 mkco.div <- function() {
     return(list('colFn'=cm.div(), 'n'=100L, 'symm'=TRUE));
+}
+
+
+#' @title Return recommended 'makecmap_options' for diverging cluster data.
+#'
+#' @description This function returns recommended visualization settings (a colormap function and suitable other settings) for the given type of data. The return value is meant to be passed as parameter 'makecmap_options' to the vis.* functions, e.g., \code{\link[fsbrain]{vis.subject.morph.native}}.
+#'
+#' @return named list, visualization settings to be used as 'makecmap_options' for diverging data.
+#'
+#' @note This uses a cyan blue red yellow colormap, which is popular for displaying clusters in neuroscience.
+#'
+#' @export
+mkco.cluster <- function() {
+    return(list('colFn'=cm.cbry(), 'n'=100L, 'symm'=TRUE));
 }

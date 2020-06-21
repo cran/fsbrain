@@ -88,6 +88,7 @@ group.morph.agg.native <- function(subjects_dir, subjects_list, measure, hemi, a
 #' @family global aggregation functions
 #'
 #' @export
+#' @importFrom utils modifyList
 group.morph.agg.standard <- function(subjects_dir, subjects_list, measure, hemi, fwhm, agg_fun = mean, template_subject='fsaverage', format='mgh', cast=TRUE, cortex_only=FALSE, agg_fun_extra_params=NULL) {
   if(!(hemi %in% c("lh", "rh", "both"))) {
     stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
@@ -132,6 +133,52 @@ group.morph.agg.standard <- function(subjects_dir, subjects_list, measure, hemi,
 }
 
 
+
+
+#' @title Aggregate standard space morphometry data over subjects.
+#'
+#' @description Aggregate vertex-wise values over subjects, leading to one aggregated measure per vertex.
+#'
+#' @inheritParams group.morph.agg.standard
+#'
+#' @param split_by_hemi logical, whether to return a hemilist
+#'
+#' @family aggregation functions
+#'
+#' @importFrom utils modifyList
+#' @export
+group.morph.agg.standard.vertex <- function(subjects_dir, subjects_list, measure, hemi, fwhm, agg_fun = mean, template_subject='fsaverage', format='mgh', cortex_only=FALSE, agg_fun_extra_params=NULL, split_by_hemi=FALSE) {
+
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
+    }
+
+    if(split_by_hemi) {
+        ret_list = list();
+        if(hemi %in% c("lh", "both")) {
+            ret_list$lh = group.morph.agg.standard.vertex(subjects_dir, subjects_list, measure, 'lh', fwhm, agg_fun=agg_fun, template_subject=template_subject, format=format, cortex_only=cortex_only, agg_fun_extra_params=agg_fun_extra_params);
+        }
+        if(hemi %in% c("rh", "both")) {
+            ret_list$rh = group.morph.agg.standard.vertex(subjects_dir, subjects_list, measure, 'rh', fwhm, agg_fun=agg_fun, template_subject=template_subject, format=format, cortex_only=cortex_only, agg_fun_extra_params=agg_fun_extra_params);
+        }
+        return(ret_list);
+    }
+
+    df = group.morph.standard(subjects_dir, subjects_list, measure, hemi=hemi, fwhm=fwhm, template_subject=template_subject, format=format, cortex_only=cortex_only, df=TRUE);
+
+    df_axis = 1;
+    agg_fun_default_params = list(df, df_axis, agg_fun);
+    if( ! is.null(agg_fun_extra_params)) {
+        agg_fun_params = modifyList(agg_fun_default_params, agg_fun_extra_params);
+    } else {
+        agg_fun_params = agg_fun_default_params;
+    }
+    vert_agg = do.call(apply, agg_fun_params);
+    names(vert_agg) = NULL;
+    return(vert_agg);
+}
+
+
 #' @title Aggregate standard space (fsaverage) morphometry data for multiple measures over hemispheres for a group of subjects.
 #'
 #' @description Compute the mean (or other aggregates) over all vertices of a subject from standard space morphometry data (like 'surf/lh.area.fwhm10.fsaverage.mgh'). You can specify several measures and hemispheres. Uses knowledge about the FreeSurfer directory structure to load the correct files.
@@ -146,7 +193,7 @@ group.morph.agg.standard <- function(subjects_dir, subjects_list, measure, hemi,
 #'
 #' @param fwhm, string. Smoothing as string, e.g. '10' or '25'.
 #'
-#' @param agg_fun, function. An R function that aggregates data, typically \code{\link[base]{max}}, mean, min or something similar. Note: this is NOT a string, put the function name without quotes. Defaults to mean.
+#' @param agg_fun, function. An R function that aggregates data, typically \code{\link{max}}, mean, min or something similar. Note: this is NOT a string, put the function name without quotes. Defaults to mean.
 #'
 #' @param template_subject, string. Template subject name, defaults to 'fsaverage'.
 #'
@@ -154,7 +201,7 @@ group.morph.agg.standard <- function(subjects_dir, subjects_list, measure, hemi,
 #'
 #' @param cast, Whether a separate 'hemi' column should exist.
 #'
-#' @param cortex_only logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subjects. Also not that the aggregation function will need to be able to cope with NA values if you set this to TRUE. You can use 'agg_fun_extra_params' if needed to achieve that, depending on the function. Foe example, if you use the \code{\link[base]{mean}} function, you could set \code{agg_fun_extra_params=list("na.rm"=TRUE)} to get the mean of the vertices which are not masked. Defaults to FALSE.
+#' @param cortex_only logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subjects. Also not that the aggregation function will need to be able to cope with NA values if you set this to TRUE. You can use 'agg_fun_extra_params' if needed to achieve that, depending on the function. Foe example, if you use the \code{\link{mean}} function, you could set \code{agg_fun_extra_params=list("na.rm"=TRUE)} to get the mean of the vertices which are not masked. Defaults to FALSE.
 #'
 #' @param agg_fun_extra_params named list, extra parameters to pass to the aggregation function 'agg_fun' besides the loaded morphometry data. This is useful if you have masked the data and need to ignore NA values in the agg_fun.
 #'

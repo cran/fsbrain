@@ -19,7 +19,7 @@
 #'
 #' @param views list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.
 #'
-#' @param rgloptions option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.
+#' @param rgloptions option list passed to \code{\link{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.
 #'
 #' @param rglactions named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action. The following example clips outliers in the data before plotting and writes a screenshot in PNG format: \code{rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95))}.
 #'
@@ -29,7 +29,7 @@
 #'
 #' @param style character string, a rendering style, e.g., 'default', 'shiny' or 'semitransparent'.
 #'
-#' @param makecmap_options named list of parameters to pass to \code{\link[squash]{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'. Should include at least a colormap function as name 'colFn'.
+#' @param makecmap_options named list of parameters to pass to \code{\link{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'. Should include at least a colormap function as name 'colFn'.
 #'
 #' @param bg a background definition. Can be a surface color layer or a character string, see \code{\link[fsbrain]{collayer.bg}} for valid strings.
 #'
@@ -47,7 +47,7 @@
 #'
 #' @importFrom squash jet
 #' @export
-vis.subject.morph.native <- function(subjects_dir, subject_id, measure, hemi="both", surface="white", colormap=NULL, views=c("t4"), rgloptions = list(), rglactions = list(), draw_colorbar = FALSE, cortex_only=FALSE, style = 'default', makecmap_options=mkco.seq(), bg=NULL) {
+vis.subject.morph.native <- function(subjects_dir, subject_id, measure, hemi="both", surface="white", colormap=NULL, views=c("t4"), rgloptions = rglot(), rglactions = list(), draw_colorbar = FALSE, cortex_only=FALSE, style = 'default', makecmap_options=mkco.seq(), bg=NULL) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
@@ -80,13 +80,15 @@ vis.subject.morph.native <- function(subjects_dir, subject_id, measure, hemi="bo
 
 
 
-#' @title Visualize native space morphometry data for a subject.
+#' @title Visualize native space morphometry data for a subject or a group.
 #'
-#' @description Creates a surface mesh, applies a colormap transform the morphometry data values into colors, and renders the resulting colored mesh in an interactive window. If hemi is 'both', the data is rendered for the whole brain.
+#' @description Renders standard space morphometry data for a single subject, or the group mean for a group of subjects. The default template subject is fsaverage.
 #'
 #' @inheritParams vis.subject.morph.native
 #'
-#' @param fwhm string, smoothing setting. The smoothing part of the filename, typically something like '0', '5', '10', ...,  or '25'.
+#' @param subject_id character string or vector of character strings, the subject or subjects. For a single subjects, its data will be plotted. If a group of subjects is given instead, at each vertex the mean value over all the subjects will be plotted.
+#'
+#' @param fwhm string, smoothing setting (full width at half maximum of the kernel). The smoothing part of the filename, typically something like '0', '5', '10', ...,  or '25'.
 #'
 #' @param template_subject The template subject used. This will be used as part of the filename, and its surfaces are loaded for data visualization. Defaults to 'fsaverage'.
 #'
@@ -113,11 +115,13 @@ vis.subject.morph.native <- function(subjects_dir, subject_id, measure, hemi="bo
 #'
 #' @importFrom squash jet
 #' @export
-vis.subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi="both", fwhm="10", surface="white", template_subject = 'fsaverage', template_subjects_dir = NULL, colormap=NULL, views=c("t4"), rgloptions = list(), rglactions = list(), draw_colorbar = FALSE, cortex_only = FALSE, makecmap_options=mkco.seq(), bg=NULL) {
+vis.subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi="both", fwhm="10", surface="white", template_subject = 'fsaverage', template_subjects_dir = NULL, colormap=NULL, views=c("t4"), rgloptions = rglot(), rglactions = list(), draw_colorbar = FALSE, cortex_only = FALSE, makecmap_options=mkco.seq(), bg=NULL) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
     }
+
+    check.subjectslist(subject_id, subjects_dir=subjects_dir);
 
     makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
@@ -129,7 +133,12 @@ vis.subject.morph.standard <- function(subjects_dir, subject_id, measure, hemi="
         measure_data = measure;
         hemi = hemilist.derive.hemi(measure_data);  # need to rewrite the hemi, depending on the passed data
     } else {
-        measure_data = subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm=fwhm, template_subject=template_subject, cortex_only=cortex_only, split_by_hemi=TRUE);
+        if(length(subject_id) > 1L) {
+            subjects_list = subject_id;
+            measure_data = group.morph.agg.standard.vertex(subjects_dir, subjects_list, measure, hemi, fwhm=fwhm, template_subject=template_subject, cortex_only=cortex_only, split_by_hemi=TRUE)
+        } else {
+            measure_data = subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm=fwhm, template_subject=template_subject, cortex_only=cortex_only, split_by_hemi=TRUE);
+        }
     }
 
     measure_data = rglactions.transform(measure_data, rglactions);
@@ -209,7 +218,7 @@ rglactions.transform <- function(measure_data, rglactions) {
 #'
 #' @importFrom squash rainbow2
 #' @export
-vis.subject.label <- function(subjects_dir, subject_id, label, hemi, surface="white", colormap=NULL, views=c("t4"), rgloptions = list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=label.colFn.inv, 'col.na'='#FFFFFF00'), map_to_NA=0L, bg=NULL) {
+vis.subject.label <- function(subjects_dir, subject_id, label, hemi, surface="white", colormap=NULL, views=c("t4"), rgloptions = rglot(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=list('colFn'=label.colFn.inv, 'col.na'='#FFFFFF00'), map_to_NA=0L, bg=NULL) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
@@ -285,10 +294,10 @@ vis.subject.label <- function(subjects_dir, subject_id, label, hemi, surface="wh
 #'
 #' @importFrom squash jet
 #' @export
-vis.data.on.subject <- function(subjects_dir, vis_subject_id, morph_data_lh, morph_data_rh, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=mkco.seq(), bg=NULL) {
+vis.data.on.subject <- function(subjects_dir, vis_subject_id, morph_data_lh, morph_data_rh, surface="white", colormap=NULL, views=c('t4'), rgloptions=rglot(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=mkco.seq(), bg=NULL) {
 
     if(is.null(morph_data_lh) && is.null(morph_data_rh)) {
-        stop(sprintf("Only one of morph_data_lh or morph_data_rh can be NULL.\n"));
+        stop(sprintf("Only one of 'morph_data_lh' or 'morph_data_rh' can be NULL.\n"));
     }
 
     makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
@@ -418,7 +427,7 @@ vis.color.on.subject <- function(subjects_dir, vis_subject_id, color_lh, color_r
 
 #' @title Visualize a vertex mask on the surface of a subject.
 #'
-#' @description A mask is a logical vector that contains one value per vertex. You can create it manually, or use functions like [fsbrain::mask.from.labeldata.for.hemi] to create and modify it. Check the example for this function.
+#' @description A mask is a logical vector that contains one value per vertex. You can create it manually, or use functions like \code{\link[fsbrain]{mask.from.labeldata.for.hemi}} to create and modify it. Check the example for this function.
 #'
 #' @inheritParams vis.data.on.subject
 #'
@@ -564,7 +573,7 @@ vis.labeldata.on.subject <- function(subjects_dir, vis_subject_id, lh_labeldata,
 #'
 #' @importFrom squash jet
 #' @export
-vis.data.on.fsaverage <- function(subjects_dir=NULL, vis_subject_id="fsaverage", morph_data_lh, morph_data_rh, surface="white", colormap=NULL, views=c('t4'), rgloptions = list(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=mkco.seq(), bg=NULL) {
+vis.data.on.fsaverage <- function(subjects_dir=NULL, vis_subject_id="fsaverage", morph_data_lh, morph_data_rh, surface="white", colormap=NULL, views=c('t4'), rgloptions = rglot(), rglactions = list(), draw_colorbar = FALSE, makecmap_options=mkco.seq(), bg=NULL) {
 
     if(is.null(subjects_dir)) {
         subjects_dir = find.subjectsdir.of(subject_id=vis_subject_id, mustWork = TRUE);
@@ -627,7 +636,7 @@ vis.subject.annot <- function(subjects_dir, subject_id, atlas, hemi='both', surf
 #'
 #' @param atlas string. The brain atlas to use. E.g., 'aparc' or 'aparc.a2009s'.
 #'
-#' @param lh_region_value_list named list. A list for the left hemisphere in which the names are atlas regions, and the values are the value to write to all vertices of that region.
+#' @param lh_region_value_list named list. A list for the left hemisphere in which the names are atlas regions, and the values are the value to write to all vertices of that region. You can pass an unnamed list, but then the its length must exactly match the number of atlas regions. The order of values must also match the order of regions in the annotation, of course. The resulting mapping will be printed so you can check it.
 #'
 #' @param rh_region_value_list named list. A list for the right hemisphere in which the names are atlas regions, and the values are the value to write to all vertices of that region.
 #'
@@ -658,9 +667,39 @@ vis.subject.annot <- function(subjects_dir, subject_id, atlas, hemi='both', surf
 #'
 #' @importFrom grDevices heat.colors
 #' @export
-vis.region.values.on.subject <- function(subjects_dir, subject_id, atlas, lh_region_value_list, rh_region_value_list, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), value_for_unlisted_regions = NA, draw_colorbar = FALSE, makecmap_options=list('colFn'=grDevices::heat.colors), bg=NULL) {
+vis.region.values.on.subject <- function(subjects_dir, subject_id, atlas, lh_region_value_list, rh_region_value_list, surface="white", colormap=NULL, views=c('t4'), rgloptions=list(), rglactions = list(), value_for_unlisted_regions = NA, draw_colorbar = FALSE, makecmap_options=mkco.heat(), bg=NULL) {
     makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
     morph_like_data = spread.values.over.subject(subjects_dir, subject_id, atlas, lh_region_value_list, rh_region_value_list, value_for_unlisted_regions = value_for_unlisted_regions);
     return(invisible(vis.data.on.subject(subjects_dir, subject_id, morph_like_data$lh, morph_like_data$rh, surface=surface, views=views, rgloptions=rgloptions, rglactions=rglactions, draw_colorbar = draw_colorbar, makecmap_options=makecmap_options, bg=bg)));
 }
 
+
+#' @title Visualize fs.surface mesh
+#'
+#' @param fs_surface an fs.surface instance, as returned by function like \code{\link[fsbrain]{subject.surface}} or \code{\link[freesurferformats]{read.fs.surface}}. If a character string, it is assumed to be the full path of a surface file, and the respective file is loaded with \code{\link[freesurferformats]{read.fs.surface}}.
+#'
+#' @param col vector of colors, the per-vertex-colors. Defaults to white.
+#'
+#' @param per_vertex_data numerical vector, per-vertex data. If given, takes precedence over 'col'. Used to color the mesh using the colormap options in parameter 'makecmap_options'. If a character string, it is assumed to be the full path of a morphometry data file, and the respective file is loaded with \code{\link[freesurferformats]{read.fs.morph}}.
+#'
+#' @inheritParams fs.coloredmesh
+#'
+#' @inheritParams vis.subject.morph.native
+#'
+#' @param ... extra parameters to pass to \code{\link[fsbrain]{vis.coloredmeshes}}.
+#'
+#' @export
+vis.fs.surface <- function(fs_surface, col="white", per_vertex_data=NULL, hemi="lh", makecmap_options=mkco.seq(), ...) {
+    if( ! is.null(per_vertex_data)) {
+        col = NULL;
+        if(is.character(per_vertex_data)) {   # treat as path to a morph file
+            per_vertex_data = freesurferformats::read.fs.morph(per_vertex_data);
+        }
+    }
+    if(is.character(fs_surface)) {
+        fs_surface = freesurferformats::read.fs.surface(fs_surface);
+    }
+    cm_list = list();
+    cm_list[[hemi]] = coloredmesh.from.preloaded.data(fs_surface, morph_data=per_vertex_data, col=col, hemi=hemi, makecmap_options=makecmap_options);
+    return(invisible(vis.coloredmeshes(cm_list, ...)));
+}

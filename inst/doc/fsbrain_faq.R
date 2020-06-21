@@ -64,6 +64,28 @@
 #  combine.colorbar.with.brainview.image(output_brain_img, output_cbar_img, output_final_img);
 
 ## ---- eval = FALSE------------------------------------------------------------
+#  vis.subject.morph.native(sjd, sj, 'thickness', rglactions = list('shift_hemis_apart'=TRUE), surface='inflated', views='si');
+
+## ---- eval = FALSE------------------------------------------------------------
+#  vis.subject.morph.native(sjd, sj, 'thickness', rglactions = list('shift_hemis_apart'=list('min_dist'=20)), surface='inflated', views='si');
+
+## ---- eval = FALSE------------------------------------------------------------
+#  vis.fs.surface('~/Documents/my_mesh.ply');
+
+## ---- eval = FALSE------------------------------------------------------------
 #  Error in par(new = TRUE, pty = "m", plt = smallplot, err = -1) :
 #    invalid value specified for graphical parameter "plt"
+
+## ---- eval = FALSE------------------------------------------------------------
+#  vis.subject.morph.native(sjd, sj, 'your_measure_here')
+#  Error in squash::cmap(lh_morph_data, map = common_cmap) :
+#    Found 2193 values outside map range.
+
+## ---- eval = FALSE------------------------------------------------------------
+#  vis.subject.morph.native(sjd, sj, 'your_measure_here', cortex_only = T)
+
+## ---- eval = FALSE------------------------------------------------------------
+#  Warning messages:
+#  1: In rgl.init(initValue, onlyNULL) : RGL: unable to open X11 display
+#  2: 'rgl.init' failed, running with 'rgl.useNULL = TRUE'.
 
