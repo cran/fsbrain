@@ -1,6 +1,7 @@
 
 
 test_that("A brain volume or parts of it can be rendered in voxel mode", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11 and all test data.");
 
@@ -27,7 +28,7 @@ test_that("A brain volume or parts of it can be rendered in voxel mode", {
 
     render_animation = FALSE;
     if(render_animation) {
-        rgloptions=list("windowRect"=c(80,80,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+        rgloptions=list("windowRect"=c(80,80,800,800));
         rglactions = list("movie"="vox_ventricles_rot");
         vislayout.from.coloredmeshes(coloredvoxels, view_angles="sr", rgloptions = rgloptions, rglactions = rglactions);
     }
@@ -37,7 +38,47 @@ test_that("A brain volume or parts of it can be rendered in voxel mode", {
 })
 
 
+test_that("A test volume or parts of it can be rendered in voxel mode", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    myvol = gen.test.volume(c(40, 40, 40), bg = NA);
+    volvis.voxels(myvol, render_every = 10);
+    volvis.voxels(myvol, render_every = 10, voxelcol = "blue");
+
+    myvol2 = gen.test.volume(c(40, 40, 40), bg = 0L);
+    volvis.voxels(myvol2, render_every = 10, voxelcol = "from_intensity");
+
+    testthat::expect_equal(dim(myvol), c(40, 40, 40)); # add a check to prevent skip
+})
+
+
+test_that("The voxel hull can be computed from a volume", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    myvol = gen.test.volume(c(25, 25, 25), bg = NA);
+    vh = vol.hull(myvol);
+    testthat::expect_equal(dim(myvol), dim(vh));
+})
+
+
+test_that("The voxel contour can be visualized for a volume", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    myvol = gen.test.volume(c(25, 25, 25), bg = 1L);
+    volvis.contour(myvol);
+    testthat::expect_equal(dim(myvol), c(25,25,25)); # add a check to prevent skip
+
+    testthat::expect_error(volvis.contour(myvol, color = c("white", "green"))); # color must be a scalar
+})
+
+
+test_that("The voxel contour can be visualized for a volume", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    centers = matrix(rnorm(500*3)*100, ncol=3);
+    rglvoxels(centers, voxelcol="red");
+    rglvoxels(centers);
+    testthat::expect_equal(1L, 1L); # add a check to prevent skip
+})
+
 test_that("A brain volume segmentation can be rendered with correct colors from the aseg", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11, an aseg.mgz file for the demo subject and the FreeSurferColorLUT.");
 
@@ -54,7 +95,7 @@ test_that("A brain volume segmentation can be rendered with correct colors from 
     fs_home = find.freesurferhome()$found_at;
     ct = freesurferformats::read.fs.colortable(file.path(fs_home, 'FreeSurferColorLUT.txt'));
 
-    open3d();
+    rgl::open3d();
     all_regions_coloredvoxels = list();
     for(aseg_code in aseg_codes) {
         if(aseg_code == 0) { # skip background ('unknown').
@@ -69,7 +110,7 @@ test_that("A brain volume segmentation can be rendered with correct colors from 
 
     render_animation = FALSE;
     if(render_animation) {
-        rgloptions=list("windowRect"=c(80,80,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+        rgloptions=list("windowRect"=c(80,80,800,800));
         rglactions = list("movie"="vox_aseg_rot");
         vislayout.from.coloredmeshes(all_regions_coloredvoxels, view_angles="sr", rgloptions = rgloptions, rglactions = rglactions);
     }
@@ -79,6 +120,7 @@ test_that("A brain volume segmentation can be rendered with correct colors from 
 
 
 test_that("Brain structures can be rendered as contours using misc3d", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11, the misc3d package, and an aseg.mgz file for the demo subject.");
 
@@ -121,6 +163,7 @@ test_that("Brain structures can be rendered as contours using misc3d", {
 
 
 test_that("The pial surface drawn as a transparent wrapping over the white surface", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11 and extra data.");
 
@@ -141,6 +184,7 @@ test_that("The pial surface drawn as a transparent wrapping over the white surfa
 
 
 test_that("Voxels can be rotated and rendered in a brainview", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
     fsbrain::download_optional_data();
@@ -159,6 +203,7 @@ test_that("Voxels can be rotated and rendered in a brainview", {
 
 
 test_that("A misc3d contour (Triangles3D instance) can be rotated and rendered in a brainview", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
     fsbrain::download_optional_data();

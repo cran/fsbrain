@@ -28,7 +28,7 @@
 #' @export
 #' @importFrom squash cmap makecmap jet
 #' @importFrom rgl tmesh3d rgl.open wire3d
-coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hemi, surface="white", colormap=NULL, clip=NULL, cortex_only=FALSE, makecmap_options=list('colFn'=squash::jet)) {
+coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hemi, surface="white", colormap=NULL, clip=NULL, cortex_only=FALSE, makecmap_options=mkco.seq()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
@@ -66,12 +66,13 @@ coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hem
     }
 
     mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
-    map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
-    col = squash::cmap(morph_data, map=map);
-    map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
-    col_sorted = squash::cmap(morph_data, map=map_sorted);
 
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "map"=map, "col_sorted"=col_sorted, "map_sorted"=map_sorted, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
+    morph_data_hl = hemilist.wrap(morph_data, hemi);
+    cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh, return_metadata = TRUE);
+    map = cmr$map;
+    col = cmr$collayer[[hemi]];
+
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "map"=map, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
 }
 
 
@@ -171,7 +172,7 @@ coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi,
 #' @export
 #' @importFrom squash cmap makecmap jet
 #' @importFrom rgl tmesh3d rgl.open wire3d
-coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm, surface="white", template_subject='fsaverage', template_subjects_dir=NULL, colormap=NULL, clip = NULL, cortex_only=FALSE, makecmap_options=list('colFn'=squash::jet)) {
+coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm, surface="white", template_subject='fsaverage', template_subjects_dir=NULL, colormap=NULL, clip = NULL, cortex_only=FALSE, makecmap_options=mkco.seq()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
@@ -189,7 +190,7 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
         if(is.numeric(measure)) {
             morph_data = measure;
         } else {
-            morph_data = subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm = fwhm, cortex_only = cortex_only);
+            morph_data = subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm = fwhm, cortex_only = cortex_only, template_subject = template_subject);
         }
     }
 
@@ -209,23 +210,21 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
     }
 
     if(nrow(surface_mesh$vertices) != length(morph_data)) {
-        warning(sprintf("Data mismatch: surface has %d vertices, but %d morphometry values passed in argument 'measure'.\n", nrow(surface_mesh$vertices), length(morph_data)));
+        warning(sprintf("Data mismatch: template surface has %d vertices, but %d morphometry values passed in argument 'measure'. Is the template subject '%s' correct?\n", nrow(surface_mesh$vertices), length(morph_data), template_subject));
     }
 
     mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
 
     if(is.null(morph_data)) {
-        col = 'white';
         map = NULL;
-        map_sorted = NULL;
-        col_sorted = NULL;
+        col = 'white';
     } else {
-        map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
-        col = squash::cmap(morph_data, map=map);
-        map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
-        col_sorted = squash::cmap(morph_data, map=map_sorted);
+        morph_data_hl = hemilist.wrap(morph_data, hemi);
+        cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh);
+        map = cmr$map;
+        col = cmr$collayer[[hemi]];
     }
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "col_sorted"=col_sorted, "map"=map, "map_sorted"=map_sorted, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "map"=map, "data_range"=range(morph_data, finite=TRUE), "makecmap_options"=makecmap_options)));
 }
 
 
@@ -242,10 +241,10 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
 #' @family coloredmesh functions
 #'
 #' @export
-#' @importFrom squash cmap makecmap jet
+#' @importFrom squash cmap makecmap
 #' @importFrom rgl tmesh3d rgl.open wire3d
 #' @importFrom utils modifyList
-coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data, hemi, surface="white", colormap=NULL, makecmap_options=list('colFn'=squash::jet)) {
+coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data, hemi, surface="white", colormap=NULL, makecmap_options=mkco.seq()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
@@ -266,18 +265,18 @@ coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data,
 
     mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
 
-    map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
-    col = squash::cmap(morph_data, map = map);
-    map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_data)), makecmap_options));
-    col_sorted = squash::cmap(morph_data, map=map_sorted);
+    morph_data_hl = hemilist.wrap(morph_data, hemi);
+    cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh);
+    map = cmr$map;
+    col = cmr$collayer[[hemi]];
 
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "col_sorted"=col_sorted, "map"=map, "map_sorted"=map_sorted, "data_range"=range(morph_data, finite=TRUE), "cmap_fun"=makecmap_options$colFn)));
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_data, "fs_mesh"=surface_mesh, "map"=map, "data_range"=range(morph_data, finite=TRUE), "cmap_fun"=makecmap_options$colFn)));
 }
 
 
 #' @title Generate coloredmesh from loaded data.
 #'
-#' @param fs_surface an fs.surface instance
+#' @param fs_surface an fs.surface instance or a character string, which will be interpreted as the path to a file and loaded with \code{freesurferformats::read.fs.surface}.
 #'
 #' @param morph_data numerical vector, per-vertex data (typically morphometry) for the mesh. If given, takes precedence over 'col' parameter.
 #'
@@ -290,18 +289,30 @@ coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data,
 #' @return as fs.coloredmesh instance
 #'
 #' @export
-coloredmesh.from.preloaded.data <- function(fs_surface, morph_data=NULL, col=NULL, hemi='lh', makecmap_options=mkco.seq()) {
-    if( ! freesurferformats::is.fs.surface(fs_surface)) {
-        stop("Parameter 'fs_surface' must be an fs.surface instance");
+`coloredmesh.from.preloaded.data` <- function(fs_surface, morph_data=NULL, col=NULL, hemi='lh', makecmap_options=mkco.seq()) {
+    if(!(hemi %in% c("lh", "rh"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
+
+    if( ! freesurferformats::is.fs.surface(fs_surface)) {
+        if(is.character(fs_surface)) {
+            fs_surface = freesurferformats::read.fs.surface(fs_surface);
+        } else {
+            stop("Parameter 'fs_surface' must be an fs.surface instance or filepath.");
+        }
+    }
+
     mesh = rgl::tmesh3d(c(t(fs_surface$vertices)), c(t(fs_surface$faces)), homogeneous=FALSE);
     if(! is.null(morph_data)) {
         if(! hasIn(makecmap_options, c('colFn'))) {
             makecmap_options$colFn = mkco.seq()$colFn;
         }
         data_range = range(morph_data, finite=TRUE);
-        map = do.call(squash::makecmap, utils::modifyList(list(morph_data), makecmap_options));
-        col = squash::cmap(morph_data, map = map);
+
+        morph_data_hl = hemilist.wrap(morph_data, hemi);
+        cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh);
+        map = cmr$map;
+        col = cmr$collayer[[hemi]];
     } else {
         map = NULL;
         data_range = NULL;
@@ -457,11 +468,13 @@ coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface=
     }
 
     mesh = rgl::tmesh3d(c(t(surface_data$vertices)), c(t(surface_data$faces)), homogeneous=FALSE);
-    map = do.call(squash::makecmap, utils::modifyList(list(morph_like_data), makecmap_options));
-    col = squash::cmap(morph_like_data, map = map);
-    map_sorted = do.call(squash::makecmap, utils::modifyList(list(sort(morph_like_data)), makecmap_options));
-    col_sorted = squash::cmap(morph_like_data, map=map_sorted);
-    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_like_data, "fs_mesh"=surface_data, "col_sorted"=col_sorted, "map"=map, "map_sorted"=map_sorted, "data_range"=range(morph_like_data, finite=TRUE), "makecmap_options"=makecmap_options)));
+
+    morph_data_hl = hemilist.wrap(morph_like_data, hemi);
+    cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh);
+    map = cmr$map;
+    col = cmr$collayer[[hemi]];
+
+    return(fs.coloredmesh(mesh, col, hemi, metadata=list("src_data"=morph_like_data, "fs_mesh"=surface_data, "map"=map, "data_range"=range(morph_like_data, finite=TRUE), "makecmap_options"=makecmap_options)));
 }
 
 
@@ -473,9 +486,9 @@ coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface=
 #'
 #' @export
 print.fs.coloredmesh <- function(x, ...) {
-    cat(sprintf("Brain coloredmesh with %d vertices and %d faces.\n", ncol(x$mesh$vb), ncol(x$mesh$it)));
+    cat(sprintf("Brain coloredmesh with %d vertices and %d faces.\n", ncol(x$mesh$vb), ncol(x$mesh$it)));             # nocov start
     cat(sprintf(" * Hemi is '%s', will be rendered: %s.\n", x$hemi, !x$render));
-    cat(sprintf(" * Contains %d color values, %d unique colors.\n", length(x$col), length(unique(x$col))));
+    cat(sprintf(" * Contains %d color values, %d unique colors.\n", length(x$col), length(unique(x$col))));           # nocov end
 }
 
 
@@ -533,16 +546,16 @@ fs.coloredmesh <- function(mesh, col, hemi, render=TRUE, metadata=NULL, add_norm
         }
     }
     if(! is.logical(render)) {
-        stop("Parameter 'render' must be of type logical.");
+        stop("Parameter 'render' must be of type logical.");      # nocov
     }
 
     if(is.null(metadata)) {
-        metadata=list();
+        metadata=list();        # nocov
     }
 
     md_entries = names(metadata);
     for (mde in md_entries) {
-        if(! mde %in% c("src_data", "fs_mesh", "data_range", "makecmap_options", "map", "map_sorted", "col_sorted", "cmap_fun")) {
+        if(! mde %in% c("src_data", "fs_mesh", "data_range", "makecmap_options", "map", "cmap_fun")) {
             warning(sprintf("Untypical metadata entry '%s' found in colormesh metadata.\n", mde));
         }
     }

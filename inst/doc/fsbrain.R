@@ -6,6 +6,17 @@
 #  subject_id = 'subject1';       # for function which use one subject only
 
 ## ---- eval = FALSE------------------------------------------------------------
+#  # Read from a simple ASCII subjects file (one subject per line, typically no header):
+#  sjl = read.md.subjects("~/data/study1/subjects.txt", header = FALSE);
+#  
+#  # Extract the subject identifiers from a FreeSurfer Group Descriptor file, used for the GLM:
+#  sjl = read.md.subjects.from.fsgd("~/data/study1/subjects.fsgd");
+#  
+#  # Use the subject identifier column from a demographics file, i.e., a CSV file containing demographics and other covariates (typically age, gender, site, IQ):
+#  demographics = read.md.demographics("~/data/study1/demogr.csv", header = TRUE);
+#  sjl = demographics$participant_id; # or whatever your subject identifier column is called.
+
+## ---- eval = FALSE------------------------------------------------------------
 #  groupdata_nat = group.morph.native(subjects_dir, subjects_list, "thickness", "lh");
 
 ## ---- eval = FALSE------------------------------------------------------------
@@ -25,9 +36,16 @@
 #  fulldata = group.morph.native(subjects_dir, subjects_list, "thickness", "lh");
 #  mean(fulldata$subject1);
 #  
-#  # This time, restrict data to the cerebral cortex:
+#  # This time, restrict data to the cerebral cortex (the medial wall vertices will get NA values):
 #  cortexdata = group.morph.native(subjects_dir, subjects_list, "thickness", "lh", cortex_only=TRUE);
 #  mean(cortexdata$subject1, na.rm=TRUE);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  write.group.morph.standard.sf('~/mystudy/group_thickness_lh_fwhm10.mgz', groupdata_std);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  #groupdata_std = group.morph.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm="10");  # slow
+#  groupdata_std = group.morph.standard.sf('~/mystudy/group_thickness_lh_fwhm10.mgz');                # fast
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  grouplabels = group.label(subjects_dir, subjects_list, "cortex.label", hemi='lh');
@@ -247,8 +265,7 @@
 #  vis.color.on.subject(subjects_dir, subject_id, cl$lh, cl$rh);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  library('rgl');
-#  r3dDefaults$windowRect=c(50, 50, 1200, 1200);
+#  fsbrain.set.default.figsize(1200, 1200);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  rgloptions = list('windowRect'=c(50, 50, 1200, 1200));
@@ -296,4 +313,20 @@
 #  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 #  coloredmeshes = vis.subject.morph.native(subjects_dir, 'subject1', 'thickness', 'lh', views=c('t4'), makecmap_options=list('colFn'=squash::jet));
 #  coloredmesh.plot.colorbar.separate(coloredmeshes, horizontal=TRUE);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  coloredmeshes = vis.subject.morph.standard(subjects_dir, 'subject1', 'sulc', rglactions=list('no_vis'=T));
+#  img = vis.export.from.coloredmeshes(coloredmeshes, colorbar_legend='Sulcal depth [mm]', output_img='~/fig1.png');
+
+## ---- eval = FALSE------------------------------------------------------------
+#  subjects_list = c('subject1', 'subject2', 'subject3');
+#  
+#  # Plot standard space thickness for 3 subjects:
+#  vis.group.morph.standard(subjects_dir, subjects_list, 'thickness', fwhm = "5", num_per_row = 3);
+#  
+#  # Plot thickness at 3 different smoothing levels for the same subject:
+#  vis.group.morph.standard(subjects_dir, 'subject1', 'thickness', fwhm = c("0", "10", "20"), num_per_row = 3);
+#  
+#  # Plot Desikan atlas parcellation for 3 subjects:
+#  vis.group.annot(subjects_dir, subjects_list, 'aparc', num_per_row = 3);
 

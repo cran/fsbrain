@@ -27,17 +27,30 @@ draw.colorbar <- function(coloredmeshes, horizontal=FALSE, ...) {
         return(invisible(NULL));
     }
 
-    combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+
     makecmap_options = coloredmeshes.get.md(coloredmeshes, 'makecmap_options');
+
+    if(hasIn(makecmap_options, 'range')) {
+        combined_data_range = makecmap_options$range;
+        makecmap_options$range = NULL;
+        if(length(combined_data_range) != 2) {
+            stop("In makecmap_options: 'range' must be a numerical vector of length 2 if given.");
+        }
+        force_range = TRUE;
+    } else {
+        combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+        force_range = FALSE;
+    }
 
     if(can.plot.colorbar(combined_data_range, makecmap_options)) {
         is_symmetric = ifelse(is.null(makecmap_options$symm), FALSE, makecmap_options$symm);
-        if(is_symmetric) {
+        if(is_symmetric & (!force_range)) {
             zlim = symmrange(combined_data_range)
         } else {
             zlim = combined_data_range;
         }
         num_col = ifelse(is.null(makecmap_options$n), 100L, makecmap_options$n);
+
         rgl::bgplot3d({op = graphics::par(mar = rep(0.1, 4)); plot.new(); fields::image.plot(add=T, legend.only = TRUE, zlim = zlim, col = makecmap_options$colFn(num_col), horizontal = horizontal, ...); graphics::par(op);});
     } else {
         warning("Requested to draw colorbar, but meshes do not contain the required metadata. Skipping.");
@@ -79,6 +92,8 @@ draw.colorbar <- function(coloredmeshes, horizontal=FALSE, ...) {
 #'
 #' @family colorbar functions
 #'
+#' @return named list, entries: 'output_img_path': character string, the path to the output file, or NULL.
+#'
 #' @importFrom fields image.plot
 #' @importFrom squash cmap makecmap
 #' @importFrom graphics plot.new
@@ -92,8 +107,19 @@ coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=FALSE, image.
         return(invisible(NULL));
     }
 
-    combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+
     makecmap_options = coloredmeshes.get.md(coloredmeshes, 'makecmap_options');
+    if(hasIn(makecmap_options, 'range')) {
+        combined_data_range = makecmap_options$range;
+        makecmap_options$range = NULL;
+        if(length(combined_data_range) != 2) {
+            stop("In makecmap_options: 'range' must be a numerical vector of length 2 if given.");
+        }
+        force_range = TRUE;
+    } else {
+        combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+        force_range = FALSE;
+    }
 
     if(! can.plot.colorbar(combined_data_range, makecmap_options)) {
         warning("Requested to draw a colorbar based on meshes, but they do not contain the required metadata, skipping.");
@@ -101,12 +127,13 @@ coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=FALSE, image.
     }
 
     is_symmetric = ifelse(is.null(makecmap_options$symm), FALSE, makecmap_options$symm);
-    if(is_symmetric) {
+    if(is_symmetric & !(force_range)) {
         zlim = symmrange(combined_data_range)
     } else {
         zlim = combined_data_range;
     }
-    num_col = ifelse(is.null(makecmap_options$n), 100L, makecmap_options$n);
+
+    num_col = ifelse(is.null(makecmap_options$n), 100L, makecmap_options$n);  # for small meshes with < 100 verts, the user will have to set n to <= num_verts
 
     image.plot_options_internal = list(legend.only=TRUE, zlim = zlim, col = makecmap_options$colFn(num_col), add=TRUE, graphics.reset=TRUE);
     image.plot_options = modifyList(image.plot_options_internal, image.plot_extra_options);
@@ -140,9 +167,11 @@ coloredmesh.plot.colorbar.separate <- function(coloredmeshes, show=FALSE, image.
                 }
             }
         }
+    } else {
+        png_options = list('filename'=NULL);
     }
 
-    return(invisible(NULL));
+    return(invisible(list('output_img_path'=png_options$filename)));
 }
 
 
@@ -248,7 +277,11 @@ vis.colortable.legend <- function(colortable, ncols=1L, plot_struct_index=TRUE) 
 
 #' @title Determine whether colorbar can be plotted with given metadata.
 #'
-#' @return logical
+#' @param combined_data_range numerical vector of length 2, the combined data range of the meshes as returned by \code{coloredmeshes.combined.data.range}
+#'
+#' @param makecmap_options the 'makecmap_options' from the metadata field of the 'coloredmeshes', see \code{coloredmeshes.get.md}
+#'
+#' @return logical, whether the metadata suffices to plot a colorbar
 #'
 #' @keywords internal
 can.plot.colorbar <- function(combined_data_range, makecmap_options) {
@@ -259,6 +292,20 @@ can.plot.colorbar <- function(combined_data_range, makecmap_options) {
         return(FALSE);
     }
     return(TRUE);
+}
+
+
+#' @title Determine whether colorbar can be plotted with given coloredmeshes.
+#'
+#' @param coloredmeshes hemilist of coloredmeshes
+#'
+#' @return logical, whether the metadata suffices to plot a colorbar
+#'
+#' @keywords internal
+can.plot.colorbar.from.coloredmeshes <- function(coloredmeshes) {
+    combined_data_range = coloredmeshes.combined.data.range(coloredmeshes);
+    makecmap_options = coloredmeshes.get.md(coloredmeshes, 'makecmap_options');
+    return(can.plot.colorbar(combined_data_range, makecmap_options));
 }
 
 

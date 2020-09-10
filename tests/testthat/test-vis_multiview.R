@@ -5,6 +5,7 @@
 # You may want to set a globale default for windowrect, e.g.: `library('rgl'); r3dDefaults$windowRect <- c(50,50, 800, 800);`
 
 test_that("We can visualize morphometry data in multiview.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
 
@@ -15,7 +16,7 @@ test_that("We can visualize morphometry data in multiview.", {
     measure = 'thickness';
     surface = 'white';
 
-    rgloptions=list("windowRect"=c(80,80,900,900));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+    rgloptions=list("windowRect"=c(80,80,800,800));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
     rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95));
     rglactionsmovie = list("snapshot_png"="~/fsbrain.png", "movie"="brain_rot");
 
@@ -37,8 +38,6 @@ test_that("We can visualize morphometry data in multiview.", {
         # open3d(); shade3d(cmesh$mesh, col=cmesh$col);
         # rgl.viewpoint(0, 0, fov=0, interactive=FALSE, zoom=.9);
 
-        #r3dDefaults$windowRect <- c(0,50, 1200, 1200)
-
         ax = 1;
         ay = 0;
         az = 0;
@@ -54,11 +53,13 @@ test_that("We can visualize morphometry data in multiview.", {
     }
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 
 })
 
 
 test_that("We can visualize p values or other arbitrary data, one value per atlas region.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     fsbrain::download_optional_data();
@@ -78,25 +79,27 @@ test_that("We can visualize p values or other arbitrary data, one value per atla
 
 
     if(dir.exists(file.path(subjects_dir, subject))) {
-        rgloptions=list("windowRect"=c(80,80,1000,1000));
+        rgloptions=list("windowRect"=c(80,80,800,800));
         rglactions = list("snapshot_png"="~/fsbrain_pvalues_fsavg.png");
         vis.region.values.on.subject(subjects_dir, subject, atlas, lh_region_value_list, rh_region_value_list, rgloptions=rgloptions, rglactions=rglactions);
     } else {
         message("Subject not found.");
     }
+    testthat::expect_equal(1L, 1L);
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize data on fsaverage if available", {
+    testthat::skip_on_cran(); # skip: leads to memory errors ('cannot allocate vector of size XX MB') on CRAN.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
-    skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
-    subjects_dir = testdatapath.subjectsdir.full.subject1();
+    fsbrain::download_fsaverage(accept_freesurfer_license = TRUE);
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 
-    #fsaverage_dir = file.path(Sys.getenv('FREESURFER_HOME'), 'subjects');
-    fsaverage_dir = find.subjectsdir.of("fsaverage")$found_at;
+    fsaverage_dir = subjects_dir;
 
-    rgloptions=list("windowRect"=c(50,50,1200,1200));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
-    rglactions = list("snapshot_png"="~/fsbrain_t4_fsavg.png");
+    rgloptions=list("windowRect"=c(50,50,800,800));
+    rglactions = list();
     makecmap_options = list('colFn'=grDevices::terrain.colors);
 
     if(dir.exists(fsaverage_dir)) {
@@ -104,11 +107,27 @@ test_that("We can visualize data on fsaverage if available", {
     } else {
         message("No fsaverage found.");
     }
+    testthat::expect_equal(1L, 1L);
+    close.all.rgl.windows();
+})
 
+
+test_that("We can visualize data on fsaverage3 if available", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    fsbrain::download_fsaverage3(accept_freesurfer_license = TRUE);
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+
+    makecmap_options = list('colFn'=grDevices::terrain.colors, 'n'=100);
+
+    vis.subject.morph.standard(subjects_dir, 'subject1', 'thickness', 'both', fwhm='0', template_subject='fsaverage3');
+    testthat::expect_equal(1L, 1L);
+    close.all.rgl.windows();
 })
 
 
 test_that("We can record a gif movie of a rotating brain.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(run.extralong.tests(), "This test takes ages.");
 
@@ -144,10 +163,13 @@ test_that("We can record a gif movie of a rotating brain.", {
         rglactions = list("movie"=sprintf("fsbrain_rot_%s_std_fwhm%s", measure, fwhm));
         vis.subject.morph.standard(subjects_dir, subject_id, measure, 'both', fwhm, views=c('sr'), rgloptions=rgloptions, rglactions=rglactions);
     }
+    testthat::expect_equal(1L, 1L);
+    close.all.rgl.windows();
 })
 
 
 test_that("A label can be visualized.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.has.x11display(), "This test requires X11.");
 
@@ -161,9 +183,11 @@ test_that("A label can be visualized.", {
     vis.subject.label(subjects_dir, subject_id, label, hemi);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 test_that("A region from an atlas can be converted to a label and visualized.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
@@ -197,10 +221,12 @@ test_that("A region from an atlas can be converted to a label and visualized.", 
     vis.mask.on.subject(subjects_dir, subject_id, lh_mask2, rh_mask2);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize label data or arbitrary sets of vertices.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
@@ -224,10 +250,12 @@ test_that("We can visualize label data or arbitrary sets of vertices.", {
     vis.labeldata.on.subject(subjects_dir, subject_id, lh_labeldata, rh_labeldata_neighborhood$vertices, views=c('si'), surface=surface);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
 test_that("We can combine an output view with a separate colormap.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(run.extralong.tests(), "This test requires the full test data and X11, and takes ages.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
@@ -317,6 +345,7 @@ test_that("We can combine an output view with a separate colormap.", {
 
 
 test_that("We can construct a tight layout image by merging several sd views.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11 and imagemagick.");
 
@@ -325,10 +354,37 @@ test_that("We can construct a tight layout image by merging several sd views.", 
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
 
     view_angles = get.view.angle.names(angle_set = "t9");
-    merged_img = "~/fsbrain_merged_brainviews.png";
-    rgloptions=list("windowRect"=c(80,80,1000,1000));     # the first 2 entries give the position on screen, the rest defines resolution as width, height in px
+    rgloptions=list("windowRect"=c(80,80,800,800));
 
     coloredmeshes = vis.subject.morph.native(subjects_dir, "subject1", "thickness", cortex_only=TRUE, rglactions=list("clip_data"=c(0.05, 0.95)), views=NULL);
-    vislayout.from.coloredmeshes(coloredmeshes, view_angles=view_angles);
+    vislayout.from.coloredmeshes(coloredmeshes, view_angles = view_angles);
+
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
+
+test_that("View angle names can be retrieved", {
+    expect_equal(get.view.angle.names("medial"), c("sd_medial_lh", "sd_medial_rh"));
+    expect_equal(get.view.angle.names("lateral"), c("sd_lateral_lh", "sd_lateral_rh"));
+    expect_equal(get.view.angle.names("lh"), c("sd_lateral_lh", "sd_medial_lh"));
+    expect_equal(get.view.angle.names("rh"), c("sd_lateral_rh", "sd_medial_rh"));
+    expect_equal(length(get.view.angle.names("all")), 8L);
+
+    # check for expected errors
+    expect_error(get.view.angle.names("no_such_set"));
+})
+
+
+test_that("We can shift hemis apart", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    fsbrain::download_optional_data();
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+
+    cm_lh = coloredmesh.from.morph.native(subjects_dir, 'subject1', 'thickness', hemi='lh');
+    cm_rh = coloredmesh.from.morph.native(subjects_dir, 'subject1', 'thickness', hemi='rh');
+    cm_hemilist = list('lh'=cm_lh, 'rh'=cm_rh);
+
+    cm_hl_shifted = shift.hemis.apart(cm_hemilist);
+    expect_true(is.hemilist(cm_hl_shifted));
+})

@@ -4,16 +4,27 @@
 #  vis.data.on.subject('~/data/', 'subject1_spm12', lh_gyrification, NULL, surface=lh_surf);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  library('rgl');
-#  r3dDefaults$windowRect=c(20, 20, 1800, 1200);
+#  fsbrain.set.default.figsize(1200, 1200);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  rglo = list('windowRect'=c(20, 20, 1800, 1200));
-#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rgloptions=rglo);
+#  rgloptions = list('windowRect'=c(20, 20, 1800, 1200));
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rgloptions=rgloptions);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  rgla = list('snapshot_png'='~/subject1_thickness.png');
 #  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rglactions=rgla);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  rgla = list('trans_fun'=clip.data);
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'curv', rglactions=rgla);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  rgla = list('trans_fun'=limit_fun(2,3));
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rglactions = rgla);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  makecmap_options = list('range'=c(0,6));
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options = makecmap_options);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  makecmap_options = list('colFn'=viridis::viridis);
@@ -46,6 +57,10 @@
 ## ---- eval = FALSE------------------------------------------------------------
 #  mkc = list('n'=200L);
 #  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=mkc);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  mkc = list('n'=200L, 'col.na'='orange');
+#  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', cortex_only = TRUE, makecmap_options=mkc);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  # To get coloredmeshes return value only, ignore the visualization:
@@ -88,4 +103,9 @@
 #  Warning messages:
 #  1: In rgl.init(initValue, onlyNULL) : RGL: unable to open X11 display
 #  2: 'rgl.init' failed, running with 'rgl.useNULL = TRUE'.
+
+## ---- eval = FALSE------------------------------------------------------------
+#  library("fsbrain")
+#  Error: package or namespace load failed for ‘fsbrain’ in get(method, envir = home):
+#  lazy-load database '/Users/youruser/Library/R/3.6/library/fsbrain/R/fsbrain.rdb' is corrupt
 

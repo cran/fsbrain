@@ -6,7 +6,7 @@
 #'
 #' @param vertex_label_names, string vector. The region names for the vertices, one string per vertex. The region names are typically loaded from an annotation file with the read.fs.annot function.
 #'
-#' @param agg_fun, function. An R function that aggregates data, typically max, mean, min or something similar. Note: this is NOT a string, put the function name without quotes. Defaults to mean.
+#' @param agg_fun, function. An R function that aggregates data, typically max, mean, min or something similar. Note: this is NOT a string, put the function name without quotes. Defaults to \code{base::mean}.
 #'
 #' @param requested_label_names, string vector. The label (or region) names that you want to occur in the output. If not specified, all region names which occur in the data are used. If given, and one of the requested names does NOT occur in the data, it will occur in the output with aggregation value NaN. If given, and one of the names from the data does NOT occur in the requested list, it will NOT occur in the output. So if you specify this, the output dataframe will contain a row for a region if and only if it is in the requested list.
 #'
@@ -25,7 +25,7 @@
 #' @family atlas functions
 #'
 #' @export
-subject.atlas.agg <- function(vertex_morph_data, vertex_label_names, agg_fun = mean, requested_label_names = c()) {
+subject.atlas.agg <- function(vertex_morph_data, vertex_label_names, agg_fun = base::mean, requested_label_names = c()) {
 
   if (length(vertex_morph_data) != length(vertex_label_names)) {
       stop(sprintf("Data mismatch: Received morphometry data for %d vertices, but %d labels. Counts must match.\n", length(vertex_morph_data), length(vertex_label_names)));
@@ -460,6 +460,8 @@ write.region.values <- function(subjects_dir, subject_id, hemi, atlas, region_va
 #'
 #' @param value_for_unlisted_regions, numeric scalar. The value to assign to vertices which are part of atlas regions that are not listed in region_value_list. Defaults to NaN.
 #'
+#' @inheritParams vis.region.values.on.subject
+#'
 #' @return numeric vector containing the data.
 #'
 #' @examples
@@ -474,7 +476,7 @@ write.region.values <- function(subjects_dir, subject_id, hemi, atlas, region_va
 #' @family atlas functions
 #'
 #' @export
-spread.values.over.hemi <- function(subjects_dir, subject_id, hemi, atlas, region_value_list, value_for_unlisted_regions=NA) {
+spread.values.over.hemi <- function(subjects_dir, subject_id, hemi, atlas, region_value_list, value_for_unlisted_regions=NA, silent = FALSE) {
   if(!(hemi %in% c("lh", "rh"))) {
     stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
   }
@@ -486,7 +488,9 @@ spread.values.over.hemi <- function(subjects_dir, subject_id, hemi, atlas, regio
     regions = annot$colortable$struct_names;
     if(length(region_value_list) == length(regions)) {
       names(region_value_list) = regions;
-      message(sprintf("Received unnamed list for hemi '%s'. That's totally fine, here is the assumed mapping for double-checking:\n%s\n", hemi, pp.named.list(region_value_list)));
+      if(! silent) {
+        message(sprintf("Received unnamed list for hemi '%s'. That's totally fine, here is the assumed mapping for double-checking:\n%s\n", hemi, pp.named.list(region_value_list)));
+      }
     } else {
       stop(sprintf("Received unnamed data of length %d, but atlas '%s' has %d regions for subject '%s' hemi '%s'. Pass a named list, or make sure the length of your data matches the number of atlas regions.\n", length(region_value_list), atlas, length(regions), subject_id, hemi));
     }
@@ -529,6 +533,8 @@ pp.named.list <- function(named_list) {
 #'
 #' @param value_for_unlisted_regions, numeric scalar. The value to assign to vertices which are part of atlas regions that are not listed in region_value_list. Defaults to NaN.
 #'
+#' @inheritParams vis.region.values.on.subject
+#'
 #' @return named list with entries 'lh' and 'rh'. Each value is a numeric vector containing the data for the respective hemisphere.
 #'
 #' @examples
@@ -545,16 +551,16 @@ pp.named.list <- function(named_list) {
 #' @family atlas functions
 #'
 #' @export
-spread.values.over.subject <- function(subjects_dir, subject_id, atlas, lh_region_value_list, rh_region_value_list, value_for_unlisted_regions=NaN) {
+spread.values.over.subject <- function(subjects_dir, subject_id, atlas, lh_region_value_list, rh_region_value_list, value_for_unlisted_regions=NaN, silent=FALSE) {
 
     return_list = list();
 
     if(!is.null(lh_region_value_list)) {
-        return_list$lh = spread.values.over.hemi(subjects_dir, subject_id, 'lh', atlas, lh_region_value_list, value_for_unlisted_regions=value_for_unlisted_regions);
+        return_list$lh = spread.values.over.hemi(subjects_dir, subject_id, 'lh', atlas, lh_region_value_list, value_for_unlisted_regions=value_for_unlisted_regions, silent=silent);
     }
 
     if(! is.null(rh_region_value_list)) {
-        return_list$rh = spread.values.over.hemi(subjects_dir, subject_id, 'rh', atlas, rh_region_value_list, value_for_unlisted_regions=value_for_unlisted_regions);
+        return_list$rh = spread.values.over.hemi(subjects_dir, subject_id, 'rh', atlas, rh_region_value_list, value_for_unlisted_regions=value_for_unlisted_regions, silent=silent);
     }
     return(return_list);
 }

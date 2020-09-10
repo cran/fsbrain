@@ -15,6 +15,7 @@ test_that("A mean curvature color layer can be loaded", {
     expect_equal(length(bgcol$rh), num_verts_subject1_rh);
 
     vis.color.on.subject(subjects_dir, subject_id, bgcol$lh, bgcol$rh, surface="inflated");
+    close.all.rgl.windows();
 })
 
 
@@ -94,5 +95,22 @@ test_that("An outline layer based on an annotation can be created", {
     expect_equal(length(unique(outline_layer$rh)), 35L);
 
     vis.color.on.subject(subjects_dir, 'subject1', outline_layer$lh, outline_layer$rh, surface = "inflated");
+    close.all.rgl.windows();
 })
 
+
+test_that("We can visualize meshes using vis.fs.surface as expected.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    fsbrain::download_optional_data();
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+
+    col_aparc = collayer.bg(subjects_dir, subject_id, "aparc");
+
+    skip_if_not(box.has.full.subject1(), message = "Full recon-all output for subject1 required");
+    subjects_dir = testdatapath.subjectsdir.full.subject1();
+    col_curv = collayer.bg(subjects_dir, subject_id, "curv");
+    col_curv_light = collayer.bg(subjects_dir, subject_id, "curv_light");
+    col_sulc = collayer.bg(subjects_dir, subject_id, "sulc");
+    col_sulc_light = collayer.bg(subjects_dir, subject_id, "sulc_light");
+})

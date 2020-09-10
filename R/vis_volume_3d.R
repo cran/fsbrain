@@ -60,7 +60,7 @@ volvis.voxels <- function(volume, render_every=1, voxelcol=NULL, ...) {
         }
 
         if(length(voxelcol) != num_foreground_voxels) {
-            stop(sprintf("Bug: Voxel color mismatch. Computed %d voxel colors for %d foreground voxels.\n", length(voxelcol), num_foreground_voxels));
+            stop(sprintf("Bug: Voxel color mismatch. Computed %d voxel colors for %d foreground voxels.\n", length(voxelcol), num_foreground_voxels)); # nocov
         }
 
         # Filter the colors by the voxels which will actually be rendered:
@@ -69,7 +69,7 @@ volvis.voxels <- function(volume, render_every=1, voxelcol=NULL, ...) {
         }
 
         if(length(voxelcol) != num_rendered_voxels) {
-            stop(sprintf("Bug: Voxel color mismatch. Computed %d voxel colors for %d rendered voxels.\n", length(voxelcol), num_rendered_voxels));
+            stop(sprintf("Bug: Voxel color mismatch. Computed %d voxel colors for %d rendered voxels.\n", length(voxelcol), num_rendered_voxels)); # nocov
         }
     }
 
@@ -349,6 +349,8 @@ apply.transform <- function(object, matrix_fun) {
 #'
 #' @param ... material properties, passed to \code{\link{triangles3d}}. Example: \code{color = "#0000ff", lit=FALSE}.
 #'
+#' @param do_show logical, whether to visualize the result in the current rgl scene
+#'
 #' @return list of `fs.coloredvoxels` instances, invisible. The function is called for the side effect of visualizing the data, and usually you can ignore the return value.
 #'
 #'
@@ -359,7 +361,7 @@ apply.transform <- function(object, matrix_fun) {
 #'    rglvoxels(centers, voxelcol="red");
 #' }
 #' @export
-rglvoxels <- function(centers, r=1.0, voxelcol=NULL, ...) {
+rglvoxels <- function(centers, r=1.0, voxelcol=NULL, do_show = TRUE, ...) {
     coloredvoxels = list();
     if(is.null(voxelcol)) {
         coloredvox = list("voxeltris"=cubes3D.tris(centers, edge_length = r), "color"="#000000");
@@ -379,7 +381,9 @@ rglvoxels <- function(centers, r=1.0, voxelcol=NULL, ...) {
             coloredvox = list("voxeltris"=cubes3D.tris(centers[voxel_indices_this_color,], edge_length = r), "color"=rgbcol);
             class(coloredvox) = c("fs.coloredvoxels", class(coloredvox));
             coloredvoxels = append(coloredvoxels, list(coloredvox));
-            rgl::triangles3d(coloredvox$voxeltris, color = coloredvox$color, ...);
+            if(do_show) {
+                rgl::triangles3d(coloredvox$voxeltris, color = coloredvox$color, ...);
+            }
         }
     }
     return(invisible(coloredvoxels));
@@ -390,7 +394,7 @@ rglvoxels <- function(centers, r=1.0, voxelcol=NULL, ...) {
 #'
 #' @param x any `R` object
 #'
-#' @return TRUE if its argument is a fs.coloredvoxels instance (that is, has "fs.coloredvoxels" amongst its classes) and FALSE otherwise.
+#' @return TRUE if its argument is a fs.coloredvoxels instance (that is, has "fs.coloredvoxels" among its classes) and FALSE otherwise.
 #'
 #' @export
 is.fs.coloredvoxels <- function(x) inherits(x, "fs.coloredvoxels")
@@ -405,7 +409,7 @@ is.fs.coloredvoxels <- function(x) inherits(x, "fs.coloredvoxels")
 #'
 #' @export
 print.fs.coloredvoxels <- function(x, ...) {
-    cat(sprintf("Brain coloredvoxels with %d triangles.\n", nrow(x$voxeltris)/3L));
+    cat(sprintf("Brain coloredvoxels with %d triangles.\n", nrow(x$voxeltris)/3L));     # nocov start
     if(is.null(x$color)) {
         cat(sprintf("No color information.\n"));
     } else {
@@ -414,7 +418,7 @@ print.fs.coloredvoxels <- function(x, ...) {
         } else {
             cat(sprintf("Voxel color with %d entries.\n", length(x$color)));
         }
-    }
+    }                                                                                   # nocov end
 }
 
 

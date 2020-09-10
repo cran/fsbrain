@@ -16,37 +16,6 @@ fup <- function(word) {
 }
 
 
-#' @title Clip data at quantiles to remove outliers.
-#'
-#' @description Set all data values outside the given quantile range to the border values. This is usefull to properly visualize morphometry data that includes outliers. These outliers negatively affect the colormap, as all the non-outlier values become hard to distinguish. This function can be used to filter the data before plotting it.
-#'
-#' @param data, numeric vector. The input data. Can also be a hemi list.
-#'
-#' @param lower, numeric. The probability for the lower quantile, defaults to `0.05`.
-#'
-#' @param upper, numeric. The probability for the upper quantile, defaults to `0.95`.
-#'
-#' @return numeric vector. The output data.
-#'
-#' @examples
-#'    full_data = rnorm(50, 3, 1);
-#'    clipped = clip.data(full_data);
-#'
-#' @importFrom stats quantile
-#' @export
-clip.data <- function(data, lower=0.05, upper=0.95){
-
-    if(is.hemilist(data)) { # treat as a hemi list
-      return(lapply(data, clip.data, lower, upper));
-    } else {
-      quantiles = stats::quantile(data, c(lower, upper), na.rm = TRUE, names = FALSE);
-      data[ data < quantiles[1] ] = quantiles[1];
-      data[ data > quantiles[2] ] = quantiles[2];
-    }
-    return(data);
-}
-
-
 #' @title Compute neighborhood of a vertex
 #'
 #' @description Given a set of query vertex indices and a mesh *m*, compute all vertices which are adjacent to the query vertices in the mesh. A vertex *u* is *adjacent* to another vertex *v* iff there exists an edge *e = (u, v)* in *m*. While you could call this function repeatedly with the old output as its new input to extend the neighborhood, you should maybe use a proper graph library for this.
@@ -131,6 +100,9 @@ mesh.vertex.included.faces <- function(surface_mesh, source_vertices) {
 #' @note Sorry for the computational time, the mesh datastructure is not ideal for neighborhood search.
 #'
 #' @export
+# @importFrom foreach foreach
+# @importFrom parallel detectCores
+# @importFrom doParallel registerDoParallel
 annot.outline <- function(annotdata, surface_mesh, background="white", silent=TRUE, expand_inwards=0L, outline_color=NULL, limit_to_regions=NULL) {
 
     if(! freesurferformats::is.fs.annot(annotdata)) {
@@ -145,6 +117,8 @@ annot.outline <- function(annotdata, surface_mesh, background="white", silent=TR
         stop(sprintf("Annotation is for %d vertices but mesh contains %d, vertex counts must match.\n", length(annotdata$vertices), nrow(surface_mesh$vertices)));
     }
     col = rep(background, length(annotdata$vertices));
+    #doParallel::registerDoParallel(parallel::detectCores());
+    #foreach::foreach(region_idx = seq_len(annotdata$colortable$num_entries)) %dopar% {
     for(region_idx in seq_len(annotdata$colortable$num_entries)) {
         region_name = annotdata$colortable$struct_names[[region_idx]];
 
@@ -374,145 +348,13 @@ read.colorcsv <- function(filepath) {
 }
 
 
-#' @title Wrap data into a named hemi list.
-#'
-#' @param data something to wrap, typically some data for a hemisphere, e.g., a vector of morphometry data values. If NULL, the name will not be created.
-#'
-#' @param hemi character string, one of 'lh' or 'rh'. The name to use for the data in the returned list.
-#'
-#' @param hemilist optional hemilist, an existing hemilist to add the entry to. If left at the default value `NULL`, a new list will be created.
-#'
-#' @return named list, with the 'data' in the name given by parameter 'hemi'
-#'
-#' @export
-hemilist.wrap <- function(data, hemi, hemilist=NULL) {
-  if(!(hemi %in% c("lh", "rh"))) {
-    stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
-  }
-  if(is.null(hemilist)) {
-    ret_list = list();
-  } else {
-    ret_list = hemilist;
-  }
-  if(!is.null(data)) {
-    ret_list[[hemi]] = data;
-  }
-  return(ret_list);
-}
-
-
-#' @title Derive 'hemi' string from the data in a hemilist
-#'
-#' @param hemilist hemilist, an existing hemilist
-#'
-#' @return character string, one of 'lh', 'rh' or 'both'
-#'
-#' @export
-hemilist.derive.hemi <- function(hemilist) {
-  if(!is.hemilist(hemilist)) {
-    stop("Parameter 'hemilist' must be a hemilist.");
-  }
-  if(is.null(hemilist$lh) | is.null(hemilist$rh)) {
-    if(is.null(hemilist$lh)) {
-      return('rh');
-    } else {
-      return('lh');
-    }
-  } else {
-    return('both');
-  }
-}
-
-
-
-#' @title Unwrap hemi data from a named hemi list.
-#'
-#' @param hemi_list named list, can have entries 'lh' and/or 'rh'
-#'
-#' @param hemi character string, the hemi data name to retrieve from the list. Can be NULL if the list only has a single entry.
-#'
-#' @param allow_null_list logical, whether to silently return NULL instead of raising an error if 'hemi_list' is NULL
-#'
-#' @return the data
-#'
-#' @export
-hemilist.unwrap <- function(hemi_list, hemi=NULL, allow_null_list=FALSE) {
-  if(is.null(hemi_list)) {
-    if(allow_null_list) {
-      return(NULL);
-    } else {
-      stop("Parameter 'hemi_list' must not be NULL unless 'allow_null_list' is TRUE.");
-    }
-  }
-  if(! is.list(hemi_list)) {
-    stop("Parameter 'hemi_list' must be a named list.");
-  }
-  if(length(hemi_list) < 1L) {
-    stop("Parameter 'hemi_list' must not be empty.");
-  }
-  if(is.null(hemi)) {
-    if(length(hemi_list) != 1L) {
-      stop("Parameter 'hemi' can only be NULL if 'hemi_list' has exactly length 1.");
-    }
-    if("lh" %in% names(hemi_list)) {
-      return(hemi_list$lh);
-    } else if("rh" %in% names(hemi_list)) {
-      return(hemi_list$rh);
-    } else {
-      stop("The entry in the 'hemi_list' must be named 'lh' or 'rh'.");
-    }
-  } else {
-    if(!(hemi %in% c("lh", "rh"))) {
-      stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh', or NULL but is '%s'.\n", hemi));
-    }
-    return(hemi_list[[hemi]]);
-  }
-}
-
-
-#' @title Get combined data of hemi list
-#'
-#' @param hemi_list named list, can have entries 'lh' and/or 'rh'
-#'
-#' @return the data combined with \code{\link{c}}, or NULL if both entries are NULL.
-#'
-#' @export
-hemilist.get.combined.data <- function(hemi_list) {
-  lh_data = hemilist.unwrap(hemi_list, 'lh');
-  rh_data = hemilist.unwrap(hemi_list, 'rh');
-  if(is.null(lh_data) | is.null(rh_data)) {
-    if(is.null(lh_data) & is.null(rh_data)) {
-      return(NULL);
-    } else {
-      return(hemilist.unwrap(hemi_list));
-    }
-  } else {
-    return(c(lh_data, rh_data));
-  }
-}
-
-
-#' @title Check whether x is a hemilist
-#'
-#' @description A hemilist is a named list with entries 'lh' and/or 'rh'.
-#'
-#' @param x any R object
-#'
-#' @return whether 'x' is a hemilist
-#'
-#' @export
-is.hemilist <- function(x) {
-  return(is.list(x) & ("lh" %in% names(x) | "rh" %in% names(x)));
-}
-
-
 #' @title Create final `makecmap_options` list
 #'
 #' @description Create final makecmap_options to pass to \code{\link{makecmap}} from existing `makecmap_options` and a colormap function. Used in the vis functions, like \code{\link[fsbrain]{vis.subject.morph.native}}, see the note.
 #'
-#' @param makecmap_options list of `makecmap_options` or `NULL`
+#' @param makecmap_options list of `makecmap_options` or `NULL`. Must contain at least the 'colFn' entry pointing to a colormap function.
 #'
-#' @param colormap a colormap function or `NULL`
+#' @param colormap a colormap function or `NULL`. Will trigger a warning if not `NULL`.
 #'
 #' @param default_colormap the colormap function to use in case none is found in the other parameters
 #'
@@ -525,6 +367,10 @@ is.hemilist <- function(x) {
 makecmakeopts.merge <- function(makecmap_options, colormap, default_colormap=squash::jet) {
   if(is.null(makecmap_options)) {
     makecmap_options = list();
+  }
+
+  if(!is.null(colormap)) {
+    warning("The parameter 'colormap' is deprecated for all vis function and will be removed from fsbrain in the next release, please use 'makecmap_options$colFn' instead.");
   }
 
   if(is.null(makecmap_options$colFn)) {
@@ -620,6 +466,8 @@ hasIn <- function(named_list, listkeys) {
 #'
 #' @return named list with the following entries: "found": logical, whether it was found. "found_at": Only set if found=TRUE, the path to the fsaverage directory (NOT including the fsaverage dir itself). "found_all_locations": list of all locations in which it was found. See 'mustWork' for important information.
 #'
+#' @seealso \code{\link{fsaverage.path}}
+#'
 #' @export
 find.subjectsdir.of <- function(subject_id='fsaverage', mustWork=FALSE) {
   ret = list();
@@ -634,8 +482,9 @@ find.subjectsdir.of <- function(subject_id='fsaverage', mustWork=FALSE) {
   }
 
 
-  fs_home=Sys.getenv("FREESURFER_HOME");
-  if(nchar(fs_home) > 0) {
+  fs_home_search_res = find.freesurferhome();
+  if(fs_home_search_res$found) {
+    fs_home = fs_home_search_res$found_at;
     guessed_path = file.path(fs_home, "subjects", subject_id);
     if(dir.exists(guessed_path)) {
       ret$found = TRUE;
@@ -700,6 +549,8 @@ fs.home <- function() {
 #'
 #' @return named list with the following entries: "found": logical, whether it was found. "found_at": Only set if found=TRUE, the path to the FreeSurfer installation directory (including the directory itself). See 'mustWork' for important information.
 #'
+#' @seealso \code{\link{fs.home}}
+#'
 #' @export
 find.freesurferhome <- function(mustWork=FALSE) {
   ret = list();
@@ -751,18 +602,49 @@ find.freesurferhome <- function(mustWork=FALSE) {
 }
 
 
-#' @title Get rgl_options for testing.
+#' @title Get rgloptions for testing.
 #'
-#' @description This function defines the figure size that is used during the unit tests.
+#' @description This function defines the figure size that is used during the unit tests. Currently \code{list('windowRect' = c(50, 50, 800, 800)}.
 #'
-#' @return named list, usable as 'rgl_options' parameter for vis functions like \code{\link[fsbrain]{vis.subject.morph.native}}.
-#'
-#' @note This function is public so one can copy and paste unit test code into the R console, but you should not consider it part of the official functions and use it in your client code.
+#' @return named list, usable as 'rgloptions' parameter for vis functions like \code{\link[fsbrain]{vis.subject.morph.native}}.
 #'
 #' @export
 rglot <- function() {
     return(list('windowRect' = c(50, 50, 800, 800)));
 }
+
+
+#' @title Get rgloptions and consider global options.
+#'
+#' @description This function retrieves the global rgloptions defined in \code{getOption('fsbrain.rgloptions')}, or, if this is not set, returns the value from \code{\link{rglot}}.
+#'
+#' @return named list, usable as 'rgloptions' parameter for vis functions like \code{\link[fsbrain]{vis.subject.morph.native}}.
+#'
+#' @note You can set the default size for all fsbrain figures to 1200x1200 pixels like this: \code{options("fsbrain.rgloptions"=list("windowRect"=c(50,50,1200,1200)))}.
+#'
+#' @export
+rglo <- function() {
+  return(getOption('fsbrain.rgloptions', default=rglot()));
+}
+
+
+#' @title Set default figure size for fsbrain visualization functions.
+#'
+#' @param width integer, default figure width in pixels
+#'
+#' @param height integer, default figure height in pixels
+#'
+#' @param xstart integer, default horizontal position of plot window on screen, left border is 0. The max value (right border) depends on your screen resolution.
+#'
+#' @param ystart integer, default vertical position of plot window on screen, upper border is 0. The max value (lower border) depends on your screen resolution.
+#'
+#' @note This function overwrites \code{options("fsbrain.rgloptions")}. Output size is limited by your screen resolution. To set your preferred figure size for future R sessions, you could call this function in your \code{'~/.Rprofile'} file.
+#'
+#' @export
+fsbrain.set.default.figsize <- function(width, height, xstart=50L, ystart=50L) {
+    options("fsbrain.rgloptions"=list("windowRect"=c(xstart, ystart, width, height)));
+}
+
 
 
 #' @title Split morph data vector at hemisphere boundary.
@@ -773,22 +655,46 @@ rglot <- function() {
 #'
 #' @param surface the surface to load to determine the vertex counts
 #'
+#' @param expand logical, whether to allow input of length 1, and expand (repeat) it to the length of the hemispheres.
+#'
 #' @inheritParams subject.morph.native
 #'
 #' @note Instead of calling this function to split the data, you could use the 'split_by_hemi' parameter of \code{\link[fsbrain]{subject.morph.native}}.
 #'
 #' @return a hemilist, each entry contains the data part of the respective hemi.
 #' @export
-vdata.split.by.hemi <- function(subjects_dir, subject_id, vdata, surface='white') {
-  lh_surf = subject.surface(subjects_dir, subject_id, surface=surface, hemi='lh');
-  rh_surf = subject.surface(subjects_dir, subject_id, surface=surface, hemi='rh');
-  num_verts_lh = nrow(lh_surf$vertices);
-  num_verts_rh = nrow(rh_surf$vertices);
-  if(length(vdata) != num_verts_lh+num_verts_rh) {
-    if(length(vdata) == (163842*2L)) {
+vdata.split.by.hemi <- function(subjects_dir, subject_id, vdata, surface='white', expand=TRUE) {
+  nv = subject.num.verts(subjects_dir, subject_id, surface=surface);
+  nv_sum = nv$lh + nv$rh;
+  if(length(vdata) == 1L && expand) {
+    vdata = rep(vdata, nv_sum);
+  }
+  if(length(vdata) != nv_sum) {
+    if(length(vdata) == (163842L*2L)) {
       warning("Hint: The length of 'vdata' matches the number of vertices in the fsaverage template. Wrong 'subject_id' parameter with standard space data?");
     }
-    stop(sprintf("Cannot split data: surfaces contain a total of %d vertices (lh=%d, rh=%d), but vdata has length %d. Lengths must match.\n", (num_verts_lh+num_verts_rh), num_verts_lh, num_verts_rh, length(vdata)));
+    stop(sprintf("Cannot split data: surfaces contain a total of %d vertices (lh=%d, rh=%d), but vdata has length %d. Lengths must match.\n", (nv$lh + nv$rh), nv$lh, nv$rh, length(vdata)));
   }
-  return(list('lh'=vdata[1:num_verts_lh], 'rh'=vdata[(num_verts_lh+1L):(num_verts_lh+num_verts_rh)]));
+  return(list('lh'=vdata[1L:nv$lh], 'rh'=vdata[(nv$lh+1L):(nv$lh + nv$rh)]));
+}
+
+
+#' @title Generate test 3D volume of integers. The volume has an outer background area (intensity value 'bg') and an inner foreground areas (intensity value 200L).
+#'
+#' @param vdim integer vector of length 3, the dimensions
+#'
+#' @param bg value to use for outer background voxels. Typically `0L` or `NA`.
+#'
+#' @note This function exists for software testing purposes only, you should not use it in client code.
+#'
+#' @return a 3d array of integers
+#' @export
+gen.test.volume <- function(vdim=c(256L, 256L, 256L), bg = NA) {
+  data3d = rep(bg, prod(vdim));
+  v3d = array(data = data3d, dim = vdim);
+  vcenter = vdim %/% 2;
+  vcore_start = vcenter %/% 2;
+  vcore_end = vdim - vcore_start;
+  v3d[vcore_start[1]:vcore_end[1],vcore_start[2]:vcore_end[2],vcore_start[3]:vcore_end[3]] = 200L;
+  return(v3d);
 }

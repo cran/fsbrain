@@ -50,17 +50,14 @@ You should be able to load data from a number of different neuroimaging software
 To increase the output resolution, you need to increase the size of the *rgl* rendering device. To do this globally, before you call any *fsbrain* rendering function:
 
 ```{r, eval = FALSE}
-library('rgl');
-r3dDefaults$windowRect=c(20, 20, 1800, 1200);
+fsbrain.set.default.figsize(1200, 1200);
 ```
-
-This instructs *rgl* to create new rendering devices at screen position 20, 20 (close to the upper left corner) with a size of 1800x1200 pixels.
 
 Alternatively, you can control the size when calling an *fsbrain* visualization function by passing the same information in the optional `rgloptions` parameter, like this:
 
 ```{r, eval = FALSE}
-rglo = list('windowRect'=c(20, 20, 1800, 1200));
-vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rgloptions=rglo);
+rgloptions = list('windowRect'=c(20, 20, 1800, 1200));
+vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rgloptions=rgloptions);
 ```
 
 ###  How can I save high quality figures to PNG images?
@@ -75,6 +72,41 @@ vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rglactions
 ```
 
 This opens the plot in a window as usual and also saves it in PNG format to the file *subject1_thickness.png* in your home directory.
+
+
+### When visualizing data with outliers and long tails, the colors are not helpful. What to do?
+
+If you have data with very few but extreme outliers, almost all of your plot will have a single color. This happens for example when plotting curvature data. You can of course first load the data using `subject.morph.native`, adjust it (transform it, remove outliers), and then plot it using `vis.data.on.subject`.
+
+In many cases, it is easier to use `rglactions` to clip the data to the 5th to 95th percentile, which can be done with an rglaction. E.g.:
+
+```{r, eval = FALSE}
+rgla = list('trans_fun'=clip.data);
+vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'curv', rglactions=rgla);
+```
+
+
+### Can I limit the data range, including the min and max values displayed on the color bar?
+
+Yes, this can be achieved in different ways:
+
+Option 1: Use `rglactions` in combination with `limit_fun`:
+
+```{r, eval = FALSE}
+rgla = list('trans_fun'=limit_fun(2,3));
+vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', rglactions = rgla);
+```
+
+This will limit your data to the range 2 to 3.
+
+If you want the data values outside the given range to be plotted as background (in the color for `NA` values), use `limit_fun_na` instead of `limit_fun`.
+
+Option 2: If you want more flexibility, e.g., you also need support for a larger data range than the real data range of your subject, e.g., when plotting group data to ensure that all subjects use the same colors for identical values, you should use the 'range' entry in 'makecmap_options' instead:
+
+```{r, eval = FALSE}
+makecmap_options = list('range'=c(0,6));
+vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options = makecmap_options);
+```
 
 
 ### How can I change the colormap for the plots?
@@ -106,7 +138,7 @@ vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_o
 
 ### What are the best colormaps for my data?
 
-Chosing a colormap can be a surprisingly complex question and there are many publications which discuss this topic. You may want to consider what kind of data you have and what property you want to highlight, how many colors you need, whether you want colorblind-friendly colors, how they look when printed in grayscale, whether they look pleasing to you, and maybe many more dimensions.
+Choosing a colormap can be a surprisingly complex question and there are many publications which discuss this topic. You may want to consider what kind of data you have and what property you want to highlight, how many colors you need, whether you want colorblind-friendly colors, how they look when printed in gray-scale, whether they look pleasing to you, and maybe many more dimensions.
 
 The most important thing is to decide is whether you need a sequential, qualitative, or diverging palette for your data.
 
@@ -160,6 +192,17 @@ vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_o
 
 This also means that more colors are used in the rendered image, but the effect will be less noticable.
 
+### Can I set a custom color for NA values in the plot, like the masked medial wall?
+
+By default, NA values are rendered in white. You can change this using col.na in makecmap_options:
+
+```{r, eval = FALSE}
+mkc = list('n'=200L, 'col.na'='orange');
+vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', cortex_only = TRUE, makecmap_options=mkc);
+```
+
+This is also useful when plotting clusters, just set all values which are not part of any cluster to NA.
+
 ### Can I get a color legend when plotting atlas regions from an annotation? I want to know the region names for the colors.
 
 Yes, see the answer to the next question for details.
@@ -184,7 +227,7 @@ vislayout.from.coloredmeshes(cm);
 
 Note that your output resolution settings (see question above) now count for each of the single images. This means that you will get quite high resolution output in combination with the tight layout. This makes the function ideal for producing plots for publications.
 
-You can adjust various settings, e.g., change the rendering stlyle, select different views, and save it to a custom file name in your home directory:
+You can adjust various settings, e.g., change the rendering style, select different views, and save it to a custom file name in your home directory:
 
 ```{r, eval = FALSE}
 output_brain_img = "fsbrain_arranged.png";
@@ -200,7 +243,9 @@ coloredmesh.plot.colorbar.separate(cm, image.plot_extra_options = list('horizont
 combine.colorbar.with.brainview.image(output_brain_img, output_cbar_img, output_final_img);
 ```
 
-You may have to play a bit with the resolution settings of your brain images and the colorbar to get this right (the background cropping makes it hard to compute the exact values in advance). 
+You may have to play a bit with the resolution settings of your brain images and the colorbar to get this right (the background cropping makes it hard to compute the exact values in advance).
+
+You should also have a look at the new `vis.export.from.coloredmeshes` function.
 
 ### When visualizing data on the inflated surface, the left and right hemisphere overlap and look garbled. How to fix that?
 
@@ -278,5 +323,23 @@ Warning messages:
 ```
 
 This happens if you do not have X11, or no window can be opened. Possible reasons include that you are running R on a remote host using an SSH connection without X11 forwarding, or that you do not have XQuartz installed under MacOS.
+
+
+### I am trying to plot a very large image with fsbrain, but the output is not as large as expected. Why?
+
+The output dimensions are limited by your screen resolution.
+
+
+### What to do about the error 'lazy-load database is corrupt' when loading fsbrain?
+
+If you install the development version from github and try to load it without restarting R, you ma^y get this error:
+
+```{r, eval = FALSE}
+library("fsbrain")
+Error: package or namespace load failed for ‘fsbrain’ in get(method, envir = home):
+lazy-load database '/Users/youruser/Library/R/3.6/library/fsbrain/R/fsbrain.rdb' is corrupt
+```
+
+To fix this, simply restart R.
 
 

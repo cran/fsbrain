@@ -33,7 +33,7 @@
 #'
 #' @importFrom rgl open3d bg3d wire3d par3d
 #' @export
-vis.coloredmeshes <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", rgloptions=list(), rglactions=list(), draw_colorbar=FALSE) {
+vis.coloredmeshes <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", rgloptions = rglo(), rglactions=list(), draw_colorbar=FALSE) {
 
     if(!is.list(coloredmeshes)) {
         stop("Parameter coloredmeshes must be a list.");
@@ -125,7 +125,7 @@ is.Triangles3D <- function(x) inherits(x, "Triangles3D")
 #'
 #' @description Renders instances of `coloredmesh`, `coloredvoxels` and `Triangles3D`.
 #'
-#' @param cmesh an instance of one of the supported classes
+#' @param cmesh an instance of one of the supported renderable classes
 #'
 #' @param skip_all_na logical, whether to skip rendering hidden instances
 #'
@@ -143,6 +143,9 @@ vis.renderable <- function(cmesh, skip_all_na=TRUE, style="default") {
         }
     } else if (is.fs.coloredvoxels(cmesh)) {
         style_params = get.rglstyle.parameters(cmesh, style);
+        if(hasIn(cmesh, 'color')) {
+            style_params = modifyList(style_params, list("color"=cmesh$color));
+        }
         do.call(rgl::triangles3d, c(list(cmesh$voxeltris), style_params));
     } else if(is.Triangles3D(cmesh)) {
         if (requireNamespace("misc3d", quietly = TRUE)) {
@@ -150,10 +153,10 @@ vis.renderable <- function(cmesh, skip_all_na=TRUE, style="default") {
             style_params = modifyList(style_params, list("add"=TRUE)); # Add image to existing scene, otherwise only the last one will be visible.
             do.call(misc3d::drawScene.rgl, c(list(cmesh), style_params));
         } else {
-            warning("The 'misc3d' package must be installed to render 'Triangles3D' instances. Skipping visualization.");
+            warning("The 'misc3d' package must be installed to render 'Triangles3D' instances. Skipping visualization."); # nocov
         }
     } else {
-        stop(sprintf("Received object with classes '%s', cannot render this. Pass an 'fs.coloredmesh', 'fs.coloredvoxels', or 'Triangles3D' instance.\n", paste(class(cmesh), collapse=" ")));
+        stop(sprintf("Received object with classes '%s', cannot render this. Pass an 'fs.coloredmesh', 'fs.coloredvoxels', or 'Triangles3D' instance.\n", paste(class(cmesh), collapse=" ")));  # nocov
     }
 }
 
@@ -184,9 +187,9 @@ vis.renderable <- function(cmesh, skip_all_na=TRUE, style="default") {
 #'
 #' @return the list of visualized coloredmeshes
 #'
-#' @keywords internal
+#' @export
 #' @importFrom rgl open3d bg3d wire3d play3d spin3d
-vis.coloredmeshes.rotating <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", x=0, y=0, z=1, rpm=6, duration=10, rgloptions=list(), rglactions = list()) {
+vis.coloredmeshes.rotating <- function(coloredmeshes, background="white", skip_all_na=TRUE, style="default", x=0, y=0, z=1, rpm=6, duration=10, rgloptions = rglo(), rglactions = list()) {
 
     if(!is.list(coloredmeshes)) {
         stop("Parameter coloredmeshes must be a list.");
@@ -211,7 +214,7 @@ vis.coloredmeshes.rotating <- function(coloredmeshes, background="white", skip_a
             rgl::play3d(rgl::spin3d(axis = c(x, y, z), rpm = rpm), duration = duration);
         }
     } else {
-        warning("Cannot show rotating scene with NULL device.");
+        warning("Cannot show rotating scene with NULL device.");    # nocov
     }
 
     perform.rglactions(rglactions);
@@ -239,7 +242,7 @@ vis.coloredmeshes.rotating <- function(coloredmeshes, background="white", skip_a
 #' @keywords internal
 vis.rotated.coloredmeshes <- function(renderables, rotation_angle, x, y, z, style="default", draw_colorbar=FALSE) {
     if(is.null(renderables)) {
-        return;
+        return(invisible(NULL));
     }
     for (mesh_idx in seq_len(length(renderables))) {     # usually this will only run once for the single mesh of a hemisphere.
         orig_renderable = renderables[[mesh_idx]];
@@ -272,6 +275,7 @@ vis.rotated.coloredmeshes <- function(renderables, rotation_angle, x, y, z, styl
     if(draw_colorbar) {
         draw.colorbar(renderables);
     }
+    return(invisible(NULL));
 }
 
 
@@ -302,23 +306,24 @@ vis.coloredmesh <- function(cmesh, style="default") {
 #'
 #' @param renderable A renderable (or any list) which includes a 'style' key. If it does not include such a key, the 'default' style will be used.
 #'
-#' @param style A style definition. Can be a character string like 'shiny' or 'from_mesh', or already a named lsit of material properties (which will be returned as-is).
+#' @param style A style definition. Can be a character string like 'shiny' or 'from_mesh', or already a named list of material properties (which will be returned as-is).
 #'
 #' @return a style, resolved to a parameter list compatible with \code{\link{material3d}}.
 #'
 #' @keywords internal
 get.rglstyle.parameters <- function(renderable, style) {
-    if(style == 'from_mesh') {
-        if(!is.null(renderable$style)) {
-            style = renderable$style;
-        } else {
-            style = 'default';
-        }
-    }
     if(is.list(style)) {
         style_params = style;
     } else if (is.character(style)) {
-        style_params = get.rglstyle(style);
+        if(style == 'from_mesh') {
+            if(!is.null(renderable$style)) {
+                style = renderable$style;
+            } else {
+                style = 'default';
+            }
+        } else {
+            style_params = get.rglstyle(style);
+        }
     } else {
         stop("Parameter 'style' must be a named list of style parameters or a string specifying an available style by name (e.g., 'default' or 'shiny').");
     }
@@ -330,22 +335,24 @@ get.rglstyle.parameters <- function(renderable, style) {
 #'
 #' @description Run \code{\link{material3d}} without arguments to see valid style keywords to create new styles.
 #'
-#' @param style string. A style name. Available styles are one of: "default", "shiny", "semitransparent".
+#' @param style string. A style name. Available styles are one of: "default", "shiny", "semitransparent", "edges".
 #'
 #' @return a style, resolved to a parameter list compatible with \code{\link{material3d}}.
 #'
 #' @seealso \code{\link{shade3d}} can use the returned style
 #'
-#' @keywords internal
+#' @export
 get.rglstyle <- function(style) {
     if(style == "default") {
         return(get.rglstyle.default());
     } else if (style == "shiny") {
         return(get.rglstyle.shiny());
+    } else if (style == "edges") {
+        return(get.rglstyle.edges());
     } else if (style == "semitransparent") {
         return(get.rglstyle.semitransparent());
     } else {
-        stop(sprintf("No such rendering style: '%s'. Try something like 'default', 'shiny', or 'semitransparent'.\n", style));
+        stop(sprintf("No such rendering style: '%s'. Try something like 'default', 'shiny', 'edges' or 'semitransparent'.\n", style));
     }
 }
 
@@ -372,6 +379,19 @@ get.rglstyle.default <- function() {
 get.rglstyle.semitransparent <- function() {
     return(list("shininess"=50, specular="black", alpha=0.5, front="filled", back="lines"));
 }
+
+
+#' @title Get the mesh edges visualization style parameters as a named list.
+#'
+#' @description Mesh edges rendering style.
+#'
+#' @return named list, style parameters that can be passed to \code{\link{shade3d}} via \code{\link{do.call}}.
+#'
+#' @keywords internal
+get.rglstyle.edges <- function() {
+    return(list(front="lines", back="lines", lwd=2.0, size=5.0));
+}
+
 
 
 #' @title Get a shiny visualization style.
@@ -420,4 +440,3 @@ sort.coloredmeshes.by.hemi <- function(coloredmeshes) {
     }
     return(list("lh"=lh_meshes, "rh"=rh_meshes));
 }
-

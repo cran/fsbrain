@@ -162,6 +162,7 @@ test_that("Spreading a single value over an atlas region works from manually cre
 })
 
 test_that("Writing MGH data spread over regions works", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
@@ -185,6 +186,7 @@ test_that("Writing MGH data spread over regions works", {
 })
 
 test_that("Writing faverage region values works", {
+  testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     hemi = "lh";
     atlas = "aparc";
@@ -200,7 +202,7 @@ test_that("Writing faverage region values works", {
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.") # skip when test data missing, e.g., on travis
     skip_if_not(dir.exists(file.path(subjects_dir, 'fsaverage')), message="Test data for fsaverage missing.")
 
-    ret = write.region.values.fsaverage(hemi, atlas, region_value_list, output_file="/tmp/spread.mgz", template_subjects_dir=subjects_dir);
+    ret = write.region.values.fsaverage(hemi, atlas, region_value_list, output_file=tempfile(fileext = ".mgz"), template_subjects_dir=subjects_dir);
     data = ret$data;
     num_verts_fsaverage = 163842
     num_verts_fsaverage_bankssts = 2137
@@ -214,10 +216,11 @@ test_that("Writing faverage region values works", {
 
 test_that("Atlas region names can be retrieved", {
   skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
-  subjects_dir = path.expand("~/data/tim_only")
-  fsaverage_dir = path.expand("~/data/tim_only/fsaverage")
-  skip_if_not(dir.exists(subjects_dir), message="Test data missing.") # skip when test data missing, e.g., on travis
-  skip_if_not(dir.exists(fsaverage_dir), message="Test data missing.") # skip when test data missing, e.g., on travis
+  fsbrain::download_optional_data();
+  fsbrain::download_fsaverage(accept_freesurfer_license = TRUE);
+  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+  skip_if_not(dir.exists(subjects_dir), message="Test data missing."); # skip when test data missing, e.g., on travis
+  skip_if_not(dir.exists(file.path(subjects_dir, 'fsaverage')), message="Test data for fsaverage missing."); # skip when test data missing, e.g., on travis
 
   regions = get.atlas.region.names('aparc', template_subjects_dir=subjects_dir);
   expect_equal(length(regions), 36);
@@ -336,6 +339,7 @@ test_that("Subject annotation works", {
 
 
 test_that("Merging annotations works", {
+  testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");

@@ -4,12 +4,12 @@
 \alias{read.md.subjects}
 \title{Read subjects file}
 \usage{
-read.md.subjects(subjects_file, header = FALSE)
+read.md.subjects(subjects_file, header)
 }
 \arguments{
 \item{subjects_file}{character string, the path to the subjects file.}
 
-\item{header}{logical, whether the file starts with a header line. Defaults to `FALSE`.}
+\item{header}{logical, whether the file starts with a header line.}
 }
 \value{
 vector of strings, the subject identifiers.
@@ -19,11 +19,13 @@ Load a list of subjects from a subjects file, i.e., a simple text file containin
 }
 \examples{
    subjects_file = system.file("extdata", "subjects.txt", package = "fsbrain", mustWork = TRUE);
-   subjects_list = read.md.subjects(subjects_file);
+   subjects_list = read.md.subjects(subjects_file, header = FALSE);
 
 }
 \seealso{
-Other metdata functions: 
-\code{\link{read.md.demographics}()}
+Other metadata functions: 
+\code{\link{demographics.to.fsgd.file}()},
+\code{\link{read.md.demographics}()},
+\code{\link{report.on.demographics}()}
 }
-\concept{metdata functions}
+\concept{metadata functions}

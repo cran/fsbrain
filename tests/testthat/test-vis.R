@@ -1,24 +1,42 @@
 # These tests are to be run manually and interactively, they are therefore skipped by default.
 # You can run them by copying & pasting the code into an R session. Treat it as examples.
 
-test_that("We can visualize morphometry data.", {
+test_that("We can visualize morphometry data from different views.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
 
     fsbrain::download_optional_data();
+    fsbrain::download_optional_paper_data();
 
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
     subject_id = 'subject1';
     measure = 'thickness';
     surface = 'white';
 
-    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T);
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("t9", "si", "sr"));
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("t4"), draw_colorbar = "horizontal");
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("t9"), draw_colorbar = "horizontal");
+
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("sd_lateral_lh"), draw_colorbar = "horizontal");
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("sd_ventral"), draw_colorbar = "vertical");
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("sd_rostral"), draw_colorbar = FALSE);
+    vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("sd_caudal"), draw_colorbar = FALSE);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+
+    # error handling
+    expect_error(vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = "nosuchview"));  # invalid views
+    expect_error(vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("t4"), draw_colorbar = "dunno")); # invalid draw_colorbar setting in t4 view
+    expect_error(vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("t9"), draw_colorbar = "dunno")); # invalid draw_colorbar setting in t9 view
+    expect_error(vis.subject.morph.native(subjects_dir, subject_id, measure, 'both', rgloptions = rglot(), draw_colorbar = T, views = c("sd_laternal_lh"), draw_colorbar = "dunno")); # invalid draw_colorbar setting in sd_ view
+
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize annotation atlas data.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
 
@@ -30,10 +48,12 @@ test_that("We can visualize annotation atlas data.", {
     vis.subject.annot(subjects_dir, subject_id, 'aparc', 'both', rgloptions = rglot());
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize arbitrary data on a subjects surface.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
 
@@ -54,6 +74,7 @@ test_that("We can visualize arbitrary data on a subjects surface.", {
 
 
 test_that("We can visualize arbitrary data on the fsaverage surfaces if available.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
 
@@ -72,6 +93,7 @@ test_that("We can visualize arbitrary data on the fsaverage surfaces if availabl
     vis.data.on.fsaverage(morph_data_lh=morph_data_lh, morph_data_rh=morph_data_rh, rgloptions = rglot(), draw_colorbar = T);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
@@ -100,10 +122,12 @@ test_that("We can visualize one value per atlas region on a subject.", {
     vis.data.on.subject(subjects_dir, subject_id, morph_data2$lh, morph_data2$rh);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize one value per Desikan atlas region on fsaverage.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11.");
 
@@ -133,10 +157,12 @@ test_that("We can visualize one value per Desikan atlas region on fsaverage.", {
     # freesurferformats::write.fs.morph("~/rh.regiondata.mgz", morph_data$rh);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize a subset of the regions of the Desikan atlas on fsaverage.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.has.fsaverage(), "This test requires fsaverage.");
 
@@ -164,10 +190,12 @@ test_that("We can visualize a subset of the regions of the Desikan atlas on fsav
     # freesurferformats::write.fs.morph("~/rh.regiondata.mgz", morph_data$rh);
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })
 
 
 test_that("We can visualize clusters on fsaverage with a background.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.has.freesurfer() & box.has.fsaverage(), "This test requires the full fsaverage subject with curv data.");
 
@@ -181,4 +209,106 @@ test_that("We can visualize clusters on fsaverage with a background.", {
     vis.symmetric.data.on.subject(subjects_dir, subject_id, lh_clust, rh_clust, bg="curv");
 
     expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
+})
+
+
+test_that("We can visualize arbitrary data on a subjects surface using a single data vector for both hemispheres.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    skip_if_not(box.can.run.all.tests(), "This test requires X11.");
+
+    fsbrain::download_optional_data();
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+
+    num_verts_subject1_lh = 149244;  # We need to know these to generate random data of suitable length.
+    num_verts_subject1_rh = 153333;
+
+    morph_data_both = rnorm((num_verts_subject1_lh + num_verts_subject1_rh), 2.0, 1.0);
+
+    # Check:
+    vis.data.on.subject(subjects_dir, subject_id, morph_data_both=morph_data_both, rgloptions = rglot(), draw_colorbar = T);
+    vis.symmetric.data.on.subject(subjects_dir, subject_id, morph_data_both=morph_data_both, rgloptions = rglot(), draw_colorbar = T);
+
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
+})
+
+
+test_that("We can retrieve vertex counts for a subject.", {
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+
+    fsbrain::download_optional_data();
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+
+    num_verts_subject1_lh = 149244L;  # We need to know these to generate random data of suitable length.
+    num_verts_subject1_rh = 153333L;
+
+    nv = subject.num.verts(subjects_dir, subject_id);
+    expect_equal(nv$lh, num_verts_subject1_lh);
+    expect_equal(nv$rh, num_verts_subject1_rh);
+
+    expect_equal(subject.num.verts(subjects_dir, subject_id, do_sum = TRUE), (num_verts_subject1_lh + num_verts_subject1_rh));
+    expect_equal(subject.num.verts(subjects_dir, subject_id, hemi = 'lh'), num_verts_subject1_lh);
+    expect_equal(subject.num.verts(subjects_dir, subject_id, hemi = 'rh'), num_verts_subject1_rh);
+})
+
+
+test_that("We can visualize meshes using vis.fs.surface as expected.", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+
+    fsbrain::download_optional_data();
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    subject_id = 'subject1';
+
+    # Load data and surfaces
+    sf_lh = subject.surface(subjects_dir, subject_id, 'white', 'lh');
+    sf_rh = subject.surface(subjects_dir, subject_id, 'white', 'rh');
+    morph_lh = subject.morph.native(subjects_dir, subject_id, 'thickness', 'lh');
+    morph_rh = subject.morph.native(subjects_dir, subject_id, 'thickness', 'rh');
+
+
+    # Visualize a single lh mesh with morph data
+    cm = vis.fs.surface(sf_lh, per_vertex_data = morph_lh, hemi='lh');
+    expect_equal(length(cm), 1L);
+    expect_false(is.null(cm$lh));
+
+    # Visualize a single rh mesh with color data
+    cm = vis.fs.surface(sf_rh, col = 'green', hemi='rh');
+    expect_equal(length(cm), 1L);
+    expect_false(is.null(cm$rh));
+
+    # Visualize both hemispheres by passing hemilists
+    cm = vis.fs.surface(list('lh'=sf_lh, 'rh'=sf_rh), col = 'green', hemi='both');
+    expect_equal(length(cm), 2L);
+    expect_false(is.null(cm$lh));
+    expect_false(is.null(cm$rh));
+
+    # Visualize both hemispheres by passing hemilists, this time use morph data instead of colors
+    cm = vis.fs.surface(list('lh'=sf_lh, 'rh'=sf_rh), per_vertex_data=list('lh'=morph_lh, 'rh'=morph_rh), hemi='both');
+    expect_equal(length(cm), 2L);
+    expect_false(is.null(cm$lh));
+    expect_false(is.null(cm$rh));
+
+    # Errors should be thrown if parameters make no sense
+    expect_error(vis.fs.surface(list('lh'=sf_lh, 'rh'=sf_rh), per_vertex_data=list('lh'=morph_lh, 'rh'=morph_rh), hemi='lh')); # hemilist passed for surface but hemi is not both
+    expect_error(vis.fs.surface(sf_lh, per_vertex_data=list('lh'=morph_lh, 'rh'=morph_rh), hemi='lh')); # hemilist passed for per_vertex_data but hemi is not both
+
+    close.all.rgl.windows();
+})
+
+
+test_that("We can shift hemis apart, e.g. for inflated where lh and rh intersect.", {
+    cm = get.demo.coloredmeshes.hemilist();
+    cm_shifted = shift.hemis.apart(cm);
+    cm_shifted2 = shift.hemis.apart(cm, hemi_order_on_axis = 'auto');
+    cm_shifted3 = shift.hemis.apart(cm, hemi_order_on_axis = 'auto_flipped');
+    cm_shifted4 = shift.hemis.apart(cm, hemi_order_on_axis = 'lr');
+    cm_shifted5 = shift.hemis.apart(cm, hemi_order_on_axis = 'rl');
+
+    # error handling
+    expect_error(shift.hemis.apart(cm, axis = -1L));  # invalid axis
+    expect_error(shift.hemis.apart(cm, hemi_order_on_axis = "noidea"));  # invalid hemi order
 })

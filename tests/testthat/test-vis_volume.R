@@ -1,4 +1,5 @@
 test_that("A brain volume can be turned into an animation", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(run.extralong.tests(), "This test requires the full test data and X11, and takes ages.");
 
@@ -26,10 +27,12 @@ test_that("A brain volume can be turned into an animation", {
     magick::image_write(magick::image_animate(brain_stack, fps = 20), sprintf("MRI_axis%d.gif", imgplane));
 
     expect_equal(1L, 1L);  # empty tests will be skipped
+    close.all.rgl.windows();
 })
 
 
 test_that("The axis-aligned bounding box of a 3D brain image can be computed", {
+    testthat::skip_on_cran(); # skip: leads to memory errors ('cannot allocate vector of size XX MB') on CRAN.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
@@ -45,6 +48,7 @@ test_that("The axis-aligned bounding box of a 3D brain image can be computed", {
     # Now select the inner foreground volume as a new image:
     foreground = brain[bbox$from[1]:bbox$to[1], bbox$from[2]:bbox$to[2], bbox$from[3]:bbox$to[3]];
     expect_equal(dim(foreground), c(135L, 153L, 178L));
+    close.all.rgl.windows();
 })
 
 
@@ -115,6 +119,7 @@ test_that("Axes are derived from a plane definition as expected", {
 
 
 test_that("A brain volume and an overlay can be merged", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11 and the 'magick' package (ImageMagick for R).");
 
@@ -141,11 +146,12 @@ test_that("A brain volume and an overlay can be merged", {
     magick::image_write(lb, path="brain_lightbox.png");
 
     expect_equal(1L, 1L);   # empty tests will be skipped
+    close.all.rgl.windows();
 })
 
 
 test_that("A brain volume can be visualized as a lightbox", {
-
+    testthat::skip_on_cran(); # skip: leads to memory errors ('cannot allocate vector of size XX MB') on CRAN.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_optional_data();
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
@@ -174,6 +180,7 @@ test_that("A brain volume can be visualized as a lightbox", {
     }
 
     expect_equal(1L, 1L);   # prevent skipping
+    close.all.rgl.windows();
 })
 
 
@@ -199,18 +206,22 @@ test_that("Intensity integer to RGB color string conversion works in 1, 2, and 3
 
 
 test_that("A brain volume can be visualized as a lightbox colored from the aseg", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires X11, the 'magick' package (ImageMagick for R), and extra data.");
 
     fsbrain::download_optional_data();
+    fsbrain::download_fsaverage(accept_freesurfer_license = TRUE);
     subjects_dir = testdatapath.subjectsdir.full.subject1();
     skip_if_not(dir.exists(subjects_dir), message="Test data missing.");
 
+    fsaverage_subject_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+
     subject_id = "subject1";
     brain = subject.volume(subjects_dir, subject_id, 'brain');
-    aseg = subject.volume(subjects_dir, subject_id, 'aparc+aseg');    # Not shipped with the package atm.
+    aseg = subject.volume(subjects_dir, subject_id, 'aparc+aseg');
 
-    colortable = freesurferformats::read.fs.colortable("~/software/freesurfer/FreeSurferColorLUT.txt");   # adapt path to your machine
+    colortable = freesurferformats::read.fs.colortable(file.path(fsaverage_subject_dir, 'fsaverage', 'ext', 'FreeSurferColorLUT.txt'));
     overlay_colors = vol.overlay.colors.from.colortable(aseg, colortable);
     colored_brain = vol.merge(brain/255, overlay_colors); # will also apply bounding box by default
 
@@ -231,6 +242,8 @@ test_that("A brain volume can be visualized as a lightbox colored from the aseg"
     }
 
     expect_equal(1L, 1L);   # prevent skipping
+    close.all.rgl.windows();
 
 })
+
 

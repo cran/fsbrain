@@ -669,6 +669,8 @@ subject.annot <- function(subjects_dir, subject_id, hemi, atlas) {
 #'
 #' @param hemi string, one of 'lh', 'rh', or 'both'. The hemisphere name. Used to construct the names of the surface file to be loaded. For 'both', see the information on the return value.
 #'
+#' @param force_hemilist logical, whether to return a hemilist even if the 'hemi' parameter is not set to 'both'
+#'
 #' @return the `fs.surface` instance, as returned by \code{\link[freesurferformats]{read.fs.surface}}. If parameter `hemi` is set to `both`, a named list with entries `lh` and `rh` is returned, and the values of are the respective surfaces. The mesh data structure used in `fs.surface` is a *face index set*.
 #'
 #' @examples
@@ -681,7 +683,7 @@ subject.annot <- function(subjects_dir, subject_id, hemi, atlas) {
 #' @family surface mesh functions
 #'
 #' @export
-subject.surface <- function(subjects_dir, subject_id, surface, hemi) {
+subject.surface <- function(subjects_dir, subject_id, surface, hemi, force_hemilist = FALSE) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
@@ -698,7 +700,11 @@ subject.surface <- function(subjects_dir, subject_id, surface, hemi) {
     if(!file.exists(surface_file)) {
         stop(sprintf("Surface file '%s' for subject '%s' surface '%s' hemi '%s' cannot be accessed.\n", surface_file, subject_id, surface, hemi));
     }
-    return(freesurferformats::read.fs.surface(surface_file));
+    if(force_hemilist) {
+        return(hemilist.wrap(freesurferformats::read.fs.surface(surface_file), hemi));
+    } else {
+        return(freesurferformats::read.fs.surface(surface_file));
+    }
 }
 
 
@@ -778,6 +784,33 @@ hemi.lobe.labels <- function(subjects_dir, subject_id, hemi, include_cingulate=T
     } else {
         return(lobe_indices);
     }
+}
+
+
+#' @title Get subjects vertex count.
+#'
+#' @description Determine vertex counts for the brain meshes of a subject.
+#'
+#' @inheritParams subject.surface
+#'
+#' @param do_sum logical, whether to return the sum of the vertex counts for lh and rh. Ignored unless 'hemi' is 'both'. If set, a single scalar will be returned.
+#'
+#' @return integer of hemilist of integers, the vertex count. If hemi is 'both' and 'do_sum' is `FALSE`, a hemilist of integers is returned. Otherwise, a single integer.
+#'
+#' @export
+subject.num.verts <- function(subjects_dir, subject_id, surface='white', hemi='both', do_sum=FALSE) {
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
+    }
+    sf = subject.surface(subjects_dir, subject_id, surface=surface, hemi=hemi);
+
+    if(hemi == 'both') {
+        if(do_sum) {
+            return(nrow(sf$lh$vertices) + nrow(sf$rh$vertices));
+        }
+        return(list('lh'=nrow(sf$lh$vertices), 'rh'=nrow(sf$rh$vertices)));
+    }
+    return(nrow(sf$vertices));
 }
 
 

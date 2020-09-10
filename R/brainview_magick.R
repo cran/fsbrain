@@ -4,6 +4,8 @@
 
 #' @title Combine several brainview images into a new figure.
 #'
+#' @description Create a new image from several image tiles, the exact layout depends on the number of given images.
+#'
 #' @param brainview_images vector of character strings, paths to the brainview images, usually in PNG format
 #'
 #' @param output_img path to output image that including the file extension
@@ -18,10 +20,10 @@
 #'
 #' @param background_color string, a valid ImageMagick color string such as "white" or "#000080". The color to use when extending images (e.g., when creating the border).
 #'
-#' @return vector of character strings, paths to the brainview images. This is the input parameter 'brainview_images'.
+#' @return named list with entries: 'brainview_images': vector of character strings, the paths to the input images. 'output_img_path': character string, path to the output image. 'merged_img': the magick image instance.
 #'
 #' @export
-arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=NULL, silent=FALSE, grid_like=TRUE, border_geometry="5x5", background_color = "white") {
+arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=NULL, silent=TRUE, grid_like=TRUE, border_geometry="5x5", background_color = "white") {
 
     if (requireNamespace("magick", quietly = TRUE)) {
 
@@ -65,7 +67,31 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
 
                 merged_img = magick::image_append(c(top_and_mid, bottom_row), stack = TRUE);
             } else {
-                merged_img = magick::image_append(images);
+                if(num_img <= 10L) {
+                    merged_img = magick::image_append(images);
+                } else {
+                    # For more than 10 images, plot 10 per row.
+                    num_per_row = 10L;
+                    num_rows = as.integer(ceiling(num_img / num_per_row));
+                    num_in_last_row = (num_rows * num_per_row) %% num_img;
+                    start_img_idx = 1L;
+                    for(row_idx in seq.int(num_rows)) {
+                        img_row = magick::image_append(images[start_img_idx:min((start_img_idx+num_per_row-1L),num_img)]);
+                        if(row_idx == 1L) {
+                            merged_img = img_row;
+                        } else {
+                            width_so_far = magick::image_info(merged_img)$width;
+                            width_img_row = magick::image_info(img_row)$width;
+                            width_missing = width_so_far - width_img_row;
+                            if(width_missing > 0L) {
+                                blank_right_img = magick::image_blank(width_missing, magick::image_info(img_row)$height, background_color);
+                                img_row = magick::image_append(c(img_row, blank_right_img));
+                            }
+                            merged_img = magick::image_append(c(merged_img, img_row), stack = TRUE);
+                        }
+                        start_img_idx = start_img_idx + num_per_row;
+                    }
+                }
             }
         } else {
             merged_img = magick::image_append(images);
@@ -75,12 +101,165 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
         if(! silent) {
             message(sprintf("Merged image written to '%s' (current working dir is '%s').\n", output_img, getwd()));
         }
+        return(invisible(list('merged_img'=merged_img, 'brainview_images'=brainview_images, 'output_img_path'=output_img)));
 
     } else {
         warning("The 'magick' package must be installed to use this functionality. Merged image NOT written.");
+        return(invisible(NULL));
     }
+}
 
-    return(invisible(brainview_images));
+
+#' @title Combine several brainview images as a grid into a new figure.
+#'
+#' @description Create a new image from several image tiles, the exact layout is a grid with n per row.
+#'
+#' @inheritParams arrange.brainview.images
+#'
+#' @param output_img path to output image that including the file extension
+#'
+#' @param num_per_row positive integer, the number of image tiles per row.
+#'
+#' @param captions vector of character strings or NULL, the (optional) text annotations for the images. Useful to print the subject identifier onto the individual tiles. Length must match number of image tiles in 'brainview_images'.
+#'
+#' @return named list with entries: 'brainview_images': vector of character strings, the paths to the input images. 'output_img_path': character string, path to the output image. 'merged_img': the magick image instance.
+#'
+#' @note The tiles are written row-wise, in the order in which they occur in the parameter 'brainview_images'.
+#'
+#' @export
+arrange.brainview.images.grid <- function(brainview_images, output_img, colorbar_img=NULL, silent=TRUE, num_per_row=10L, border_geometry="5x5", background_color = "white", captions=NULL) {
+    if (requireNamespace("magick", quietly = TRUE)) {
+
+        # load image files
+        images = magick::image_read(brainview_images);
+
+        # trim images
+        images = magick::image_trim(images);
+
+        # Add tiny border back (to prevent them from touching each other)
+        images = magick::image_border(images, background_color, border_geometry);
+        num_img = length(images);
+
+        images = images.rescale.to.max.canvas(images);
+
+        # annotate if requested
+        images = images.annotate(images, captions);
+
+
+
+        num_rows = as.integer(ceiling(num_img / num_per_row));
+        num_in_last_row = (num_rows * num_per_row) %% num_img;
+        start_img_idx = 1L;
+        for(row_idx in seq.int(num_rows)) {
+            row_start_idx = start_img_idx;
+            row_end_idx = min((start_img_idx+num_per_row-1L),num_img);
+            img_row = magick::image_append(images[row_start_idx:row_end_idx]);
+
+            if(row_idx == 1L) {
+                merged_img = img_row;
+            } else {
+                width_so_far = magick::image_info(merged_img)$width;
+                width_img_row = magick::image_info(img_row)$width;
+                width_missing = width_so_far - width_img_row;
+                if(width_missing > 0L) {
+                    blank_right_img = magick::image_blank(width_missing, magick::image_info(img_row)$height, background_color);
+                    img_row = magick::image_append(c(img_row, blank_right_img));
+                }
+                merged_img = magick::image_append(c(merged_img, img_row), stack = TRUE);
+            }
+            start_img_idx = start_img_idx + num_per_row;
+        }
+
+        magick::image_write(merged_img, path = output_img);
+        if(! silent) {
+            message(sprintf("Merged image written to '%s' (current working dir is '%s').\n", output_img, getwd()));
+        }
+        return(invisible(list('merged_img'=merged_img, 'brainview_images'=brainview_images, 'output_img_path'=output_img)));
+    } else {
+        warning("The 'magick' package must be installed to use this functionality. Merged image NOT written.");
+        return(invisible(NULL));
+    }
+}
+
+#' @title Rescale all images canvas to match the largest one.
+#'
+#' @param images vector of magick images
+#'
+#' @param background color string, like 'white' or '#00FF00'
+#'
+#' @return vector of magick images, the rescaled images
+#'
+#' @keywords internal
+images.rescale.to.max.canvas <- function(images, background="white") {
+    if (requireNamespace("magick", quietly = TRUE)) {
+        num_img = length(images);
+        # Determine max tile heigth and width to resize canvas of all tiles, so all images have the same width and height.
+        tile_widths = rep(NA, num_img);
+        tile_heights = rep(NA, num_img);
+        for(img_idx in seq.int(num_img)) {
+            tile_widths[img_idx] = magick::image_info(images[img_idx])$width;
+            tile_heights[img_idx] = magick::image_info(images[img_idx])$height;
+        }
+        max_tile_width = max(tile_widths);
+        max_tile_height = max(tile_heights);
+        #cat(sprintf("The min and max tile widths are %d and %d.\n", min(tile_widths), max_tile_width));
+        #cat(sprintf("The min and max tile heights are %d and %d.\n", min(tile_heights), max_tile_height));
+
+        geom_string = sprintf("%dx%d", max_tile_width, max_tile_height);
+
+        #cat(sprintf("Using geom string '%s' for the %d tiles.\n", geom_string, num_img));
+
+        imgs_rescaled = images;
+        for(img_idx in seq.int(num_img)) {
+            imgs_rescaled[img_idx] = magick::image_extent(images[img_idx], geom_string, color = background);
+        }
+        return(imgs_rescaled);
+
+    } else {
+        warning("The 'magick' package must be installed to use this functionality.");
+        return(invisible(NULL));
+    }
+}
+
+
+#' @title Annotate image with text.
+#'
+#' @inheritParams images.rescale.to.max.canvas
+#'
+#' @param annotations vector of character strings, the strings to print onto the tiles
+#'
+#' @param do_extend logical, whether to add the space for the annotation text below the existing image tile
+#'
+#' @return vector of magick images, the annotated images
+#'
+#' @keywords internal
+images.annotate <- function(images, annotations, do_extend = TRUE, background = 'white') {
+
+    if (requireNamespace("magick", quietly = TRUE)) {
+        num_img = length(images);
+
+        if(is.null(annotations)) {
+            return(images);
+        }
+        annotations = recycle(annotations, num_img);
+        imgs_annotated = images;
+        for(img_idx in seq.int(num_img)) {
+            font_size = 30L;
+            if(do_extend) {
+                extend_height_by = font_size * 2L;
+                lower_extension_img = magick::image_blank(magick::image_info(images[img_idx])$width, extend_height_by, background);
+                merged_img = magick::image_append(c(images[img_idx], lower_extension_img), stack = TRUE);
+            } else {
+                merged_img = images[img_idx];
+            }
+
+            imgs_annotated[img_idx] = magick::image_annotate(merged_img, annotations[img_idx], size = font_size, gravity = "south", color = "black");
+        }
+        return(imgs_annotated);
+    } else {
+        warning("The 'magick' package must be installed to use this functionality.");
+        return(invisible(NULL));
+    }
 }
 
 
@@ -104,7 +283,7 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
 #'
 #' @param grid_like logical, whether to arrange the images in a grid-like fashion. If FALSE, they will all be merged horizontally. Passed to \code{\link[fsbrain]{arrange.brainview.images}}.
 #'
-#' @return list of coloredmeshes. The coloredmeshes used for the visualization.
+#' @return named list, see \code{\link{arrange.brainview.images}} for details
 #'
 #' @examples
 #' \dontrun{
@@ -126,7 +305,7 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
 #'
 #' @family visualization functions
 #' @export
-vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.angle.names(angle_set = "t4"), rgloptions=list(), rglactions=list(), style="default", output_img="fsbrain_arranged.png", silent=FALSE, grid_like=TRUE) {
+vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.angle.names(angle_set = "t4"), rgloptions = rglo(), rglactions=list(), style="default", output_img="fsbrain_arranged.png", silent=FALSE, grid_like=TRUE) {
 
     if (requireNamespace("magick", quietly = TRUE)) {
         view_images = tempfile(view_angles, fileext = ".png");   # generate one temporary file name for each image
@@ -147,9 +326,97 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
         }
 
         # Now merge them into one
-        arrange.brainview.images(view_images, output_img, silent=silent, grid_like=grid_like);
+        return(invisible(arrange.brainview.images(view_images, output_img, silent=silent, grid_like=grid_like)));
     } else {
         warning("The 'magick' package must be installed to use this functionality. Image with manual layout NOT written.");
+        return(invisible(NULL));
+    }
+}
+
+
+#' @title Export high-quality brainview image with horizontal colorbar.
+#'
+#' @description This function serves as an easy (but slightly inflexible) way to export a high-quality, tight-layout, horizontal colorbar figure to disk.
+#'
+#' @inheritParams vislayout.from.coloredmeshes
+#'
+#' @param colorbar_legend character string or NULL, the title for the colorbar.
+#'
+#' @param img_only logical, whether to return only the resulting image
+#'
+#' @param horizontal logical, whether to plot the colorbar horizontally
+#'
+#' @param silent logical, whether to suppress messages
+#'
+#' @param quality integer, an arbitrary quality. This is the resolution per tile before trimming, divided by 1000, in pixels. Example: 1L means 1000x1000 pixels per tile before trimming. Currently supported values: \code{1L..2L}. Note that the resolution you can get is also limited by your screen resolution.
+#'
+#' @param image.plot_extra_options named list, custom options for fields::image.plot. Overwrites those derived from the quality setting. If in doubt, leave this alone.
+#'
+#' @param large_legend logical, whether to plot extra large legend text, affects the font size of the colorbar_legend and the tick labels.
+#'
+#' @param style the rendering style, see \code{material3d} or use a predefined style like 'default' or 'shiny'.
+#'
+#' @return magick image instance or named list, depending on the value of 'img_only'. If the latter, the list contains the fields 'rev_vl', 'rev_cb', and 'rev_ex', which are the return values of the functions \code{vislayout.from.coloredmeshes}, \code{coloredmesh.plot.colorbar.separate}, and {combine.colorbar.with.brainview.image}, respectively.
+#'
+#' @note This function also exports the resulting image to disk in PNG format, in the current working directory, named 'fsbrain_merged.png'. Note that your screen resolution has to be high enough to generate the final image.
+#'
+#' @examples
+#' \dontrun{
+#'     rand_data = rnorm(327684, 5, 1.5);
+#'     cm = vis.data.on.fsaverage(morph_data_both=rand_data, rglactions=list('no_vis'=T));
+#'     vis.export.from.coloredmeshes(cm, colorbar_legend='Random data');
+#' }
+#'
+#' @export
+vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, img_only=TRUE, horizontal=TRUE, silent = TRUE, quality=1L, output_img="fsbrain_arranged.png", image.plot_extra_options=NULL, large_legend=TRUE, view_angles = get.view.angle.names(angle_set = "t4"), style = 'default') {
+
+    if (requireNamespace("magick", quietly = TRUE)) {
+        quality = as.integer(quality);
+        if(quality < 1L | quality > 2L) {
+            stop("The parameter 'quality' must be an integer in range 1-2.");
+        }
+
+        if(is.null(image.plot_extra_options)) {
+            if(quality == 1L) {
+                if(large_legend) {
+                    font_s = 4;
+                    image.plot_extra_options = list(horizontal = horizontal, legend.cex = font_s, legend.width = 4, legend.mar = 18, legend.line=-6, legend.lab=colorbar_legend, axis.args = list(cex.axis = font_s, mgp=c(3,(max(1.0, font_s -1)),0)));
+                } else {
+                    font_s = 1.8;
+                    image.plot_extra_options = list(horizontal = horizontal, legend.cex = font_s, legend.width = 2, legend.mar = 12, legend.line=-4, legend.lab=colorbar_legend, axis.args = list(cex.axis = font_s, mgp=c(3,(max(1.0, font_s -1)),0)));
+                }
+            } else { # quality 2
+                if(large_legend) {
+                    font_s = 4;
+                    image.plot_extra_options = list(horizontal = horizontal, legend.cex = font_s, legend.width = 4, legend.mar = 18, legend.line=-6, legend.lab=colorbar_legend, axis.args = list(cex.axis = font_s, mgp=c(3,(max(1.0, font_s -1)),0)));
+                } else {
+                    font_s = 2.6;
+                    image.plot_extra_options = list(horizontal = horizontal, legend.cex = font_s, legend.width = 4, legend.mar = 18, legend.line=-6, legend.lab=colorbar_legend, axis.args = list(cex.axis = font_s, mgp=c(3,(max(1.0, font_s -1)),0)));
+                }
+            }
+        }
+        rgloptions = list('windowRect'=c(50, 50, 1000 * quality, 1000 * quality));
+
+        if(can.plot.colorbar.from.coloredmeshes(coloredmeshes)) {
+            tmp_img = tempfile(fileext = ".png");
+            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = tmp_img, style = style);
+            res_cb = coloredmesh.plot.colorbar.separate(coloredmeshes, image.plot_extra_options=image.plot_extra_options, silent = silent);
+            res_ex = combine.colorbar.with.brainview.image(horizontal = horizontal, silent = silent, brainview_img = tmp_img, output_img = output_img);
+            if(img_only) {
+                return(res_ex$merged_img);
+            }
+        } else {
+            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = output_img, style = style);
+            res_cb = NULL;
+            rex_ex = NULL;
+            if(img_only) {
+                return(res_vl$merged_img);
+            }
+        }
+        return(invisible(list('res_vl'=res_vl, 'res_cb'=res_cb, 'res_ex'=res_ex)));
+    } else {
+        warning("The 'magick' package must be installed to use this functionality. Image NOT written.");
+        return(invisible(NULL));
     }
 }
 
