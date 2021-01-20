@@ -4,6 +4,32 @@
 #  vis.data.on.subject('~/data/', 'subject1_spm12', lh_gyrification, NULL, surface=lh_surf);
 
 ## ---- eval = FALSE------------------------------------------------------------
+#  # read file with bssr package
+#  bd = bssr::readdfs('~/data/brainsuite_subject1/subject1_v1_sMRI.brain.dfs');
+#  
+#  # turn into fs.surface
+#  sfb = list('vertices'=t(bd$vertices), faces=t(bd$faces)+1L);
+#  class(sfb) = c(class(sfb), 'fs.surface');
+#  
+#  # show it with fsbrain
+#  fsbrain::vis.fs.surface(sfb);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  # load and turn into fs.surface
+#  bd_thickness = bssr::readdfs('~/data/brainsuite_subject1/subject1_v1_sMRI.pvc-thickness_0-6mm.right.mid.cortex.dfs');
+#  sfb_thickness = list('vertices'=t(bd_thickness$vertices), faces=t(bd_thickness$faces)+1L);
+#  class(sfb_thickness) = c(class(sfb_thickness), 'fs.surface');
+#  
+#  # Display the vertex colors:
+#  fsbrain::vis.fs.surface(sfb_thickness, col=rgb(t(bd_thickness$vColor)));
+#  
+#  # Display labels (feel free to change the colormap).
+#  fsbrain::vis.fs.surface(sfb_thickness, per_vertex_data = bd_thickness$labels);
+#  
+#  # Display raw morphometry data (feel free to change the colormap).
+#  fsbrain::vis.fs.surface(sfb_thickness, per_vertex_data = bd_thickness$attributes);
+
+## ---- eval = FALSE------------------------------------------------------------
 #  fsbrain.set.default.figsize(1200, 1200);
 
 ## ---- eval = FALSE------------------------------------------------------------
