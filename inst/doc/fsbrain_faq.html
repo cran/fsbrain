@@ -181,14 +181,19 @@ fsbrain<span class="op">::</span><span class="kw">vis.fs.surface</span>(sfb_thic
 <div id="can-i-limit-the-data-range-including-the-min-and-max-values-displayed-on-the-color-bar" class="section level3">
 <h3>Can I limit the data range, including the min and max values displayed on the color bar?</h3>
 <p>Yes, this can be achieved in different ways:</p>
-<p>Option 1: Use <code>rglactions</code> in combination with <code>limit_fun</code>:</p>
+<p>The first option is to use <code>rglactions</code> in combination with <code>limit_fun</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rgla =<span class="st"> </span><span class="kw">list</span>(<span class="st">'trans_fun'</span>=<span class="kw">limit_fun</span>(<span class="dv">2</span>,<span class="dv">3</span>));
 <span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">rglactions =</span> rgla);</code></pre></div>
 <p>This will limit your data to the range 2 to 3.</p>
 <p>If you want the data values outside the given range to be plotted as background (in the color for <code>NA</code> values), use <code>limit_fun_na</code> instead of <code>limit_fun</code>.</p>
-<p>Option 2: If you want more flexibility, e.g., you also need support for a larger data range than the real data range of your subject, e.g., when plotting group data to ensure that all subjects use the same colors for identical values, you should use the ‘range’ entry in ‘makecmap_options’ instead:</p>
+<p>See the answer to the next question for a second option.</p>
+</div>
+<div id="how-can-i-enforce-fixed-colorbar-settings-i.e.-one-color-should-represent-the-same-value-across-several-images" class="section level3">
+<h3>How can I enforce fixed colorbar settings (i.e., one color should represent the same value) across several images?</h3>
+<p>This typically means that you want a colorbar that shows a larger data range than the real data range of your subject, for some of the subjects. In this case you should use the ‘range’ entry in ‘makecmap_options’:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">makecmap_options =<span class="st"> </span><span class="kw">list</span>(<span class="st">'range'</span>=<span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">6</span>));
 <span class="kw">vis.subject.morph.native</span>(<span class="st">'~/mysubjects_dir'</span>, <span class="st">'subject1'</span>, <span class="st">'thickness'</span>, <span class="dt">makecmap_options =</span> makecmap_options);</code></pre></div>
+<p>This is useful when plotting group data to ensure that all subjects use the same colors for identical values, or when comparing statistical results.</p>
 </div>
 <div id="how-can-i-change-the-colormap-for-the-plots" class="section level3">
 <h3>How can I change the colormap for the plots?</h3>
@@ -276,6 +281,17 @@ output_final_img =<span class="st"> &quot;fsbrain_merged.png&quot;</span>;
 <p>You can also set a distance manually:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vis.subject.morph.native</span>(sjd, sj, <span class="st">'thickness'</span>, <span class="dt">rglactions =</span> <span class="kw">list</span>(<span class="st">'shift_hemis_apart'</span>=<span class="kw">list</span>(<span class="st">'min_dist'</span>=<span class="dv">20</span>)), <span class="dt">surface=</span><span class="st">'inflated'</span>, <span class="dt">views=</span><span class="st">'si'</span>);</code></pre></div>
 <p>If you need more customization options, have a look at the <code>shift.hemis.apart</code> function. If you pass a named list in the rglactions for ‘shift_hemis_apart’ (like in the previous example), the entries are passed on to that function.</p>
+</div>
+<div id="when-plotting-several-views-can-i-have-the-subplots-arranged-in-a-horizontal-strip-rather-than-2x2-tiles" class="section level3">
+<h3>When plotting several views, can I have the subplots arranged in a horizontal strip (rather than 2x2 tiles)?</h3>
+<p>There is no ‘view’ setting for that yet (like ‘t4’ for 4 tiles), but you can set the ‘grid_like’ to false to get a horizontal strip of images. Here is an example:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subjects_dir =<span class="st"> </span>fsbrain<span class="op">::</span><span class="kw">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);
+
+view_angles =<span class="st"> </span><span class="kw">get.view.angle.names</span>(<span class="dt">angle_set =</span> <span class="st">&quot;t4&quot;</span>);
+
+coloredmeshes =<span class="st"> </span><span class="kw">vis.subject.morph.native</span>(subjects_dir, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;thickness&quot;</span>, <span class="dt">views=</span><span class="ot">NULL</span>);
+<span class="kw">vislayout.from.coloredmeshes</span>(coloredmeshes, <span class="dt">view_angles =</span> view_angles, <span class="dt">grid_like=</span><span class="ot">FALSE</span>, <span class="dt">output_img=</span><span class="st">&quot;~/fsbrain_horizontal.png&quot;</span>);</code></pre></div>
+<p>If you want a colorbar, you can use <code>vis.export.from.coloredmeshes</code> instead of <code>vislayout.from.coloredmeshes</code>.</p>
 </div>
 </div>
 <div id="various-topics" class="section level2">

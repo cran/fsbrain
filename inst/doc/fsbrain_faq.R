@@ -111,6 +111,14 @@
 #  vis.subject.morph.native(sjd, sj, 'thickness', rglactions = list('shift_hemis_apart'=list('min_dist'=20)), surface='inflated', views='si');
 
 ## ---- eval = FALSE------------------------------------------------------------
+#  subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#  
+#  view_angles = get.view.angle.names(angle_set = "t4");
+#  
+#  coloredmeshes = vis.subject.morph.native(subjects_dir, "subject1", "thickness", views=NULL);
+#  vislayout.from.coloredmeshes(coloredmeshes, view_angles = view_angles, grid_like=FALSE, output_img="~/fsbrain_horizontal.png");
+
+## ---- eval = FALSE------------------------------------------------------------
 #  vis.fs.surface('~/Documents/my_mesh.ply');
 
 ## ---- eval = FALSE------------------------------------------------------------

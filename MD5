@@ -1,8 +1,8 @@
-6d4c92afbc1c4cba2e7657854b9f14b0 *DESCRIPTION
+9d0c7dcae545519790a281250b20359c *DESCRIPTION
 df3e97686c2d7b4574d33a830e80b6ad *LICENSE
 c814155e23488d106f853fd0eb4ed5a1 *NAMESPACE
 31448c5437a7bf152d65c0d95907871f *R/atlas.R
-9969ad508927c7d5a0426587ab966609 *R/brainview_magick.R
+9828b59479927ce2cab65101f2c663cc *R/brainview_magick.R
 58ff8a3ae90846e89d1b7b0e6be5e503 *R/cbar.R
 90db3313fd4a7de93e91d8686057b914 *R/cbar_magick.R
 da09aad4345d8dfee0029ce4f58f3edd *R/coloredmesh.R
@@ -25,7 +25,7 @@ f7875c323913da4e26207239da43cb58 *R/spherical.R
 4ae6e6f1bd0a16d6e7885d6f48e1d431 *R/vis_group.R
 48cccf459427a20249b038b8c7a612f8 *R/vis_meshes.R
 5f541ecda85b470349109427e0b11488 *R/vis_multiview.R
-f5b41c2b9d56b09d2b8fc968966acdf7 *R/vis_surface_background.R
+23ff360ff0be3d4de3b0611348f112c6 *R/vis_surface_background.R
 c01cc72199c31f69c6a3fcf824fbfe36 *R/vis_volume.R
 3d981001b94aa5010d13ab9519a7a1d7 *R/vis_volume_3d.R
 9c3681dccd4b3502815c32b3544c399a *R/volume.R
@@ -34,9 +34,9 @@ c01cc72199c31f69c6a3fcf824fbfe36 *R/vis_volume.R
 87112e97f97d04327486f48c63313138 *inst/doc/fsbrain.R
 9c26c435ae7750755ef423551cdbfb64 *inst/doc/fsbrain.Rmd
 50ca667cd09eb1080395a33097822d22 *inst/doc/fsbrain.html
-0254bb2efa2840fb0cc7dee42879fcf2 *inst/doc/fsbrain_faq.R
-62f64dcc0c8da6194f16d1bb5d890e52 *inst/doc/fsbrain_faq.Rmd
-29ea2591708794a2df48712d95270c8e *inst/doc/fsbrain_faq.html
+cac1adb733be83405c9e16819190c86c *inst/doc/fsbrain_faq.R
+0f4ee891c626e2ff6a2d18f932cc572e *inst/doc/fsbrain_faq.Rmd
+ab954ed1c3c492c407585bc67e805366 *inst/doc/fsbrain_faq.html
 3d881c9f93bd2e2bce8bc5ab23baa427 *inst/doc/fsbrain_vol.R
 fa2421d8311cb287a80a4c6811f5216d *inst/doc/fsbrain_vol.Rmd
 8cadca11dcf7064b8d3f512f12eee7f7 *inst/doc/fsbrain_vol.html
@@ -258,7 +258,7 @@ ad983a8aee705c74d78e7a26647ea59f *man/vis.coloredmeshes.Rd
 5fcf8295fdce2d2613ee562c64dc0a01 *man/vis.data.on.group.standard.Rd
 de44056f6a06abb804997754f6ac781d *man/vis.data.on.subject.Rd
 7b009e6e8e41d3db94c57c242b024ca2 *man/vis.dti.trk.Rd
-22905b2fb3e318bdeb3b738e8321cfe8 *man/vis.export.from.coloredmeshes.Rd
+99d88c8d1a532d297953f3943ef5dba9 *man/vis.export.from.coloredmeshes.Rd
 8b22289d923abfd1e289cd6b7dd0152e *man/vis.fs.surface.Rd
 c7e6cc14e2d4f73d9a7e5e718c8a950b *man/vis.group.annot.Rd
 497e9ce7309c6be199ed8381db6d5ffb *man/vis.group.coloredmeshes.Rd
@@ -319,7 +319,7 @@ ea3438d7f64c66c427689c951c657135 *tests/testthat/test-fsdir_abstraction_group.R
 0d5aa140cbea886cbe1adbde2ea2b4ee *tests/testthat/test-rglactions.R
 7d59131b066cd8fbf432ba2207699f11 *tests/testthat/test-seg_stats.R
 c6fbcdfa09af640b9e655f89a2e9651e *tests/testthat/test-spherical.R
-7bb83b040c29e4875407787c8d39d8f6 *tests/testthat/test-vis.R
+4d97412b878072095cc594e366bf0633 *tests/testthat/test-vis.R
 e545d60da455221ec45bf129b77290a0 *tests/testthat/test-vis_group.R
 91b53525ad469161052c0c55f0d96548 *tests/testthat/test-vis_meshes.R
 69ff1dcab83644a6cbc92b69a37f40a6 *tests/testthat/test-vis_multiview.R
@@ -333,7 +333,7 @@ facc1f0c3c99ecf76e96f6f3ea47fbbd *vignettes/colorbar_bgplot3d.jpg
 9c26c435ae7750755ef423551cdbfb64 *vignettes/fsbrain.Rmd
 65c3a0ee1012a81eb57f038bc7a3fa80 *vignettes/fsbrain_aparc.jpg
 cc619ff46db4d83a94c9ca7e5c232e5c *vignettes/fsbrain_ct.jpg
-62f64dcc0c8da6194f16d1bb5d890e52 *vignettes/fsbrain_faq.Rmd
+0f4ee891c626e2ff6a2d18f932cc572e *vignettes/fsbrain_faq.Rmd
 050775f2d72f7e085f6ff5b7773830a9 *vignettes/fsbrain_lightbox.jpg
 f1aafe8cd8a063f5d1271ad4931a08f0 *vignettes/fsbrain_vis_bg.jpg
 ed2b2a9aac598cef0cd8fbabe7a2f95c *vignettes/fsbrain_vis_surfaces.jpg
