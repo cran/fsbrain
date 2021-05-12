@@ -20,19 +20,27 @@
 #'
 #' @param horizontal logical, whether the colorbar is horizontal. If so, it will be added below the 'brainview_img'. If it is vertical, it will be added to the right of the 'brainview_img'.
 #'
+#' @param background_color color string, the background color to use. Use 'transparency_color' if you want a transparent background.
+#'
+#' @param transparency_color the temporary background color that will get mapped to transparency, or NULL if you do not want a transparent background. If used, it can be any color that does not occur in the foreground. Try 'white' or 'black' if in doubt.
+#'
 #' @return named list with entries 'output_img_path': character string, path to saved image. 'merged_img': magick image instance, the merged image
 #'
 #' @family colorbar functions
 #' @export
-combine.colorbar.with.brainview.image <- function(brainview_img = "fsbrain_arranged.png", colorbar_img = "fsbrain_cbar.png", output_img = "fsbrain_merged.png", offset="+0+0", extend_brainview_img_height_by=NULL, silent=FALSE, allow_colorbar_shrink=TRUE, horizontal=FALSE) {
+combine.colorbar.with.brainview.image <- function(brainview_img = "fsbrain_arranged.png", colorbar_img = "fsbrain_cbar.png", output_img = "fsbrain_merged.png", offset="+0+0", extend_brainview_img_height_by=NULL, silent=FALSE, allow_colorbar_shrink=TRUE, horizontal=FALSE, background_color = "#FFFFFF", transparency_color = NULL) {
 
     if(! horizontal) {
-        return(invisible(combine.colorbar.with.brainview.image.vertical(brainview_img, colorbar_img, output_img, offset=offset, extend_brainview_img_width_by=extend_brainview_img_height_by, silent=silent, allow_colorbar_shrink=allow_colorbar_shrink)));
+        return(invisible(combine.colorbar.with.brainview.image.vertical(brainview_img, colorbar_img, output_img, offset=offset, extend_brainview_img_width_by=extend_brainview_img_height_by, silent=silent, allow_colorbar_shrink=allow_colorbar_shrink, background_color = background_color, transparency_color = transparency_color)));
     }
 
     if (requireNamespace("magick", quietly = TRUE)) {
 
-        background_color = "white"; # Background color to use when extending images.
+        if(! is.null(transparency_color)) {
+            background_color = transparency_color;
+        }
+
+        #background_color = "white"; # Background color to use when extending images.
 
         main_img = magick::image_read(brainview_img);
         cbar_img = magick::image_read(colorbar_img);
@@ -86,6 +94,12 @@ combine.colorbar.with.brainview.image <- function(brainview_img = "fsbrain_arran
 
         # Overlay the colorbar over the bottom part of the main image.
         combined_img = magick::image_composite(main_img, cbar_img_trimmed, gravity="south", offset=offset);
+
+        if(! is.null(transparency_color)) {
+            combined_img = image.remap.color(combined_img, source_color=background_color, source_point = "+1+1");
+        }
+
+
         magick::image_write(combined_img, path = output_img);
         if(! silent) {
             message(sprintf("Combined image with horizontal colorbar written to '%s'.\n", output_img));
@@ -107,11 +121,15 @@ combine.colorbar.with.brainview.image <- function(brainview_img = "fsbrain_arran
 #' @param extend_brainview_img_width_by integer value in pixels, the size of the right border to add to the brainview_img. Increase this if the right part of the colorbar is off the image canvas.
 #'
 #' @keywords internal
-combine.colorbar.with.brainview.image.vertical <- function(brainview_img, colorbar_img, output_img, offset="+0+0", extend_brainview_img_width_by=NULL, silent=FALSE, allow_colorbar_shrink=TRUE) {
+combine.colorbar.with.brainview.image.vertical <- function(brainview_img, colorbar_img, output_img, offset="+0+0", extend_brainview_img_width_by=NULL, silent=FALSE, allow_colorbar_shrink=TRUE, background_color = "#FFFFFF", transparency_color = NULL) {
 
     if (requireNamespace("magick", quietly = TRUE)) {
 
-        background_color = "white"; # Background color to use when extending images.
+        #background_color = "white"; # Background color to use when extending images.
+
+        if(! is.null(transparency_color)) {
+            background_color = transparency_color;
+        }
 
         main_img = magick::image_read(brainview_img);
         cbar_img = magick::image_read(colorbar_img);
@@ -168,6 +186,12 @@ combine.colorbar.with.brainview.image.vertical <- function(brainview_img, colorb
 
         # Overlay the colorbar over the right side of the main image.
         combined_img = magick::image_composite(main_img, cbar_img_trimmed, gravity="east", offset=offset);
+
+        # Apply transparency if requested
+        if(! is.null(transparency_color)) {
+            combined_img = image.remap.color(combined_img, source_color=background_color, source_point = "+1+1");
+        }
+
         magick::image_write(combined_img, path = output_img);
         if(! silent) {
             message(sprintf("Combined image with vertical colorbar written to '%s'.\n", output_img));
@@ -184,7 +208,9 @@ combine.colorbar.with.brainview.image.vertical <- function(brainview_img, colorb
 
 #' @title Combine a colorbar and a brain animation in gif format into a new animation.
 #'
-#' @param brain_animation path to the brain animation in gif format
+#' @inheritParams combine.colorbar.with.brainview.image
+#'
+#' @param brain_animation path to the brain animation in GIF format
 #'
 #' @param colorbar_img path to the main image containing the separate colorbar, usually an image in PNG format
 #'
@@ -200,11 +226,9 @@ combine.colorbar.with.brainview.image.vertical <- function(brainview_img, colorb
 #'
 #' @family colorbar functions
 #' @export
-combine.colorbar.with.brainview.animation <- function(brain_animation, colorbar_img, output_animation, offset="+0+0", extend_brainview_img_height_by=0L, silent=FALSE, allow_colorbar_shrink=TRUE) {
+combine.colorbar.with.brainview.animation <- function(brain_animation, colorbar_img, output_animation, offset="+0+0", extend_brainview_img_height_by=0L, silent=FALSE, allow_colorbar_shrink=TRUE, background_color = "white") {
     if (requireNamespace("magick", quietly = TRUE)) {
         # brain_animation = "~/fsbrain_mov_main.gif"; colorbar_img = "~/fsbrain_img_cbar.gif"; extend_brainview_img_height_by = 20; offset="+0+0"; extend_brainview_img_height_by = 20;
-
-        background_color = "white"; # Background color to use, e.g., when extending images.
 
         main_mov = magick::image_read(brain_animation);
         cbar_img = magick::image_read(colorbar_img);

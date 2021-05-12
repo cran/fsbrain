@@ -12,7 +12,9 @@ vislayout.from.coloredmeshes(
   style = "default",
   output_img = "fsbrain_arranged.png",
   silent = FALSE,
-  grid_like = TRUE
+  grid_like = TRUE,
+  background_color = "white",
+  transparency_color = NULL
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ vislayout.from.coloredmeshes(
 \item{silent}{logical, whether to suppress all messages}
 
 \item{grid_like}{logical, whether to arrange the images in a grid-like fashion. If FALSE, they will all be merged horizontally. Passed to \code{\link[fsbrain]{arrange.brainview.images}}.}
+
+\item{background_color}{hex color string (like '#FFFFFF'), the color to use for the background. Ignored if 'transparency_color' is not NULL. To get a transparent background, use 'transparency_color' instead of this parameter. WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!}
+
+\item{transparency_color}{hex color string (like '#FFFFFF'), the temporary background color that will get mapped to transparency, or NULL if you do not want a transparent background. If used, it can be any color that does not occur in the foreground. Try '#FFFFFF' (white) or '#000000' (black) if in doubt. WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!}
 }
 \value{
 named list, see \code{\link{arrange.brainview.images}} for details
@@ -59,6 +65,7 @@ Create a tight layout view of coloredmeshes from several angles. Creates separat
 }
 \seealso{
 Other visualization functions: 
+\code{\link{highlight.vertices.on.subject}()},
 \code{\link{vis.color.on.subject}()},
 \code{\link{vis.data.on.fsaverage}()},
 \code{\link{vis.data.on.subject}()},

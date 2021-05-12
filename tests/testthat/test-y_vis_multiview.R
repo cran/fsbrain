@@ -6,6 +6,7 @@
 
 test_that("We can visualize morphometry data in multiview.", {
     testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    testthat::skip_on_travis(); # Reduce test time on travis to prevent the build from being killed.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
 
@@ -92,6 +93,7 @@ test_that("We can visualize p values or other arbitrary data, one value per atla
 
 test_that("We can visualize data on fsaverage if available", {
     testthat::skip_on_cran(); # skip: leads to memory errors ('cannot allocate vector of size XX MB') on CRAN.
+    testthat::skip_on_travis(); # Reduce test time on travis to prevent the build from being killed.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     fsbrain::download_fsaverage(accept_freesurfer_license = TRUE);
     subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
@@ -128,6 +130,7 @@ test_that("We can visualize data on fsaverage3 if available", {
 
 test_that("We can record a gif movie of a rotating brain.", {
     testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    testthat::skip_on_travis(); # Reduce test time on travis to prevent the build from being killed.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(run.extralong.tests(), "This test takes ages.");
 
@@ -188,6 +191,7 @@ test_that("A label can be visualized.", {
 
 test_that("A region from an atlas can be converted to a label and visualized.", {
     testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    testthat::skip_on_travis(); # Reduce test time on travis to prevent the build from being killed.
     skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
     skip_if_not(box.can.run.all.tests(), "This test requires the full test data and X11.");
     subjects_dir = testdatapath.subjectsdir.full.subject1();
@@ -387,4 +391,24 @@ test_that("We can shift hemis apart", {
 
     cm_hl_shifted = shift.hemis.apart(cm_hemilist);
     expect_true(is.hemilist(cm_hl_shifted));
+})
+
+
+test_that("We can export a PNG with background transparency from a tight layout view", {
+    testthat::skip_on_cran(); # CRAN maintainers asked me to reduce test time on CRAN by disabling unit tests.
+    testthat::skip_if(tests_running_on_cran_under_macos(), message = "Skipping on CRAN under MacOS, required test data cannot be downloaded.");
+    testthat::skip_if_not(box.can.run.all.tests(), "This test requires X11 and imagemagick.");
+
+    fsbrain::download_optional_data();
+    fsbrain::download_fsaverage(accept_freesurfer_license = TRUE)
+
+    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+    rgloptions=list("windowRect"=c(80,80,800,800));
+
+    mkc = list('col.na'="#FEFEFE", 'colFn'=viridis::viridis, 'n'=200);
+    coloredmeshes = vis.subject.morph.standard(subjects_dir, "subject1", "sulc", cortex_only=TRUE, views=NULL, makecmap_options = mkc);
+    vis.export.from.coloredmeshes(coloredmeshes, colorbar_legend = "sulcal depth [mm]", transparency_color = "white");
+
+    expect_equal(1L, 1L); # Empty tests will be skipped by testthat.
+    close.all.rgl.windows();
 })

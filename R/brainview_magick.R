@@ -18,12 +18,14 @@
 #'
 #' @param border_geometry string, a geometry string passed to \code{magick::image_border} to define the borders to add to each image tile. The default value adds 5 pixels, both horizontally and vertically.
 #'
-#' @param background_color string, a valid ImageMagick color string such as "white" or "#000080". The color to use when extending images (e.g., when creating the border).
+#' @param background_color hex color string, such as "#DDDDDD" or "#FFFFFF". The color to use when extending images (e.g., when creating the border). WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!
+#'
+#' @param map_bg_to_transparency logical, whether to map the background_color to transparency for the final PNG export.
 #'
 #' @return named list with entries: 'brainview_images': vector of character strings, the paths to the input images. 'output_img_path': character string, path to the output image. 'merged_img': the magick image instance.
 #'
 #' @export
-arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=NULL, silent=TRUE, grid_like=TRUE, border_geometry="5x5", background_color = "white") {
+arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=NULL, silent=TRUE, grid_like=TRUE, border_geometry="5x5", background_color = "white", map_bg_to_transparency = FALSE) {
 
     if (requireNamespace("magick", quietly = TRUE)) {
 
@@ -39,36 +41,36 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
 
         if(grid_like) {
             if(num_img == 3 || num_img == 4) {
-                top_row = magick::image_append(images[1:2]);
-                bottom_row = magick::image_append(images[3:num_img]);
-                merged_img = magick::image_append(c(top_row, bottom_row), stack = TRUE);
+                top_row = wrapped.image.append(images[1:2], background_color = background_color);
+                bottom_row = wrapped.image.append(images[3:num_img], background_color = background_color);
+                merged_img = wrapped.image.append(c(top_row, bottom_row), stack = TRUE, background_color = background_color);
             } else if(num_img == 8 || num_img == 9) {
-                top_row = magick::image_append(images[1:3]);
-                mid_row = magick::image_append(images[4:6]);
-                top_and_mid = magick::image_append(c(top_row, mid_row), stack = TRUE);
+                top_row = wrapped.image.append(images[1:3], background_color = background_color);
+                mid_row = wrapped.image.append(images[4:6], background_color = background_color);
+                top_and_mid = wrapped.image.append(c(top_row, mid_row), stack = TRUE, background_color = background_color);
 
                 if(num_img == 9) {
-                    bottom_row = magick::image_append(images[7:num_img]);
+                    bottom_row = wrapped.image.append(images[7:num_img], background_color = background_color);
                 } else {
                     # For 8 images, it gets a bit trickier. It looks very bad if the two
                     # images are on the left and the right is empty, so we add an empty
                     # image of appropriate size between them.
                     width_top_and_mid = magick::image_info(top_and_mid)$width;
-                    bottom_row_so_far = magick::image_append(images[7:num_img]);
+                    bottom_row_so_far = wrapped.image.append(images[7:num_img], background_color = background_color);
                     width_bottom_so_far = magick::image_info(images[7])$width + magick::image_info(images[8])$width;
                     width_missing = width_top_and_mid - width_bottom_so_far;
                     if(width_missing > 0L) {
                         mid = magick::image_blank(width_missing, magick::image_info(bottom_row_so_far)$height, background_color);
-                        bottom_row = magick::image_append(c(images[7], mid, images[8]));
+                        bottom_row = wrapped.image.append(c(images[7], mid, images[8]), background_color = background_color);
                     } else {
                         bottom_row = bottom_row_so_far;
                     }
                 }
 
-                merged_img = magick::image_append(c(top_and_mid, bottom_row), stack = TRUE);
+                merged_img = wrapped.image.append(c(top_and_mid, bottom_row), stack = TRUE, background_color = background_color);
             } else {
                 if(num_img <= 10L) {
-                    merged_img = magick::image_append(images);
+                    merged_img = wrapped.image.append(images, background_color = background_color);
                 } else {
                     # For more than 10 images, plot 10 per row.
                     num_per_row = 10L;
@@ -76,7 +78,7 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
                     num_in_last_row = (num_rows * num_per_row) %% num_img;
                     start_img_idx = 1L;
                     for(row_idx in seq.int(num_rows)) {
-                        img_row = magick::image_append(images[start_img_idx:min((start_img_idx+num_per_row-1L),num_img)]);
+                        img_row = wrapped.image.append(images[start_img_idx:min((start_img_idx+num_per_row-1L),num_img)], background_color = background_color);
                         if(row_idx == 1L) {
                             merged_img = img_row;
                         } else {
@@ -85,16 +87,20 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
                             width_missing = width_so_far - width_img_row;
                             if(width_missing > 0L) {
                                 blank_right_img = magick::image_blank(width_missing, magick::image_info(img_row)$height, background_color);
-                                img_row = magick::image_append(c(img_row, blank_right_img));
+                                img_row = wrapped.image.append(c(img_row, blank_right_img), background_color = background_color);
                             }
-                            merged_img = magick::image_append(c(merged_img, img_row), stack = TRUE);
+                            merged_img = wrapped.image.append(c(merged_img, img_row), stack = TRUE, background_color = background_color);
                         }
                         start_img_idx = start_img_idx + num_per_row;
                     }
                 }
             }
         } else {
-            merged_img = magick::image_append(images);
+            merged_img = wrapped.image.append(images, background_color = background_color);
+        }
+
+        if(map_bg_to_transparency) {
+            merged_img = image.remap.color(merged_img, source_color=background_color, source_point = NULL);
         }
 
         magick::image_write(merged_img, path = output_img);
@@ -107,6 +113,32 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
         warning("The 'magick' package must be installed to use this functionality. Merged image NOT written.");
         return(invisible(NULL));
     }
+}
+
+
+#' @title Remap a color in an image, typically used to set the background color to transparent.
+#'
+#' @description Offers 2 algorithm: remap color by flood-filling from a given pixel, or remap a hardcoded color throughout the entire image. Provide one of 'source_color' or 'source_point' by setting the other to NULL. If both are given, source_color takes precedence and source_point is silently ignored.
+#'
+#' @param source_color the source color that should be replaced in the whole image. Set to NULL to disable.
+#'
+#' @param source_point the source pixel in which to start the flood filling. Set to NULL to disable.
+#'
+#' @param target_color an image magick color string, use 'none' for transparency. Only used with flood fill.
+#'
+#' @keywords internal
+image.remap.color <- function(source_img, source_color=NULL, source_point="+1+1", target_color="none") {
+    if(is.null(source_color)) {
+        if(is.null(source_point)) {
+            stop("One of 'source_color' or 'source_point' must be provided.");
+        } else {
+            remapped_img = magick::image_fill(source_img, target_color, point = source_point, fuzz = 0);
+        }
+    } else {
+        remapped_img = magick::image_transparent(source_img, source_color, fuzz = 0);
+    }
+
+    return(remapped_img);
 }
 
 
@@ -140,10 +172,10 @@ arrange.brainview.images.grid <- function(brainview_images, output_img, colorbar
         images = magick::image_border(images, background_color, border_geometry);
         num_img = length(images);
 
-        images = images.rescale.to.max.canvas(images);
+        images = images.rescale.to.max.canvas(images, background = background_color);
 
         # annotate if requested
-        images = images.annotate(images, captions);
+        images = images.annotate(images, captions, background = background_color);
 
 
 
@@ -153,7 +185,7 @@ arrange.brainview.images.grid <- function(brainview_images, output_img, colorbar
         for(row_idx in seq.int(num_rows)) {
             row_start_idx = start_img_idx;
             row_end_idx = min((start_img_idx+num_per_row-1L),num_img);
-            img_row = magick::image_append(images[row_start_idx:row_end_idx]);
+            img_row = wrapped.image.append(images[row_start_idx:row_end_idx], background_color = background_color);
 
             if(row_idx == 1L) {
                 merged_img = img_row;
@@ -163,9 +195,9 @@ arrange.brainview.images.grid <- function(brainview_images, output_img, colorbar
                 width_missing = width_so_far - width_img_row;
                 if(width_missing > 0L) {
                     blank_right_img = magick::image_blank(width_missing, magick::image_info(img_row)$height, background_color);
-                    img_row = magick::image_append(c(img_row, blank_right_img));
+                    img_row = wrapped.image.append(c(img_row, blank_right_img), background_color = background_color);
                 }
-                merged_img = magick::image_append(c(merged_img, img_row), stack = TRUE);
+                merged_img = wrapped.image.append(c(merged_img, img_row), stack = TRUE, background_color = background_color);
             }
             start_img_idx = start_img_idx + num_per_row;
         }
@@ -248,12 +280,16 @@ images.annotate <- function(images, annotations, do_extend = TRUE, background = 
             if(do_extend) {
                 extend_height_by = font_size * 2L;
                 lower_extension_img = magick::image_blank(magick::image_info(images[img_idx])$width, extend_height_by, background);
-                merged_img = magick::image_append(c(images[img_idx], lower_extension_img), stack = TRUE);
+                merged_img = wrapped.image.append(c(images[img_idx], lower_extension_img), stack = TRUE, background_color = background);
             } else {
                 merged_img = images[img_idx];
             }
 
-            imgs_annotated[img_idx] = magick::image_annotate(merged_img, annotations[img_idx], size = font_size, gravity = "south", color = "black");
+            font_color = "black";
+            if(background == "black" || background == "#000000") {
+                font_color = "white";
+            }
+            imgs_annotated[img_idx] = magick::image_annotate(merged_img, annotations[img_idx], size = font_size, gravity = "south", color = font_color);
         }
         return(imgs_annotated);
     } else {
@@ -283,6 +319,10 @@ images.annotate <- function(images, annotations, do_extend = TRUE, background = 
 #'
 #' @param grid_like logical, whether to arrange the images in a grid-like fashion. If FALSE, they will all be merged horizontally. Passed to \code{\link[fsbrain]{arrange.brainview.images}}.
 #'
+#' @param background_color hex color string (like '#FFFFFF'), the color to use for the background. Ignored if 'transparency_color' is not NULL. To get a transparent background, use 'transparency_color' instead of this parameter. WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!
+#'
+#' @param transparency_color hex color string (like '#FFFFFF'), the temporary background color that will get mapped to transparency, or NULL if you do not want a transparent background. If used, it can be any color that does not occur in the foreground. Try '#FFFFFF' (white) or '#000000' (black) if in doubt. WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!
+#'
 #' @return named list, see \code{\link{arrange.brainview.images}} for details
 #'
 #' @examples
@@ -305,10 +345,19 @@ images.annotate <- function(images, annotations, do_extend = TRUE, background = 
 #'
 #' @family visualization functions
 #' @export
-vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.angle.names(angle_set = "t4"), rgloptions = rglo(), rglactions=list(), style="default", output_img="fsbrain_arranged.png", silent=FALSE, grid_like=TRUE) {
+vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.angle.names(angle_set = "t4"), rgloptions = rglo(), rglactions=list(), style="default", output_img="fsbrain_arranged.png", silent=FALSE, grid_like=TRUE, background_color = "white", transparency_color=NULL) {
 
     if (requireNamespace("magick", quietly = TRUE)) {
         view_images = tempfile(view_angles, fileext = ".png");   # generate one temporary file name for each image
+
+        map_bg_to_transparency = FALSE;
+        if(! is.null(transparency_color)) {
+            map_bg_to_transparency = TRUE;
+            if(background_color != "white") {
+                warning("Parameter 'transparency_color' is set, ignoring custom value for parameter 'background_color'.");
+            }
+            background_color = transparency_color;
+        }
 
         # Create the temporary images at the temp paths
         for(view_idx in seq_len(length(view_angles))) {
@@ -322,11 +371,11 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
             }
             final_rglactions = modifyList(rglactions, internal_rglactions);
 
-            brainviews(c(view), coloredmeshes, rgloptions = rgloptions, rglactions = final_rglactions, style = style);
+            brainviews(c(view), coloredmeshes, rgloptions = rgloptions, rglactions = final_rglactions, style = style, background = background_color);
         }
 
         # Now merge them into one
-        return(invisible(arrange.brainview.images(view_images, output_img, silent=silent, grid_like=grid_like)));
+        return(invisible(arrange.brainview.images(view_images, output_img, silent=silent, grid_like=grid_like, background_color = background_color, map_bg_to_transparency = map_bg_to_transparency)));
     } else {
         warning("The 'magick' package must be installed to use this functionality. Image with manual layout NOT written.");
         return(invisible(NULL));
@@ -334,9 +383,9 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
 }
 
 
-#' @title Export high-quality brainview image with horizontal colorbar.
+#' @title Export high-quality brainview image with a colorbar.
 #'
-#' @description This function serves as an easy (but slightly inflexible) way to export a high-quality, tight-layout, horizontal colorbar figure to disk.
+#' @description This function serves as an easy (but slightly inflexible) way to export a high-quality, tight-layout, colorbar figure to disk. If no colorbar is required, one can use \code{vislayout.from.coloredmeshes} instead.
 #'
 #' @inheritParams vislayout.from.coloredmeshes
 #'
@@ -344,7 +393,7 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
 #'
 #' @param img_only logical, whether to return only the resulting image
 #'
-#' @param horizontal logical, whether to plot the colorbar horizontally
+#' @param horizontal logical, whether to plot the colorbar horizontally (TRUE) or vertically (FALSE). Pass 'NULL' to force no colorbar at all.
 #'
 #' @param silent logical, whether to suppress messages
 #'
@@ -370,7 +419,7 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
 #' }
 #'
 #' @export
-vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, img_only=TRUE, horizontal=TRUE, silent = TRUE, quality=1L, output_img="fsbrain_arranged.png", image.plot_extra_options=NULL, large_legend=TRUE, view_angles = get.view.angle.names(angle_set = "t4"), style = 'default', grid_like = TRUE) {
+vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, img_only=TRUE, horizontal=TRUE, silent = TRUE, quality=1L, output_img="fsbrain_arranged.png", image.plot_extra_options=NULL, large_legend=TRUE, view_angles = get.view.angle.names(angle_set = "t4"), style = 'default', grid_like = TRUE, background_color = "white", transparency_color=NULL) {
 
     if (requireNamespace("magick", quietly = TRUE)) {
         quality = as.integer(quality);
@@ -399,16 +448,17 @@ vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, i
         }
         rgloptions = list('windowRect'=c(50, 50, 1000 * quality, 1000 * quality));
 
-        if(can.plot.colorbar.from.coloredmeshes(coloredmeshes)) {
+        if(can.plot.colorbar.from.coloredmeshes(coloredmeshes) && !(is.null(horizontal))) {
             tmp_img = tempfile(fileext = ".png");
-            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = tmp_img, style = style, grid_like = grid_like);
-            res_cb = coloredmesh.plot.colorbar.separate(coloredmeshes, image.plot_extra_options=image.plot_extra_options, silent = silent);
-            res_ex = combine.colorbar.with.brainview.image(horizontal = horizontal, silent = silent, brainview_img = tmp_img, output_img = output_img);
+            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = tmp_img, style = style, grid_like = grid_like, background_color = background_color);
+            png_options=list('filename'='fsbrain_cbar.png', 'width'=1400, 'height'=1400, 'bg'=background_color);
+            res_cb = coloredmesh.plot.colorbar.separate(coloredmeshes, image.plot_extra_options=image.plot_extra_options, silent = silent, png_options=png_options);
+            res_ex = combine.colorbar.with.brainview.image(horizontal = horizontal, silent = silent, brainview_img = tmp_img, output_img = output_img, background_color = background_color, transparency_color = transparency_color);
             if(img_only) {
                 return(res_ex$merged_img);
             }
         } else {
-            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = output_img, style = style, grid_like = grid_like);
+            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = output_img, style = style, grid_like = grid_like, background_color = background_color, transparency_color = transparency_color);
             res_cb = NULL;
             rex_ex = NULL;
             if(img_only) {

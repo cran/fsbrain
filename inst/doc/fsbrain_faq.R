@@ -81,11 +81,11 @@
 #  makecmap_options = list('colFn'=colFn_diverging, 'symm'=TRUE);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  mkc = list('n'=200L);
+#  mkc = list('n'=200L, 'colFn'=viridis::viridis);
 #  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', makecmap_options=mkc);
 
 ## ---- eval = FALSE------------------------------------------------------------
-#  mkc = list('n'=200L, 'col.na'='orange');
+#  mkc = list('n'=200L, 'col.na'='orange', 'colFn'=viridis::viridis);
 #  vis.subject.morph.native('~/mysubjects_dir', 'subject1', 'thickness', cortex_only = TRUE, makecmap_options=mkc);
 
 ## ---- eval = FALSE------------------------------------------------------------
@@ -103,6 +103,10 @@
 #  output_final_img = "fsbrain_merged.png";
 #  coloredmesh.plot.colorbar.separate(cm, image.plot_extra_options = list('horizontal' = TRUE), png_options = list('filename'=output_cbar_img, 'width'=1800));
 #  combine.colorbar.with.brainview.image(output_brain_img, output_cbar_img, output_final_img);
+
+## ---- eval = FALSE------------------------------------------------------------
+#  coloredmeshes = vis.subject.morph.standard(subjects_dir, "subject1", "sulc", cortex_only=TRUE, views=NULL);
+#  vis.export.from.coloredmeshes(coloredmeshes, colorbar_legend = "sulcal depth [mm]", transparency_color = "#FFFFFF");
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  vis.subject.morph.native(sjd, sj, 'thickness', rglactions = list('shift_hemis_apart'=TRUE), surface='inflated', views='si');
@@ -137,6 +141,9 @@
 #  Warning messages:
 #  1: In rgl.init(initValue, onlyNULL) : RGL: unable to open X11 display
 #  2: 'rgl.init' failed, running with 'rgl.useNULL = TRUE'.
+
+## ---- eval = FALSE------------------------------------------------------------
+#  fsbrain::fsbrain.set.default.figsize(3000, 3000, 0, 0);
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  library("fsbrain")
