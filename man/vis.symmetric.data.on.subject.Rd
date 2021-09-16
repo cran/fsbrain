@@ -10,7 +10,6 @@ vis.symmetric.data.on.subject(
   morph_data_lh = NULL,
   morph_data_rh = NULL,
   surface = "white",
-  colormap = NULL,
   views = c("t4"),
   rgloptions = rglo(),
   rglactions = list(),
@@ -19,7 +18,8 @@ vis.symmetric.data.on.subject(
     200),
   map_to_NA = c(0),
   bg = NULL,
-  morph_data_both = NULL
+  morph_data_both = NULL,
+  style = "default"
 )
 }
 \arguments{
@@ -32,8 +32,6 @@ vis.symmetric.data.on.subject(
 \item{morph_data_rh}{numeric vector or character string or NULL, the data to visualize on the right hemisphere surface. If a string, it is treated as a filename and data is loaded from it first. When it is a numerical vector, this is assumed to be the data already.  The data must have the same length as the surface of the vis_subject_id has vertices. If NULL, this surface will not be rendered. Only one of morph_data_lh or morph_data_rh is allowed to be NULL.}
 
 \item{surface}{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
-
-\item{colormap}{a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead, like this: \code{makecmap_options=list('colFn'=terrain.colors)}.}
 
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
@@ -50,6 +48,8 @@ vis.symmetric.data.on.subject(
 \item{bg}{a background definition. Can be a surface color layer or a character string like 'curv_light' to select a pre-defined layer, see \code{\link[fsbrain]{collayer.bg}} for valid strings.}
 
 \item{morph_data_both}{numeric vector or NULL, the data to visualize on both hemispheres. This must be a single vector with length equal to the sum of the vertex counts of the left and the right hemisphere. The data for the left hemisphere must come first. If this is given, 'morph_data_lh' and 'morph_data_rh' must be NULL.}
+
+\item{style}{character string, a rendering style, e.g., 'default', 'shiny' or 'semitransparent'.}
 }
 \value{
 list of coloredmeshes. The coloredmeshes used for the visualization.
@@ -69,6 +69,7 @@ This function is intended to plot symmetric data around zero (like positive and 
 }
 \seealso{
 Other visualization functions: 
+\code{\link{highlight.vertices.on.subject.spheres}()},
 \code{\link{highlight.vertices.on.subject}()},
 \code{\link{vis.color.on.subject}()},
 \code{\link{vis.data.on.fsaverage}()},
@@ -80,6 +81,7 @@ Other visualization functions:
 \code{\link{vis.subject.label}()},
 \code{\link{vis.subject.morph.native}()},
 \code{\link{vis.subject.morph.standard}()},
+\code{\link{vis.subject.pre}()},
 \code{\link{vislayout.from.coloredmeshes}()}
 
 Other morphometry visualization functions: 

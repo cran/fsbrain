@@ -18,7 +18,8 @@ vis.export.from.coloredmeshes(
   style = "default",
   grid_like = TRUE,
   background_color = "white",
-  transparency_color = NULL
+  transparency_color = NULL,
+  ...
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ vis.export.from.coloredmeshes(
 \item{background_color}{hex color string (like '#FFFFFF'), the color to use for the background. Ignored if 'transparency_color' is not NULL. To get a transparent background, use 'transparency_color' instead of this parameter. WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!}
 
 \item{transparency_color}{hex color string (like '#FFFFFF'), the temporary background color that will get mapped to transparency, or NULL if you do not want a transparent background. If used, it can be any color that does not occur in the foreground. Try '#FFFFFF' (white) or '#000000' (black) if in doubt. WARNING: Do not use color names (like 'gray'), as their interpretation differs between rgl and image magick!}
+
+\item{...}{extra arguments passed to \code{vislayout.from.coloredmeshes}.}
 }
 \value{
 magick image instance or named list, depending on the value of 'img_only'. If the latter, the list contains the fields 'rev_vl', 'rev_cb', and 'rev_ex', which are the return values of the functions \code{vislayout.from.coloredmeshes}, \code{coloredmesh.plot.colorbar.separate}, and {combine.colorbar.with.brainview.image}, respectively.
@@ -57,13 +60,18 @@ magick image instance or named list, depending on the value of 'img_only'. If th
 This function serves as an easy (but slightly inflexible) way to export a high-quality, tight-layout, colorbar figure to disk. If no colorbar is required, one can use \code{vislayout.from.coloredmeshes} instead.
 }
 \note{
-This function also exports the resulting image to disk in PNG format, in the current working directory, named 'fsbrain_merged.png'. Note that your screen resolution has to be high enough to generate the final image.
+Note that your screen resolution has to be high enough to generate the final image in the requested resolution, see the 'fsbrain FAQ' vignette for details and solutions if you run into trouble.
 }
 \examples{
 \dontrun{
     rand_data = rnorm(327684, 5, 1.5);
-    cm = vis.data.on.fsaverage(morph_data_both=rand_data, rglactions=list('no_vis'=T));
-    vis.export.from.coloredmeshes(cm, colorbar_legend='Random data');
+    cm = vis.data.on.fsaverage(morph_data_both=rand_data,
+      rglactions=list('no_vis'=T));
+    vis.export.from.coloredmeshes(cm, colorbar_legend='Random data',
+      output_img="~/fsbrain_arranged.png");
 }
 
+}
+\seealso{
+This function should not be used anymore, it will be deprecated soon. Please use the \code{\link[fsbrain]{export}} function instead.
 }

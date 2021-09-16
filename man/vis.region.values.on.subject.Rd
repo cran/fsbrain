@@ -11,7 +11,6 @@ vis.region.values.on.subject(
   lh_region_value_list,
   rh_region_value_list,
   surface = "white",
-  colormap = NULL,
   views = c("t4"),
   rgloptions = rglo(),
   rglactions = list(),
@@ -19,7 +18,8 @@ vis.region.values.on.subject(
   draw_colorbar = FALSE,
   makecmap_options = mkco.heat(),
   bg = NULL,
-  silent = FALSE
+  silent = FALSE,
+  style = "default"
 )
 }
 \arguments{
@@ -34,8 +34,6 @@ vis.region.values.on.subject(
 \item{rh_region_value_list}{named list. A list for the right hemisphere in which the names are atlas regions, and the values are the value to write to all vertices of that region.}
 
 \item{surface}{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
-
-\item{colormap}{a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead, like this: \code{makecmap_options=list('colFn'=terrain.colors)}.}
 
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
@@ -52,6 +50,8 @@ vis.region.values.on.subject(
 \item{bg}{a background definition. Can be a surface color layer or a character string like 'curv_light' to select a pre-defined layer, see \code{\link[fsbrain]{collayer.bg}} for valid strings.}
 
 \item{silent}{logical, whether to suppress mapping info in case of unnamed region value lists (see 'lh_region_value_list' description).}
+
+\item{style}{character string, a rendering style, e.g., 'default', 'shiny' or 'semitransparent'.}
 }
 \value{
 list of coloredmeshes. The coloredmeshes used for the visualization.
@@ -80,6 +80,7 @@ This function can be used for rendering a single value (color) for all vertices 
 }
 \seealso{
 Other visualization functions: 
+\code{\link{highlight.vertices.on.subject.spheres}()},
 \code{\link{highlight.vertices.on.subject}()},
 \code{\link{vis.color.on.subject}()},
 \code{\link{vis.data.on.fsaverage}()},
@@ -90,6 +91,7 @@ Other visualization functions:
 \code{\link{vis.subject.label}()},
 \code{\link{vis.subject.morph.native}()},
 \code{\link{vis.subject.morph.standard}()},
+\code{\link{vis.subject.pre}()},
 \code{\link{vis.symmetric.data.on.subject}()},
 \code{\link{vislayout.from.coloredmeshes}()}
 

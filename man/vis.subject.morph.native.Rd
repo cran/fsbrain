@@ -10,7 +10,6 @@ vis.subject.morph.native(
   measure,
   hemi = "both",
   surface = "white",
-  colormap = NULL,
   views = c("t4"),
   rgloptions = rglo(),
   rglactions = list(),
@@ -31,8 +30,6 @@ vis.subject.morph.native(
 \item{hemi}{string, one of 'lh', 'rh', or 'both'. The hemisphere name. Used to construct the names of the label data files to be loaded.}
 
 \item{surface}{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
-
-\item{colormap}{a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead, like this: \code{makecmap_options=list('colFn'=terrain.colors)}.}
 
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
@@ -66,6 +63,7 @@ Creates a surface mesh, applies a colormap transform the morphometry data values
 }
 \seealso{
 Other visualization functions: 
+\code{\link{highlight.vertices.on.subject.spheres}()},
 \code{\link{highlight.vertices.on.subject}()},
 \code{\link{vis.color.on.subject}()},
 \code{\link{vis.data.on.fsaverage}()},
@@ -76,6 +74,7 @@ Other visualization functions:
 \code{\link{vis.subject.annot}()},
 \code{\link{vis.subject.label}()},
 \code{\link{vis.subject.morph.standard}()},
+\code{\link{vis.subject.pre}()},
 \code{\link{vis.symmetric.data.on.subject}()},
 \code{\link{vislayout.from.coloredmeshes}()}
 

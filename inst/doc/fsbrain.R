@@ -316,7 +316,7 @@
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  coloredmeshes = vis.subject.morph.standard(subjects_dir, 'subject1', 'sulc', rglactions=list('no_vis'=T));
-#  img = vis.export.from.coloredmeshes(coloredmeshes, colorbar_legend='Sulcal depth [mm]', output_img='~/fig1.png');
+#  img = export(coloredmeshes, colorbar_legend='Sulcal depth [mm]', output_img='~/fig1.png');
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  subjects_list = c('subject1', 'subject2', 'subject3');

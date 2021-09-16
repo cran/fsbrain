@@ -4,6 +4,26 @@
 #  vis.data.on.subject('~/data/', 'subject1_spm12', lh_gyrification, NULL, surface=lh_surf);
 
 ## ---- eval = FALSE------------------------------------------------------------
+#  library("fsbrain");
+#  library("freesurferformats");
+#  
+#  # Manually load some data from wherever you want. You can also compute this data in R of course, without loading anything.
+#  my_data_dir="~/data/study1/subject1"; # just an example.
+#  surf_lh <- read.fs.surface(file.path(my_data_dir, "lh_sphere.surf.gii"));
+#  surf_rh <- read.fs.surface(file.path(my_data_dir, "whatever/rh_sphere.obj"));
+#  pvd_lh = read.fs.morph(file.path(my_data_dir, "lh.curv")); # pvd is for 'per-vertex data'.
+#  pvd_rh = read.fs.morph(file.path(my_data_dir, "surf/converted/rh.mean_curvature.mgh"));
+#  
+#  
+#  # Call high-level API for live plot.
+#  surfaces = hemilist(surf_lh, surf_rh);
+#  pvd  = hemilist(pvd_lh, pvd_rh);
+#  cm = vis.subject.pre(surfaces, pvd , draw_colorbar = T, rglactions = list('trans_fun'=limit_fun(-0.2, 0.2)));
+#  
+#  # Export if you feel like it
+#  export(cm, output_img = "~/out.png", grid_like = FALSE, colorbar_legend="Mean curvature [1/mm]");
+
+## ---- eval = FALSE------------------------------------------------------------
 #  # read file with bssr package
 #  bd = bssr::readdfs('~/data/brainsuite_subject1/subject1_v1_sMRI.brain.dfs');
 #  
@@ -106,7 +126,7 @@
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  coloredmeshes = vis.subject.morph.standard(subjects_dir, "subject1", "sulc", cortex_only=TRUE, views=NULL);
-#  vis.export.from.coloredmeshes(coloredmeshes, colorbar_legend = "sulcal depth [mm]", transparency_color = "#FFFFFF");
+#  export(coloredmeshes, colorbar_legend = "sulcal depth [mm]", transparency_color = "#FFFFFF");
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  vis.subject.morph.native(sjd, sj, 'thickness', rglactions = list('shift_hemis_apart'=TRUE), surface='inflated', views='si');

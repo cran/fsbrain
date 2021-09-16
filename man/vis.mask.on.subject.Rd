@@ -10,12 +10,12 @@ vis.mask.on.subject(
   mask_lh,
   mask_rh,
   surface = "white",
-  colormap = NULL,
   views = c("t4"),
   rgloptions = rglo(),
   rglactions = list(),
   draw_colorbar = FALSE,
-  makecmap_options = list(colFn = label.colFn.inv)
+  makecmap_options = list(colFn = label.colFn.inv),
+  style = "default"
 )
 }
 \arguments{
@@ -29,8 +29,6 @@ vis.mask.on.subject(
 
 \item{surface}{string. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".}
 
-\item{colormap}{a colormap function. **DEPRECATED**: use parameter 'makecmap_options' instead, like this: \code{makecmap_options=list('colFn'=terrain.colors)}.}
-
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
 \item{rgloptions}{option list passed to \code{\link{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
@@ -40,6 +38,8 @@ vis.mask.on.subject(
 \item{draw_colorbar}{logical or one of the character strings 'vertical' or 'horizontal', whether to draw a colorbar. Notice: the colorbar is drawn to a separate subplot, and this only works if there is enough space for it, i.e., the plot resolution must be high enough. You may have to increase the plot size for the colorbar to show up, see the vignette for instructions. Defaults to `FALSE`. See  \code{\link[fsbrain]{coloredmesh.plot.colorbar.separate}} for an alternative.}
 
 \item{makecmap_options}{named list of parameters to pass to \code{\link{makecmap}}. Must not include the unnamed first parameter, which is derived from 'measure'. Should include at least a colormap function as name 'colFn'.}
+
+\item{style}{character string, a rendering style, e.g., 'default', 'shiny' or 'semitransparent'.}
 }
 \value{
 list of coloredmeshes. The coloredmeshes used for the visualization.
@@ -89,6 +89,7 @@ Other mask functions:
 \code{\link{mask.from.labeldata.for.hemi}()}
 
 Other visualization functions: 
+\code{\link{highlight.vertices.on.subject.spheres}()},
 \code{\link{highlight.vertices.on.subject}()},
 \code{\link{vis.color.on.subject}()},
 \code{\link{vis.data.on.fsaverage}()},
@@ -99,6 +100,7 @@ Other visualization functions:
 \code{\link{vis.subject.label}()},
 \code{\link{vis.subject.morph.native}()},
 \code{\link{vis.subject.morph.standard}()},
+\code{\link{vis.subject.pre}()},
 \code{\link{vis.symmetric.data.on.subject}()},
 \code{\link{vislayout.from.coloredmeshes}()}
 }

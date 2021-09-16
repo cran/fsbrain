@@ -407,19 +407,25 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
 #'
 #' @param grid_like logical, passed to \code{vislayout.from.coloredmeshes}.
 #'
+#' @param ... extra arguments passed to \code{vislayout.from.coloredmeshes}.
+#'
 #' @return magick image instance or named list, depending on the value of 'img_only'. If the latter, the list contains the fields 'rev_vl', 'rev_cb', and 'rev_ex', which are the return values of the functions \code{vislayout.from.coloredmeshes}, \code{coloredmesh.plot.colorbar.separate}, and {combine.colorbar.with.brainview.image}, respectively.
 #'
-#' @note This function also exports the resulting image to disk in PNG format, in the current working directory, named 'fsbrain_merged.png'. Note that your screen resolution has to be high enough to generate the final image.
+#' @note Note that your screen resolution has to be high enough to generate the final image in the requested resolution, see the 'fsbrain FAQ' vignette for details and solutions if you run into trouble.
+#'
+#' @seealso This function should not be used anymore, it will be deprecated soon. Please use the \code{\link[fsbrain]{export}} function instead.
 #'
 #' @examples
 #' \dontrun{
 #'     rand_data = rnorm(327684, 5, 1.5);
-#'     cm = vis.data.on.fsaverage(morph_data_both=rand_data, rglactions=list('no_vis'=T));
-#'     vis.export.from.coloredmeshes(cm, colorbar_legend='Random data');
+#'     cm = vis.data.on.fsaverage(morph_data_both=rand_data,
+#'       rglactions=list('no_vis'=T));
+#'     vis.export.from.coloredmeshes(cm, colorbar_legend='Random data',
+#'       output_img="~/fsbrain_arranged.png");
 #' }
 #'
 #' @export
-vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, img_only=TRUE, horizontal=TRUE, silent = TRUE, quality=1L, output_img="fsbrain_arranged.png", image.plot_extra_options=NULL, large_legend=TRUE, view_angles = get.view.angle.names(angle_set = "t4"), style = 'default', grid_like = TRUE, background_color = "white", transparency_color=NULL) {
+vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, img_only=TRUE, horizontal=TRUE, silent = TRUE, quality=1L, output_img="fsbrain_arranged.png", image.plot_extra_options=NULL, large_legend=TRUE, view_angles = get.view.angle.names(angle_set = "t4"), style = 'default', grid_like = TRUE, background_color = "white", transparency_color=NULL, ...) {
 
     if (requireNamespace("magick", quietly = TRUE)) {
         quality = as.integer(quality);
@@ -450,7 +456,7 @@ vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, i
 
         if(can.plot.colorbar.from.coloredmeshes(coloredmeshes) && !(is.null(horizontal))) {
             tmp_img = tempfile(fileext = ".png");
-            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = tmp_img, style = style, grid_like = grid_like, background_color = background_color);
+            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = tmp_img, style = style, grid_like = grid_like, background_color = background_color, ...);
             png_options=list('filename'='fsbrain_cbar.png', 'width'=1400, 'height'=1400, 'bg'=background_color);
             res_cb = coloredmesh.plot.colorbar.separate(coloredmeshes, image.plot_extra_options=image.plot_extra_options, silent = silent, png_options=png_options);
             res_ex = combine.colorbar.with.brainview.image(horizontal = horizontal, silent = silent, brainview_img = tmp_img, output_img = output_img, background_color = background_color, transparency_color = transparency_color);
@@ -458,9 +464,9 @@ vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, i
                 return(res_ex$merged_img);
             }
         } else {
-            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = output_img, style = style, grid_like = grid_like, background_color = background_color, transparency_color = transparency_color);
+            res_vl = vislayout.from.coloredmeshes(coloredmeshes, rgloptions = rgloptions, view_angles = view_angles, silent = silent, output_img = output_img, style = style, grid_like = grid_like, background_color = background_color, transparency_color = transparency_color, ...);
             res_cb = NULL;
-            rex_ex = NULL;
+            res_ex = NULL;
             if(img_only) {
                 return(res_vl$merged_img);
             }
@@ -472,3 +478,51 @@ vis.export.from.coloredmeshes <- function(coloredmeshes, colorbar_legend=NULL, i
     }
 }
 
+
+
+#' @title Export high-quality brainview image with a colorbar.
+#'
+#' @description This function serves as an easy (but slightly inflexible) way to export a high-quality, tight-layout, colorbar figure to disk. If no colorbar is required, one can use \code{vislayout.from.coloredmeshes} instead. It is an alias for `vis.export.from.coloredmeshes` that requires less typing.
+#'
+#' @inheritParams vis.export.from.coloredmeshes
+#'
+#' @param horizontal deprecated (since 0.5.0) and ignored, use parameter 'draw_colorbar' instead.
+#'
+#' @param draw_colorbar logical or one of the character strings 'vertical' or 'horizontal', whether to draw a colorbar. Defaults to 'horizontal'.
+#'
+#' @return magick image instance or named list, depending on the value of 'img_only'. If the latter, the list contains the fields 'rev_vl', 'rev_cb', and 'rev_ex', which are the return values of the functions \code{vislayout.from.coloredmeshes}, \code{coloredmesh.plot.colorbar.separate}, and {combine.colorbar.with.brainview.image}, respectively.
+#'
+#' @note Note that your screen resolution has to be high enough to generate the final image in the requested resolution, see the 'fsbrain FAQ' vignette for details and solutions if you run into trouble.
+#'
+#' @examples
+#' \dontrun{
+#'     rand_data = rnorm(327684, 5, 1.5);
+#'     cm = vis.data.on.fsaverage(morph_data_both=rand_data,
+#'       rglactions=list('no_vis'=T));
+#'     export(cm, colorbar_legend='Random data',
+#'       output_img="~/fsbrain_arranged.png");
+#' }
+#'
+#' @export
+export <- function(coloredmeshes, colorbar_legend=NULL, img_only=TRUE, draw_colorbar = "horizontal", horizontal=NULL, silent = TRUE, quality=1L, output_img="fsbrain_arranged.png", image.plot_extra_options=NULL, large_legend=TRUE, view_angles = get.view.angle.names(angle_set = "t4"), style = 'default', grid_like = TRUE, background_color = "white", transparency_color=NULL, ...) {
+    if(! is.null(horizontal)) {
+        message("Parameter 'horizontal' is deprecated and ignored, please use parameter 'draw_colorbar' instead.");
+    }
+    if(is.logical(draw_colorbar)) {
+        if(draw_colorbar) {
+            horizontal = TRUE;
+        } else {
+            horizontal = NULL;
+        }
+    } else {
+        if(!(draw_colorbar %in% c("horizontal", "vertical"))) {
+            stop("Parameter 'draw_colorbar' must be a logical value or one of 'horizontal', 'vertical'.");
+        }
+        if(draw_colorbar == "horizontal") {
+            horizontal = TRUE;
+        } else {
+            horizontal = FALSE;
+        }
+    }
+    return(vis.export.from.coloredmeshes(coloredmeshes, colorbar_legend = colorbar_legend, img_only = img_only, horizontal = horizontal, silent = silent, quality=quality, output_img=output_img, image.plot_extra_options=image.plot_extra_options, large_legend=large_legend, view_angles = view_angles, style = style, grid_like = grid_like, background_color = background_color, transparency_color=transparency_color, ...));
+}

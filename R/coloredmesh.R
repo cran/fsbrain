@@ -13,8 +13,6 @@
 #'
 #' @param surface character string or `fs.surface` instance. The display surface. E.g., "white", "pial", or "inflated". Defaults to "white".
 #'
-#' @param colormap a colormap function. See the squash package for some colormaps. Defaults to \code{\link{jet}}.
-#'
 #' @param clip numeric vector of length 2 or NULL. If given, the 2 values are interpreted as lower and upper percentiles, and the morph data is clipped at the given lower and upper percentile (see \code{\link[fsbrain]{clip.data}}). Defaults to NULL (no data clipping).
 #'
 #' @param cortex_only logical, whether to mask the medial wall, i.e., whether the morphometry data for all vertices which are *not* part of the cortex (as defined by the label file `label/?h.cortex.label`) should be replaced with NA values. In other words, setting this to TRUE will ignore the values of the medial wall between the two hemispheres. If set to true, the mentioned label file needs to exist for the subject. Defaults to FALSE.
@@ -26,15 +24,13 @@
 #' @family coloredmesh functions
 #'
 #' @export
-#' @importFrom squash cmap makecmap jet
+#' @importFrom squash cmap makecmap
 #' @importFrom rgl tmesh3d rgl.open wire3d
-coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hemi, surface="white", colormap=NULL, clip=NULL, cortex_only=FALSE, makecmap_options=mkco.seq()) {
+coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hemi, surface="white", clip=NULL, cortex_only=FALSE, makecmap_options=mkco.seq()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
-
-    makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(is.null(measure)) {
         morph_data = NULL;
@@ -65,7 +61,7 @@ coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hem
         warning(sprintf("Data mismatch: surface has %d vertices, but %d color values passed in argument 'measure'.\n", nrow(surface_mesh$vertices), length(morph_data)));
     }
 
-    mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(surface_mesh);
 
     morph_data_hl = hemilist.wrap(morph_data, hemi);
     cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh, return_metadata = TRUE);
@@ -76,15 +72,45 @@ coloredmesh.from.morph.native <- function(subjects_dir, subject_id, measure, hem
 }
 
 
+#' @title Get an rgl tmesh3d instance from a brain surface mesh.
+#'
+#' @param surface an fs.surface instance, as returned by \code{subject.surface} or \code{freesurferformats::read.fs.surface}.
+#'
+#' @return a tmesh3d instance, see \code{rgl::tmesh3d} for details.
+#'
+#' @export
+fs.surface.to.tmesh3d <- function(surface) {
+    if( ! freesurferformats::is.fs.surface(surface)) {
+        stop("Parameter 'surface' must be an instance of freesurferformats::fs.surface.");
+    }
+    return(rgl::tmesh3d(c(t(surface$vertices)), c(t(surface$faces)), homogeneous=FALSE));
+}
+
+#' @title Get an fs.surface brain mesh from an rgl tmesh3d instance.
+#'
+#' @param tmesh a tmesh3d instance, see \code{rgl::tmesh3d} for details.
+#'
+#' @return an fs.surface instance, as returned by \code{subject.surface} or \code{freesurferformats::read.fs.surface}.
+#'
+#' @export
+tmesh3d.to.fs.surface <- function(tmesh) {
+    vertices = t(tmesh$vb[1:3,]);
+    faces = t(tmesh$it);
+    surface = list('vertices'=vertices, 'faces'=faces);
+    class(surface) <- c(class(surface), 'fs.surface');
+    return(surface);
+}
+
+
 #' @title Create a coloredmesh from a mesh and pre-defined colors.
 #'
 #' @inheritParams coloredmeshes.from.color
 #'
-#' @param color_data vector of hex color strings
+#' @param color_data vector of hex color strings, a single one or one per vertex.
 #'
 #' @return coloredmesh. A named list with entries: "mesh" the \code{\link{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
 #'
-#' @note Do not call this, use \code{\link[fsbrain]{coloredmeshes.from.color}} instead.
+#' @note Do not call this directly, use \code{\link[fsbrain]{coloredmeshes.from.color}} instead.
 #'
 #' @keywords internal
 #' @importFrom rgl tmesh3d rgl.open wire3d
@@ -104,11 +130,13 @@ coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, s
     } else {
         surface_mesh = subject.surface(subjects_dir, subject_id, surface, hemi);
     }
-    mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(surface_mesh);
 
     if(nrow(surface_mesh$vertices) != length(color_data)) {
         if(length(color_data) == 1L) {
             color_data = rep(color_data, nrow(surface_mesh$vertices));
+        } else if(length(color_data) == 0L) {
+            color_data = rep('#FEFEFE', nrow(surface_mesh$vertices));
         } else {
             warning(sprintf("Data mismatch: surface has %d vertices, but %d color values passed in argument 'color_data'.\n", nrow(surface_mesh$vertices), length(color_data)));
         }
@@ -170,15 +198,13 @@ coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi,
 #' @family coloredmesh functions
 #'
 #' @export
-#' @importFrom squash cmap makecmap jet
+#' @importFrom squash cmap makecmap
 #' @importFrom rgl tmesh3d rgl.open wire3d
-coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm, surface="white", template_subject='fsaverage', template_subjects_dir=NULL, colormap=NULL, clip = NULL, cortex_only=FALSE, makecmap_options=mkco.seq()) {
+coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, hemi, fwhm, surface="white", template_subject='fsaverage', template_subjects_dir=NULL, clip = NULL, cortex_only=FALSE, makecmap_options=mkco.seq()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
-
-    makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(is.null(template_subjects_dir)) {
         template_subjects_dir = subjects_dir;
@@ -213,7 +239,7 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
         warning(sprintf("Data mismatch: template surface has %d vertices, but %d morphometry values passed in argument 'measure'. Is the template subject '%s' correct?\n", nrow(surface_mesh$vertices), length(morph_data), template_subject));
     }
 
-    mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(surface_mesh);
 
     if(is.null(morph_data)) {
         map = NULL;
@@ -244,13 +270,11 @@ coloredmesh.from.morph.standard <- function(subjects_dir, subject_id, measure, h
 #' @importFrom squash cmap makecmap
 #' @importFrom rgl tmesh3d rgl.open wire3d
 #' @importFrom utils modifyList
-coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data, hemi, surface="white", colormap=NULL, makecmap_options=mkco.seq()) {
+coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data, hemi, surface="white", makecmap_options=mkco.seq()) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
-
-    makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(freesurferformats::is.fs.surface(surface)) {
         surface_mesh = surface;
@@ -263,7 +287,7 @@ coloredmesh.from.morphdata <- function(subjects_dir, vis_subject_id, morph_data,
         warning(sprintf("Received %d data values, but the hemi '%s' '%s' surface of visualization subject '%s' in dir '%s' has %d vertices. Counts must match.\n", length(morph_data), hemi, surface, vis_subject_id, subjects_dir, num_verts));
     }
 
-    mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(surface_mesh);
 
     morph_data_hl = hemilist.wrap(morph_data, hemi);
     cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh);
@@ -302,7 +326,7 @@ coloredmesh.from.preloaded.data <- function(fs_surface, morph_data=NULL, col=NUL
         }
     }
 
-    mesh = rgl::tmesh3d(c(t(fs_surface$vertices)), c(t(fs_surface$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(fs_surface);
     if(! is.null(morph_data)) {
         if(! hasIn(makecmap_options, c('colFn'))) {
             makecmap_options$colFn = mkco.seq()$colFn;
@@ -341,7 +365,7 @@ coloredmesh.from.preloaded.data <- function(fs_surface, morph_data=NULL, col=NUL
 #' @family coloredmesh functions
 #'
 #' @export
-#' @importFrom squash cmap makecmap jet
+#' @importFrom squash cmap makecmap
 #' @importFrom rgl tmesh3d rgl.open wire3d
 #' @importFrom utils modifyList
 coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surface="white", outline=FALSE) {
@@ -365,7 +389,7 @@ coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surfac
     } else {
         stop("Parameter 'atlas' has invalid type.");
     }
-    mesh = rgl::tmesh3d(c(t(surface_mesh$vertices)), c(t(surface_mesh$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(surface_mesh);
 
     if(is.list(outline)) {
         annot_outline_extra_options = outline;
@@ -400,13 +424,11 @@ coloredmesh.from.annot <- function(subjects_dir, subject_id, atlas, hemi, surfac
 #' @export
 #' @importFrom squash cmap makecmap rainbow2
 #' @importFrom rgl tmesh3d rgl.open wire3d
-coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surface="white", colormap=NULL, makecmap_options=list('colFn'=squash::rainbow2), binary = TRUE) {
+coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surface="white", makecmap_options=list('colFn'=squash::rainbow2), binary = TRUE) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
-
-    makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(freesurferformats::is.fs.surface(surface)) {
         surface_mesh = surface;
@@ -453,13 +475,11 @@ coloredmesh.from.label <- function(subjects_dir, subject_id, label, hemi, surfac
 #' @family mask functions
 #' @family coloredmesh functions
 #' @export
-coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface="white", colormap=NULL, surface_data=NULL, makecmap_options=list('colFn'=squash::rainbow2)) {
+coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface="white", surface_data=NULL, makecmap_options=list('colFn'=squash::rainbow2)) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
     }
-
-    makecmap_options = makecmakeopts.merge(makecmap_options, colormap);
 
     if(is.null(surface_data)) {
         if(freesurferformats::is.fs.surface(surface)) {
@@ -481,7 +501,7 @@ coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface=
         warning(sprintf("The length of the supplied mask (%d) does not match the number of vertices in the surface (%d).\n", length(mask), nrow(surface_data$vertices)));
     }
 
-    mesh = rgl::tmesh3d(c(t(surface_data$vertices)), c(t(surface_data$faces)), homogeneous=FALSE);
+    mesh = fs.surface.to.tmesh3d(surface_data);
 
     morph_data_hl = hemilist.wrap(morph_like_data, hemi);
     cmr = common.makecmap.range(makecmap_options, lh_data = morph_data_hl$lh, rh_data = morph_data_hl$rh);
@@ -538,7 +558,7 @@ is.fs.coloredmesh <- function(x) inherits(x, "fs.coloredmesh")
 #' @export
 fs.coloredmesh <- function(mesh, col, hemi, render=TRUE, metadata=NULL, add_normals=FALSE) {
     if(freesurferformats::is.fs.surface(mesh)) {
-        mesh = rgl::tmesh3d(c(t(mesh$vertices)), c(t(mesh$faces)), homogeneous=FALSE);
+        mesh = fs.surface.to.tmesh3d(mesh);
     }
     if(!inherits(mesh, "mesh3d")) {
         stop("Parameter 'mesh' must be a mesh3d or fs.surface instance.");

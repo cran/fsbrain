@@ -70,6 +70,8 @@ group.morph.native <- function(subjects_dir, subjects_list, measure, hemi, forma
 #'
 #' @param df logical, whether to return a dataframe instead of the named list. The dataframe will have one subject per column, and *n* rows, where *n* is the number of vertices of the template subject surface.
 #'
+#' @param df_t logical, whether to return a transposed dataframe. Only one of df or df_t must be TRUE.
+#'
 #' @return named list with standard space morph data, the names are the subject identifiers from the subjects_list, and the values are morphometry data vectors (all with identical length, the data is mapped to a template subject).
 #'
 #' @family morphometry data functions
@@ -88,13 +90,31 @@ group.morph.native <- function(subjects_dir, subjects_list, measure, hemi, forma
 #' }
 #'
 #' @export
-group.morph.standard <- function(subjects_dir, subjects_list, measure, hemi='both', fwhm='10', template_subject='fsaverage', format='mgh', cortex_only=FALSE, df=FALSE) {
+group.morph.standard <- function(subjects_dir, subjects_list, measure, hemi='both', fwhm='10', template_subject='fsaverage', format='mgh', cortex_only=FALSE, df=FALSE, df_t=FALSE) {
 
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
     }
 
     check.subjectslist(subjects_list, subjects_dir=subjects_dir);
+
+    if(df_t) {
+        if(df) {
+            stop("Only one of parameters 'df' and 'df_t' can be TRUE.");
+        }
+        num_subjects = length(subjects_list);
+        num_verts = length(subject.morph.standard(subjects_dir, subjects_list[1], measure, hemi, fwhm=fwhm, template_subject=template_subject, format=format, cortex_only=cortex_only));
+        data_mtx = matrix(rep(0.0, num_subjects * num_verts), ncol = num_verts, nrow = num_subjects);
+
+        subject_index = 1L;
+        for(subject_id in subjects_list) {
+            data_mtx[subject_index, ] = subject.morph.standard(subjects_dir, subject_id, measure, hemi, fwhm=fwhm, template_subject=template_subject, format=format, cortex_only=cortex_only);
+            subject_index = subject_index + 1L;
+        }
+        df = as.data.frame(data_mtx);
+        rownames(df) = subjects_list;
+        return(df);
+    }
 
     data_all_subjects = list();
     for(subject_id in subjects_list) {
@@ -105,6 +125,142 @@ group.morph.standard <- function(subjects_dir, subjects_list, measure, hemi='bot
         return(as.data.frame(data_all_subjects));
     }
     return(data_all_subjects);
+}
+
+
+#' @title Split a per-vertex group data matrix for both hemispheres into a hemilist at given index.
+#'
+#' @param data numerical matrix or dataframe of per-vertex data, with subjects in columns
+#'
+#' @param numverts_lh scalar positive integer, the number of vertices in the left hemisphere mesh (defining the index where to split).
+#'
+#' @return \code{\link[fsbrain]{hemilist}} of the data, split at the index.
+#'
+#' @examples
+#' \dontrun{
+#'    fsbrain::download_optional_data();
+#'    fsbrain::download_fsaverage(TRUE);
+#'    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#'    subjects_list = c("subject1", "subject2");
+#'    data = group.morph.standard(subjects_dir, subjects_list, "thickness", "lh", fwhm='10');
+#'    numverts_lh = subject.num.verts(subjects_dir, "fsaverage", hemi="lh");
+#'    data_hemilist = groupmorph.split.hemilist(data, numverts_lh);
+#' }
+#'
+#' @export
+groupmorph.split.hemilist <- function(data, numverts_lh) {
+    return(list('lh'=data[1:numverts_lh, ], 'rh'=data[(numverts_lh+1L):nrow(data), ]));
+}
+
+
+#' @title Write standard space group data to a standard FreeSurfer directory stucture.
+#'
+#' @inheritParams group.morph.standard
+#'
+#' @inheritParams write.group.morph.standard.mf
+#'
+#' @param data the data matrix
+#'
+#' @param measure_name character string, the data part of the generated file names, e.g., 'thickness' or 'area'.
+#'
+#' @seealso \code{\link[fsbrain]{write.group.morph.standard.sf}} and \code{\link[fsbrain]{write.group.morph.standard.mf}}
+#'
+#' @param template_lh_numverts positive integer, the vertex count of the left hemi of the template subject, only used if 'hemi' is 'both'. If hemi is both and this is unspecified (left at the default value \code{NULL}), the template subject needs to exist in the 'subjects_dir' to determine the vertex count of the left hemisphere, so that the data can be split into the \code{lh} and \code{rh} files at the correct index.
+#'
+#' @examples
+#' \dontrun{
+#' dm = matrix(rnorm(325684 * 6, 5.0, 1.2), ncol = 6);
+#' subjects = paste("subject", seq(6), sep="");
+#' write.group.morph.standard("/tmp/groupdata", subjects, dm,
+#'   "rand", template_lh_numverts = 325684 / 2);
+#' }
+#'
+#' @export
+write.group.morph.standard <- function(subjects_dir, subjects_list, data, measure_name, hemi='both', fwhm='10', template_subject='fsaverage', format='mgh', create_dirs = TRUE, template_lh_numverts = NULL) {
+    if(! is.data.frame(data)) {
+        data = as.data.frame(data);
+    }
+
+    if(ncol(data) != length(subjects_list)) {
+        stop(sprintf("Received %d subjects in 'subjects_list' but 'data' is for %d subjects, counts must match.\n", length(subjects_list), ncol(data)));
+    }
+
+    if(hemi == "both") {
+        if(is.null(template_lh_numverts)) {
+            template_lh_numverts = subject.num.verts(subjects_dir, template_subject, surface = "white", hemi = "lh");
+        }
+        lh_filenames = subject.filepath.morph.standard(subjects_dir, subjects_list, measure = measure_name, hemi = "lh", fwhm = fwhm, template_subject = template_subject, format = format);
+        rh_filenames = subject.filepath.morph.standard(subjects_dir, subjects_list, measure = measure_name, hemi = "rh", fwhm = fwhm, template_subject = template_subject, format = format);
+        filepaths_hl = hemilist(lh_filenames, rh_filenames);
+        data_hl = groupmorph.split.hemilist(data, template_lh_numverts);
+    } else {
+        filepaths_hl = hemilist.wrap(subject.filepath.morph.standard(subjects_dir, subjects_list, measure = measure_name, hemi = hemi, fwhm = fwhm, template_subject = template_subject, format = format), hemi);
+        data_hl = hemilist.wrap(data, hemi);
+    }
+    write.group.morph.standard.mf(filepaths_hl, data_hl, format = format, create_dirs = create_dirs);
+}
+
+
+#' @title Write per-vertex standard space data for a group of subjects to given file names.
+#'
+#' @param filepaths_hl \code{\link[fsbrain]{hemilist}} of vectors of character strings, the full paths to the output files, including file names and extension.
+#'
+#' @param data_hl \code{\link[fsbrain]{hemilist}} of numerical matrix or data.frame, the morph data for the hemispheres of all subjects. See \code{groupmorph.split.hemilist} to get this format if you have a full matrix or dataframe for both hemispheres.
+#'
+#' @param format character string, a valid format spec for \code{freesurferformats::write.fs.morph}, e.g., "auto" to derive from filename, "mgh", "mgz", "curv" or others.
+#'
+#' @param create_dirs logical, whether to create missing (sub) directories which occur in the 'filepaths'.
+#'
+#' @seealso \code{\link[fsbrain]{write.group.morph.standard.sf}} to write the data to a single stacked file instead.
+#'
+#' @export
+write.group.morph.standard.mf <- function(filepaths_hl, data_hl, format = "auto", create_dirs = TRUE) {
+    if(! is.hemilist(data_hl)) {
+        stop("Parameter 'data_hl' must be a hemilist");
+    }
+    if(! is.hemilist(filepaths_hl)) {
+        stop("Parameter 'filepaths_hl' must be a hemilist");
+    }
+
+    if(! is.null(filepaths_hl$lh)) {
+        write.group.morph.standard.singlehemi(filepaths_hl$lh, data_hl$lh, format = format, create_dirs = create_dirs);
+    }
+    if(! is.null(filepaths_hl$rh)) {
+        write.group.morph.standard.singlehemi(filepaths_hl$rh, data_hl$rh, format = format, create_dirs = create_dirs);
+    }
+}
+
+
+#' @title Write single hemi per-vertex data for a group of subjects to given file names.
+#'
+#' @param filepaths vector of character strings, the full paths to the output files, including file names and extension.
+#'
+#' @param data numerical matrix or data.frame, the morph data for a single hemi (as returned by \code{group.morph.standard}). Number of subjects (columns) must match the length of the 'filepaths'.
+#'
+#' @param format character string, a valid format spec for \code{freesurferformats::write.fs.morph}, e.g., "auto" to derive from filename, "mgh", "mgz", "curv" or others.
+#'
+#' @param create_dirs logical, whether to create missing (sub) directories which occur in the 'filepaths'.
+#'
+#' @keywords internal
+write.group.morph.standard.singlehemi <- function(filepaths, data, format = "auto", create_dirs = TRUE) {
+    if(! is.data.frame(data)) {
+        data = as.data.frame(data);
+    }
+
+    if(ncol(data) != length(filepaths)) {
+        stop(sprintf("Received %d filepaths but data is for %d subjects, counts must match.\n", length(filepaths), ncol(data)));
+    }
+
+    subject_idx = 1L;
+    for (subject_name in colnames(data)) {
+        cfp = filepaths[subject_idx];
+        if(create_dirs & (! dir.exists(dirname(cfp)))) {
+            dir.create(dirname(cfp), recursive = TRUE);
+        }
+        freesurferformats::write.fs.morph(cfp, data[[subject_name]], format = format);
+        subject_idx = subject_idx + 1L;
+    }
+    return(invisible(NULL));
 }
 
 
@@ -120,7 +276,7 @@ group.morph.standard <- function(subjects_dir, subjects_list, measure, hemi='bot
 #'
 #' @note The file has typically been generated by running \code{mris_preproc} and/or \code{mri_surf2surf} on the command line, or written from R using \code{\link{write.group.morph.standard.sf}}. The file contains no information on the subject identifiers, you need to know the subjects and their order in the file. Same goes for the hemisphere.
 #'
-#' @seealso If you have created the input data file in FreeSurfer based on an FSGD file, you can read the subject identifiers from that FSGD file using \code{\link{read.md.subjects.from.fsgd}}.
+#' @seealso \code{\link[fsbrain]{write.group.morph.standard.mf}} to write the data to one file per hemi per subject instead. If you have created the input data file in FreeSurfer based on an FSGD file, you can read the subject identifiers from that FSGD file using \code{\link{read.md.subjects.from.fsgd}}.
 #'
 #' @export
 group.morph.standard.sf <- function(filepath, df=TRUE) {
