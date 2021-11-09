@@ -539,15 +539,21 @@ read.md.subjects.from.fsgd <- function(filepath) {
 #'
 #' @description This creates the `qdec.table.dat` and all required related files (the factor level files) in a directory.
 #'
-#' @param df a data.frame containing demographics information. Make sure to have factors encoded as factors (not strings), so that the QDEC level files get created for them. Must contain a column named 'fsid' with the subject IDs as first column.
+#' @param df a data.frame containing demographics information. Make sure to have factors encoded as factors (not strings), so that the QDEC level files get created for them. Must contain a column named 'fsid' with the subject IDs as first column. If you want a long table, make sure to use \code{\link{qdec.table.skeleton}} to generate the timepoint information instead of doing it manually.
 #'
 #' @param output_path character string, existing directory into which to write the QDEC files. If the last directory level does not exist, it will be created.
 #'
-#' @param long logical, whether this is for a longitudinal run. If so, the df must contain a column named 'fsid-base' as the second column.
+#' @param long logical, whether this is for a longitudinal run. If so, the df must contain a column named 'fsid-base' as the second column. It must also contain some column that gives the inter-scan time (from this scan timepoint to the previous one). The time unit (years, days, ...) is up to you, but typically one is interested in yearly change, the unit should be years. The name of the column (e.g., 'years') must be given to 'mris_slopes' later on the command line with the \code{--time <column_name>} argument. The requires information can be generated conveniently with the \code{\link{qdec.table.skeleton}} function.
+#'
+#' @param long_timecolumn character string, the name of the column holding the inter-scan time. Ignored unless parameter \code{long} is \code{TRUE}. See the description for parameter \code{long} for details.
 #'
 #' @param add_fake_level2 logical, whether to add a 2nd fake level to the level files of factors with only a single level. Such factors make little sense, but QDEC refuses to open the resulting files at all in such a case, which seems a bit overkill. If TRUE, a 2nd level named 'level2' will be added so that one can open the output in QDEC.
 #'
+#' @param qdec_file_name character string, the filename of the QDEC file to write. Must be only the file name (with extension if you want). See \code{output_path} to set the ouput directory where this will be created.
+#'
 #' @note IMPORTANT: If you import the dataframe from a text file with functions like \code{read.table}, they will by default replace dashes in column names with dots. So if you have a column named \code{fsid-base} in there, after loading it will be named \code{fsid.base}. See the \code{check.names} parameter for \code{read.table} to prevent that.
+#'
+#' @seealso The function \code{\link{qdec.table.skeleton}} to generate the data.frame used as the 'df' argument for this function.
 #'
 #' @examples
 #' \dontrun{
@@ -555,10 +561,16 @@ read.md.subjects.from.fsgd <- function(filepath) {
 #'    # or: dem = read.table("~/demographics.csv", check.names=FALSE);
 #'    # You may want to rearrange/rename/delete some columns here.
 #'    demographics.to.qdec.table.dat(dem, "~/data/study1/qdec/");
+#'    #
+#'    # a second one with real data:
+#'    dem = data.frame("ID"=paste("subject", seq(5), sep=""),
+#'       "age"=sample.int(20, 5)+10L, "isi"=rnorm(5, 2.0, 0.1)); #sample data.
+#'    long_table = qdec.table.skeleton(dem$ID, dem$isi);
+#'    demographics.to.qdec.table.dat(long_table, long=TRUE);
 #' }
 #' @importFrom utils write.table
 #' @export
-demographics.to.qdec.table.dat <- function(df, output_path=".", long=FALSE, add_fake_level2=FALSE) {
+demographics.to.qdec.table.dat <- function(df, output_path=".", long=FALSE, add_fake_level2=FALSE, long_timecolumn="years", qdec_file_name="qdec.table.dat") {
   if(! dir.exists(output_path)) {
     dir.create(output_path); # create paths, but only non-recursively.
   }
@@ -569,21 +581,24 @@ demographics.to.qdec.table.dat <- function(df, output_path=".", long=FALSE, add_
   # Check for required columns.
   required_columns = c("fsid");
   if(long) {
-    required_columns = c(required_columns, "fsid-base");
+    required_columns = c(required_columns, "fsid-base", long_timecolumn);
   }
   for(reqcol in required_columns) {
     if(! (reqcol %in% colnames(df))) {
       if(reqcol == "fsid-base") {
         if("fsid.base" %in% colnames(df)) {
-          warning("A column named 'fsid.base' was found in the dataframe. Was is renamed on import from 'fsid-base'? See the documentation for this function for more hints.");
+          warning("A column named 'fsid.base' was found in the dataframe but requird column 'fsid-base' is missing. Was it maybe accidentaly renamed on import by R functions to create a valid R variable name? See the note in the documentation for this function for more hints on how to avoid that.");
         }
+      }
+      if(reqcol == long_timecolumn) {
+        warning(sprintf("A time column giving the inter-scan time is required for a longitudinal table but was not found. Expected column name '%s' for this column, use parameter 'long_timecolumn' to adapt the name.\n", long_timecolumn));
       }
       stop(sprintf("The data.frame in parameter 'df' must contain a column named '%s'.\n", reqcol));
     }
   }
   # The fsid and fsid-base columns MUST be the first 2 columns.
   if(colnames(df)[1] != "fsid") {
-    stop("The first column must be the 'fsid' column");
+    stop("The first column must be the 'fsid' column.");
   }
   if(long) {
     if(colnames(df)[2] != "fsid-base") {
@@ -592,9 +607,9 @@ demographics.to.qdec.table.dat <- function(df, output_path=".", long=FALSE, add_
   }
 
   # Write te qdec.table.dat file.
-  qdec_table_dat_file = file.path(output_path, "qdec.table.dat");
+  qdec_table_dat_file = file.path(output_path, qdec_file_name);
   write.table(df, file=qdec_table_dat_file, quote = FALSE, col.names = TRUE, row.names = FALSE);
-  message(sprintf("Wrote qdec table file '%s' containing %d columns for %d subjects.\n", qdec_table_dat_file, ncol(df), nrow(df)));
+  message(sprintf("Wrote qdec table file '%s' containing %d columns and %d rows.\n", qdec_table_dat_file, ncol(df), nrow(df)));
 
   # Write the factor level files.
   for(qcol in colnames(df)) {
@@ -619,5 +634,212 @@ demographics.to.qdec.table.dat <- function(df, output_path=".", long=FALSE, add_
   }
 }
 
+
+#' @title Get subject names from sub directories of FreeSurfer long directory.
+#'
+#' @description Find all subject names for which the FreeSurfer longitudinal pipeline may have finished. These are the subjects that have the \code{_MR1} and \code{_MR2} directories.
+#'
+#' @param subjects_dir character string, path to a single recon-all longitudinal output dir from FreeSurfer.
+#'
+#' @keywords internal
+fslong.subjects.detect <- function(subjects_dir, timepoint_names=c("_MR1", "_MR2")) {
+  potential_subject_dirs_files = list.files(path=subjects_dir, pattern="_MR1$");
+  is_existing_dir = dir.exists(file.path(subjects_dir, potential_subject_dirs_files));
+  potential_subject_dirs = potential_subject_dirs_files[is_existing_dir];
+  potential_subject_dirs = potential_subject_dirs[nchar(potential_subject_dirs) > 3L]; # After we strip the '_MR1', something has to be left.
+  subjects = substring(potential_subject_dirs, 1L, nchar(potential_subject_dirs) - 4L);
+
+  # Check whether all directories exist
+  subjects_existing_dirs = c();
+  for(subject in subjects) {
+    sd_tp1 = paste(subject, timepoint_names[1], sep="");
+    sd_tp2 = paste(subject, timepoint_names[2], sep="");
+    if(dir.exists(file.path(subjects_dir, sd_tp1)) & dir.exists(file.path(subjects_dir, sd_tp2))) {
+      subjects_existing_dirs = c(subjects_existing_dirs, subject);
+    }
+  }
+
+  return(subjects_existing_dirs);
+}
+
+#' @title Find completely run FreeSurfer long subjects in a recon-all long output folder.
+#'
+#' @description This finds all subjects for which the FreeSurfer long pipeline finished. It can work without a subjects file, by scanning the directory names to find all potential subjects. It checks only whether the expected folder for each subject exists. For a subject named 'subject1' and 2 timepoints, these folders are checked for existence: subject1, subject1_MR1, subject1_MR2, subject1_MR1.long.subject1, subject1_MR2.long.subject1
+#'
+#' @param subjects_dir char, the recon-all long output directory
+#'
+#' @param subjects_to_check a vector of chars, the subject names (the cross-sectional names, without the '_MR1' or '_MR2' or 'long' suffixes). If NULL, the folder will be scanned for subjects, by looking for all '_MR1' folders and stripping the '_MR1' suffix.
+#'
+#' @param timepoints vector of integers, the timepoints to check. E.g., \code{c(1,2)} or \code{seq.int(2)} if you want to check scan timepoints '_MR1' and 'MR2'.
+#'
+#' @return a named list with entries 'subjects_okay' and 'subjects_missing_dirs'. Each of these two keys contains a vector of character strings, the respective subjects (a subset if 'subjects_to_check'). In 'subjects_okay' are all subjects for which the expected long directories were found, the rest is in 'subjects_missing_dirs'.
+#'
+#' @keywords internal
+fslong.subjects.finished <- function(subjects_dir, subjects_to_check=NULL, timepoints=seq.int(2)) {
+  if(! dir.exists(subjects_dir)) {
+    stop("The subjects_dir does not exist or cannot be read.");
+  }
+
+  # Let's figure out the subjects ourselves. We scan all directories that end with '_MR1' and strip that suffix.
+  if(is.null(subjects_to_check)) {
+    subjects_to_check = fslong.subjects.detect(subjects_dir);
+  }
+
+  subject_okay = rep(TRUE, length(subjects_to_check));
+  for(tp in timepoints) {
+    tp_suffix = sprintf("_MR%d", tp);
+    subject_okay[which(!dir.exists(file.path(subjects_dir, paste(subjects_to_check, tp_suffix, sep=""))))] = FALSE;
+
+    tp_long_suffix = sprintf("_MR%d.long.%s", tp, subjects_to_check);
+    subject_okay[which(!dir.exists(file.path(subjects_dir, paste(subjects_to_check, tp_long_suffix, sep=""))))] = FALSE;
+  }
+  return(list('subjects_okay'=subjects_to_check[subject_okay], 'subjects_missing_dirs'=subjects_to_check[!subject_okay]));
+}
+
+
+#' @title Check whether subjects for FS longitudinal pipeline contain data that is identical between time points.
+#'
+#' @inheritParams qdec.table.skeleton
+#'
+#' @inheritParams subject.morph.native
+#'
+#' @note Keep in mind that this checks on the level of the FreeSurfer reconstruction, which is not 100% deterministic. So identical raw MRI data may lead to different vertex counts in 2 runs. So this is not a final check to exclude copied raw MRI images, it only checks for copied FreeSurfer reconstructions.
+#'
+#' @keywords internal
+qc.fslong.checkidenticaldata <- function(subjects_dir, subjects_to_check=NULL, timepoint_names=c("_MR1", "_MR2"), measure="thickness", surface="white") {
+  # Let's figure out the subjects ourselves. We scan all directories that end with '_MR1' and strip that suffix.
+  if(is.null(subjects_to_check)) {
+    subjects_to_check = fslong.subjects.detect(subjects_dir);
+  }
+
+  suspects = c();
+  maybe_okay = c()
+
+  for(subject in subjects_to_check) {
+    sd_tp1 = paste(subject, timepoint_names[1], sep="");
+    sd_tp2 = paste(subject, timepoint_names[2], sep="");
+    nv_tp1 = subject.num.verts(subjects_dir, sd_tp1, surface=surface);
+    nv_tp2 = subject.num.verts(subjects_dir, sd_tp2, surface=surface);
+    if((nv_tp1$lh == nv_tp2$lh) & (nv_tp1$rh == nv_tp2$rh)) {
+      cat(sprintf("Subject '%s' has identical vertex counts for both %s native hemispheres between timepoints %s and %s.\n", subject, surface, timepoint_names[1], timepoint_names[2]));
+      suspects = c(suspects, subject);
+    } else {
+      maybe_okay = c(maybe_okay, subject);
+    }
+  }
+  return(list("suspects"=suspects, "maybe_okay"=maybe_okay));
+}
+
+
+#' @title Generate skeleton dataframe for FreeSurfer QDEC long file from subjects list.
+#'
+#' @param subjects_list vector of character strings, the Freesurfer subject IDs (cross-sectional names, without any suffixes like \code{_MR1, long,} etc.)
+#'
+#' @param isi numerical vector, the inter-scan interval for the subjects, in a unit of your choice. Typically in years.
+#'
+#' @param isi_name character string, the name for the isi columns. Defaults to "years".
+#'
+#' @param timepoint_names vector of character strings, the timepoint names. These are mandatory for QDEC, so there should be very little reason to change them. Leave along unless you know what you are doing.
+#'
+#' @return data.frame with 3 columns named fsid and fsid-base and 'isi_name', a data.frame to use with the \code{\link{demographics.to.qdec.table.dat}} function.
+#'
+#' @seealso The function \code{\link{demographics.to.qdec.table.dat}} to write the result to a QDEC file.
+#'
+#' @examples
+#'     dem = data.frame("ID"=paste("subject", seq(5), sep=""),
+#'       "age"=sample.int(20, 5)+10L, "isi"=rnorm(5, 2.0, 0.1)); #sample data.
+#'     qdec.table.skeleton(dem$ID, dem$isi);
+#'
+#' @export
+qdec.table.skeleton <- function(subjects_list, isi=rep(0.8, length(subjects_list)), isi_name="years", timepoint_names=c("_MR1", "_MR2")) {
+
+  if(length(subjects_list) != length(isi)) {
+    stop("Length of parameters 'subjects_list' and 'isi' must match.");
+  }
+
+  num_timepoints = 2L;
+  num_columns = length(subjects_list) * num_timepoints;
+  qdec = data.frame("fsid"=rep("?", num_columns), "fsid-base"=rep("?", num_columns), stringsAsFactors = F, check.names = F);
+  qdec[[isi_name]] = rep(0.0, num_columns); # temporary, will be overwritten later.
+
+  current_subject_index = 1L;
+  for(subject in subjects_list) {
+    fsid_base = subject;
+    df_start_column = current_subject_index * 2L - 1L; # for this subject
+    df_end_column = df_start_column + 1L;              # for this subject
+    qdec$fsid[df_start_column] = paste(subject, timepoint_names[1], sep="");
+    qdec$fsid[df_end_column] = paste(subject, timepoint_names[2], sep="");
+    qdec$`fsid-base`[df_start_column:df_end_column] = fsid_base;
+    qdec[[isi_name]][df_start_column] = 0.0; # the first scan timepoint is always at time 0.
+    qdec[[isi_name]][df_end_column] = isi[current_subject_index]; # the first scan timepoint is always at time 0.
+    current_subject_index = current_subject_index + 1L;
+  }
+  return(qdec);
+}
+
+
+
+
+#' @title Filter QDEC long table for subjects.
+#'
+#' @param qdec_file the source QDEC table
+#'
+#' @param subjects_list the subjects to extract from the QDEC file
+#'
+#' @param output_qdec_file optional character string, a file name to which to write the resulting, filtered table. If not given, no file is created.
+#'
+#' @return the data.frame containing the subset of subjects from the original QDEC file.
+#'
+#' @note This assumes that there are 2 time points per subject and warns if not all requested subjects were found.
+#'
+#' @keywords internal
+#' @importFrom utils write.table
+qdec.table.filter <- function(qdec_file, subjects_list, output_qdec_file=NULL) {
+  qdd = read.table(qdec_file, header=TRUE, check.names = FALSE, stringsAsFactors = FALSE);
+  if(! "fsid-base" %in% colnames(qdd)) {
+    stop("Invalid longitudinal 'qdec_file': it does not contain a column named 'fsid-base'.");
+  }
+  cat(sprintf("Input QDEC file '%s' contains %d rows.\n", qdec_file, nrow(qdd)));
+  subset_qdd = qdd[qdd$`fsid-base` %in% subjects_list, ];
+  if(! is.null(output_qdec_file)) {
+    write.table(subset_qdd, file=output_qdec_file, quote = FALSE, col.names = TRUE, row.names = FALSE);
+    cat(sprintf("Writing filtered table to file '%s'.\n", output_qdec_file));
+  }
+  num_subjects_extracted = as.integer(nrow(subset_qdd)/2L);
+  if(num_subjects_extracted != length(subjects_list)) {
+    warning(sprintf("Requested to extract %d subjects from QDEC table, but %d found.\n", length(subjects_list), num_subjects_extracted));
+  }
+  return(subset_qdd);
+}
+
+
+
+#' @title Write deepcopy list for longitudinal subjects.
+#'
+#' @return vector of character strings, the file entries. Set ouput_file to also write them to a file.
+#'
+#' @keywords internal
+deepcopylist.long <- function(measures=c("thickness", "area",  "volume"), fwhms=c("5", "10", "15"), hemis=c("lh", "rh"), long_measures=c("avg", "rate", "spc", "pc1"), template="fsaverage", has_stacked_file=TRUE, output_file=NULL) {
+  filelist = c();
+  for(measure in measures) {
+    for (hemi in hemis) {
+      for(long_measure in long_measures) {
+        for(fwhm in fwhms) {
+          filename = sprintf("%s.long.%s-%s.fwhm%s.%s.mgh", hemi, measure, long_measure, fwhm, template);
+          filelist = c(filelist, filename);
+        }
+      }
+      if(has_stacked_file) {
+        stack_filename=sprintf("%s.long.%s-stack.mgh", hemi, measure);
+        filelist = c(filelist, stack_filename);
+      }
+    }
+  }
+  if(! is.null(output_file)) {
+    write.table(data.frame(filelist), file=output_file, quote = FALSE, col.names = FALSE, row.names = FALSE);
+    cat(sprintf("Deepcopy list with %d entries written to file '%s'.\n", length(filelist), output_file));
+  }
+  return(filelist);
+}
 
 

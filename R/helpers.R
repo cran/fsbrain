@@ -25,7 +25,7 @@ demo <- function() {
   fsbrain::download_optional_data();
   sjd = get_optional_data_filepath("subjects_dir");
   sj = "subject1";
-  return(invisible(vis.subject.morph.native(sjd, sj, "thickness")));
+  return(invisible(vis.subject.morph.native(sjd, sj, "thickness", cortex_only = T, draw_colorbar = T)));
 }
 
 
@@ -100,9 +100,9 @@ mesh.vertex.included.faces <- function(surface_mesh, source_vertices) {
 #'
 #' @description For each region in an atlas, compute the outer border and color the respective vertices in the region-specific color from the annot's colortable.
 #'
-#' @param annotdata an annotation, as returned by functions like \code{\link[fsbrain]{subject.annot}}.
+#' @param annotdata an annotation, as returned by functions like \code{\link[fsbrain]{subject.annot}}. If a character string, interpreted as a path to a file containing such data, and loaded with \code{freesurferformats::read.fs.annot}
 #'
-#' @param surface_mesh brain surface mesh, as returned by functions like \code{\link[fsbrain]{subject.surface}} or \code{\link[freesurferformats]{read.fs.surface}}.
+#' @param surface_mesh brain surface mesh, as returned by functions like \code{\link[fsbrain]{subject.surface}} or \code{\link[freesurferformats]{read.fs.surface}}. If a character string, interpreted as a path to a file containing such data, and loaded with \code{freesurferformats::read.fs.surface}
 #'
 #' @param background color, the background color to assign to the non-border parts of the regions. Defaults to 'white'.
 #'
@@ -124,10 +124,16 @@ mesh.vertex.included.faces <- function(surface_mesh, source_vertices) {
 # @importFrom doParallel registerDoParallel
 annot.outline <- function(annotdata, surface_mesh, background="white", silent=TRUE, expand_inwards=0L, outline_color=NULL, limit_to_regions=NULL) {
 
+    if(is.character(annotdata)) {
+      annotdate = freesurferformats::read.fs.annot(annotdata);
+    }
     if(! freesurferformats::is.fs.annot(annotdata)) {
       stop("Parameter 'annotdata' must be an fs.annot instance.");
     }
 
+  if(is.character(surface_mesh)) {
+    surface_mesh = freesurferformats::read.fs.surface(surface_mesh);
+  }
     if(! freesurferformats::is.fs.surface(surface_mesh)) {
       stop("Parameter 'surface_mesh' must be an fs.surface instance.");
     }
@@ -179,6 +185,102 @@ annot.outline <- function(annotdata, surface_mesh, background="white", silent=TR
         }
     }
     return(col);
+}
+
+
+#' @title Compute annot border vertices.
+#'
+#' @inheritParams vis.subject.morph.native
+#'
+#' @inheritParams subject.annot
+#'
+#' @inheritParams annot.outline
+#'
+#' @return hemilist of integer vectors, the vertices in the border
+subject.annot.border <- function (subjects_dir, subject_id, hemi, atlas, surface="white", expand_inwards=0L, limit_to_regions=NULL) {
+  if (!(hemi %in% c("lh", "rh", "both"))) {
+    stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh' or 'both' but is '%s'.\n", hemi));
+  }
+  if (hemi == "both") {
+    res = list();
+    res$lh = subject.annot.border(subjects_dir, subject_id, hemi="lh", atlas=atlas, surface=surface, expand_inwards=expand_inwards, limit_to_regions=limit_to_regions);
+    res$rh = subject.annot.border(subjects_dir, subject_id, hemi="rh", atlas=atlas, surface=surface, expand_inwards=expand_inwards, limit_to_regions=limit_to_regions);
+    return(res);
+  }
+  else {
+    annot_file = file.path(subjects_dir, subject_id, "label", sprintf("%s.%s.annot", hemi, atlas));
+    if (!file.exists(annot_file)) {
+      stop(sprintf("Annotation file '%s' for subject '%s' atlas '%s' hemi '%s' cannot be accessed.\n", annot_file, subject_id, atlas, hemi));
+    }
+    annot = freesurferformats::read.fs.annot(annot_file);
+    surface_file = file.path(subjects_dir, subject_id, "surf", sprintf("%s.%s", hemi, surface));
+    if (!file.exists(surface_file)) {
+      stop(sprintf("Surface file '%s' for subject '%s' surface '%s' hemi '%s' cannot be accessed.\n", surface_file, subject_id, surface, hemi));
+    }
+    surface = freesurferformats::read.fs.surface(surface_file);
+    border_vertices = annot.outline.border.vertices(annot, surface, expand_inwards=expand_inwards, limit_to_regions=limit_to_regions);
+    return(border_vertices);
+  }
+}
+
+
+#' @title Compute the border vertices for each region in an annot.
+#'
+#' @inheritParams annot.outline
+#'
+#' @return named list, the keys are the region names and the values are vectors of integers encoding vertex indices.
+#'
+#' @export
+annot.outline.border.vertices <- function(annotdata, surface_mesh, silent=TRUE, expand_inwards=0L, limit_to_regions=NULL) {
+
+  if(is.character(annotdata)) {
+    annotdate = freesurferformats::read.fs.annot(annotdata);
+  }
+  if(! freesurferformats::is.fs.annot(annotdata)) {
+    stop("Parameter 'annotdata' must be an fs.annot instance.");
+  }
+
+  if(is.character(surface_mesh)) {
+    surface_mesh = freesurferformats::read.fs.surface(surface_mesh);
+  }
+  if(! freesurferformats::is.fs.surface(surface_mesh)) {
+    stop("Parameter 'surface_mesh' must be an fs.surface instance.");
+  }
+
+  if(length(annotdata$vertices) != nrow(surface_mesh$vertices)) {
+    stop(sprintf("Annotation is for %d vertices but mesh contains %d, vertex counts must match.\n", length(annotdata$vertices), nrow(surface_mesh$vertices)));
+  }
+
+  border_vertices = list();
+
+  for(region_idx in seq_len(annotdata$colortable$num_entries)) {
+    region_name = annotdata$colortable$struct_names[[region_idx]];
+
+    region_index_in_limit_to_regions_parameter = NULL;
+
+    if(! is.null(limit_to_regions)) {
+      if(! is.character(limit_to_regions)) {
+        stop("Parameter 'limit_to_regions' must be NULL or a vector of character strings.");
+      }
+      if(! region_name %in% limit_to_regions) {
+        next;
+      } else {
+        region_index_in_limit_to_regions_parameter = which(limit_to_regions == region_name);
+        if(length(region_index_in_limit_to_regions_parameter) != 1L) {
+          stop("Regions in parameter 'limit_to_regions' must be unique.");
+        }
+      }
+    }
+
+    if(!silent) {
+      message(sprintf("Computing outline for region %d of %d: '%s'\n", region_idx, annotdata$colortable$num_entries, region_name));
+    }
+    label_vertices = label.from.annotdata(annotdata, region_name, error_on_invalid_region = FALSE);
+    label_border = label.border(surface_mesh, label_vertices, expand_inwards=expand_inwards);
+    border_vertices[[region_name]] = label_border$vertices;
+
+  }
+  return(border_vertices);
 }
 
 
@@ -434,6 +536,101 @@ vis.paths <- function(coords_list, path_color = "#FF0000") {
 }
 
 
+#sjd = fsaverage.path(T);
+#sj = "fsaverage";
+#mesh = subject.surface(sjd, sj, hemi="lh");
+#lab = subject.label(sjd, sj, "cortex", hemi = "lh");
+#sm = submesh.vertex(mesh, lab);
+
+#' @title Create a submesh including only the given vertices.
+#'
+#' @param surface_mesh an fs.surface instance, the original mesh
+#'
+#' @param old_vertex_indices_to_use integer vector, the vertex indices of the 'surface_mesh' that should be used to construct the new mesh.
+#'
+#' @return the new mesh, made up of the given 'old_vertex_indices_to_use' and all (complete) faces that exist between the query vertices in the source mesh.
+#'
+#' @note THIS FUNCTION IS NOT IMPLEMENTED YET, THE RETURNED MESH IS BROKEN.
+#'
+#' @keywords internal
+#' @importFrom stats complete.cases
+submesh.vertex <- function(surface_mesh, old_vertex_indices_to_use) {
+
+  if(! is.vector(old_vertex_indices_to_use)) {
+    stop("Argument 'old_vertex_indices_to_use' must be a vector.");
+  }
+  old_vertex_indices_to_use = as.integer(old_vertex_indices_to_use);
+
+  nv_old = nrow(surface_mesh$vertices);
+  if(min(old_vertex_indices_to_use) < 1L | max(old_vertex_indices_to_use) > nv_old) {
+    stop("Invalid 'old_vertex_indices_to_use' parameter: must be integer vector containing values >=1 and <=num_verts(surface_mesh).");
+  }
+
+  nv_new = length(old_vertex_indices_to_use);
+
+  vert_mapping = rep(NA, nv_old);
+
+  # Create a map from the old vertex indices to the new ones. Needed to construct faces later.
+  mapped_new_vertex_index = 1L;
+  vertex_is_retained = rep(FALSE, nv_old);
+  vertex_is_retained[old_vertex_indices_to_use] = TRUE;
+  for(old_vert_idx in seq(nv_old)) {
+    if(vertex_is_retained[old_vert_idx]) {
+      vert_mapping[old_vert_idx] = mapped_new_vertex_index;
+      mapped_new_vertex_index = mapped_new_vertex_index + 1L;
+    } # no 'else' needed, the rest stays at NA.
+  }
+
+  # Use the subset of the old vertices (simply grab coords).
+  new_vertices = surface_mesh$vertices[old_vertex_indices_to_use, ];
+  cat(sprintf("new_vertices has dim %d, %d.\n", dim(new_vertices)[1], dim(new_vertices)[2]));
+  if(nv_new != dim(new_vertices)[1]) {
+    stop("New vertex count does not match expectation.");
+  }
+
+  # Now for the faces.
+  nf_old = nrow(surface_mesh$faces);
+  new_faces = matrix(rep(NA, nf_old*3), ncol=3, nrow=nf_old); #over-allocate and remove invalid ones later.
+  #new_faces = matrix(ncol=3, nrow=0);
+
+  new_face_idx = 0L;
+  for(old_face_idx in seq(nf_old)) {
+    new_face_idx = new_face_idx + 1L;
+    old_face_indices = surface_mesh$faces[old_face_idx, ];
+    new_face_indices = vert_mapping[old_face_indices];
+
+    #cat(sprintf("Checking old face %d with old verts %d %d %d and new verts %d %d %d.\n", old_face_idx, old_face_indices[1], old_face_indices[2], old_face_indices[3], new_face_indices[1], new_face_indices[2], new_face_indices[3]));
+    new_faces[new_face_idx, ] = new_face_indices;
+
+    #if(! any(is.na(new_face_indices))) {
+    #  # All vertices of the old face have a valid mapping in the new mesh, add the new face.
+    #  new_faces = rbind(new_faces, new_face_indices);
+    #}
+  }
+
+  df = data.frame(new_faces);
+  cat(sprintf("Full faces Df has %d rows.\n", nrow(df)));
+  new_faces = data.matrix(df[stats::complete.cases(df),]); # remove all faces containing an NA vertex
+  cat(sprintf("Filtered Face matrix has %d rows.\n", nrow(new_faces)));
+
+  new_mesh = list('vertices'=new_vertices, 'faces'=new_faces); #, 'vert_mapping'=vert_mapping); # the sub mesh
+  class(new_mesh) = c(class(new_mesh), 'fs.surface');
+  return(new_mesh);
+}
+
+
+#' @keywords internal
+label.border.fast <- function(surface_mesh, label) {
+  if(freesurferformats::is.fs.label(label)) {
+    label_vertices = label$vertexdata$vertex_index;
+  } else {
+    label_vertices = label;
+  }
+
+  #label_mesh = submesh.vertex(surface_mesh, label_vertices);
+  return(NULL);
+}
+
 #' @title Compute border of a label.
 #'
 #' @description Compute the border of a label (i.e., a subset of the vertices of a mesh). The border thickness can be specified. Useful to draw the outline of a region, e.g., a significant cluster on the surface or a part of a ROI from a brain parcellation.
@@ -465,6 +662,12 @@ label.border <- function(surface_mesh, label, inner_only=TRUE, expand_inwards=0L
     if(length(label_vertices) == 0L) {
         return(list("vertices"=c(), "edges"=c(), "faces"=c()));
     }
+
+    #if(expand_inwards == 0L & derive == FALSE & inner_only == TRUE) {
+    #  if(requireNamespace("Rvcg", quietly = TRUE)) {
+    #    return(label.border.fast(surface_mesh, label));
+    #  }
+    #}
 
     if(inner_only) {
       label_faces = mesh.vertex.included.faces(surface_mesh, label_vertices);
@@ -666,7 +869,7 @@ read.colorcsv <- function(filepath) {
 getIn <- function(named_list, listkeys, default=NULL) {
   num_keys = length(listkeys);
   if(length(named_list) < 1L | num_keys  < 1L) {
-    return(NULL);
+    return(default);
   }
   nlist = named_list;
   current_key_index = 0L;
@@ -674,18 +877,18 @@ getIn <- function(named_list, listkeys, default=NULL) {
     current_key_index = current_key_index + 1L;
     if(current_key_index < num_keys) {
       if(!is.list(nlist)) {
-        return(NULL);
+        return(default);
       }
       if(lkey %in% names(nlist)) {
         nlist = nlist[[lkey]];
       } else {
-        return(NULL);
+        return(default);
       }
     } else {
       if(lkey %in% names(nlist)) {
         return(nlist[[lkey]]);
       } else {
-        return(NULL);
+        return(default);
       }
     }
   }

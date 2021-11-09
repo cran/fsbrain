@@ -7,7 +7,7 @@
 clip.data(data, lower = 0.05, upper = 0.95)
 }
 \arguments{
-\item{data, }{numeric vector. The input data. Can also be a hemi list.}
+\item{data, }{numeric vector. The input data. Can also be a \code{\link{hemilist}}.}
 
 \item{lower, }{numeric. The probability for the lower quantile, defaults to `0.05`.}
 
@@ -17,10 +17,13 @@ clip.data(data, lower = 0.05, upper = 0.95)
 numeric vector. The output data.
 }
 \description{
-Set all data values outside the given quantile range to the border values. This is usefull to properly visualize morphometry data that includes outliers. These outliers negatively affect the colormap, as all the non-outlier values become hard to distinguish. This function can be used to filter the data before plotting it.
+Set all data values outside the given quantile range to the border values. This is useful to properly visualize morphometry data that includes outliers. These outliers negatively affect the colormap, as all the non-outlier values become hard to distinguish. This function can be used to filter the data before plotting it.
 }
 \examples{
    full_data = rnorm(50, 3, 1);
    clipped = clip.data(full_data);
 
+}
+\seealso{
+The \code{\link{clip_fun}} function is more convenient when used in \code{\link{rglactions}}, as it allows specification of custom quantiles.
 }
