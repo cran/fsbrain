@@ -1,4 +1,4 @@
-ab4b1fb4a9b49bd50bf19d223a95d9ab *DESCRIPTION
+cef1f3a4ca14a9ae094b85284bb7cb90 *DESCRIPTION
 89e96b4ad67af015ca23525b9d29d14d *LICENSE
 ef8a590d459939562ef15e19ee262a7f *NAMESPACE
 31448c5437a7bf152d65c0d95907871f *R/atlas.R
@@ -9,7 +9,7 @@ c825cf978bd6fc53b026a3da96d70d0a *R/cbar_magick.R
 c778db46b1eaf2e58ffcec229d39d6e4 *R/coloredmesh.R
 d89ab451e307b7df57847ca95b270864 *R/curvature.R
 b9ca5ba33d0dcd46b74487bb43d071b0 *R/export.R
-e437fbfce97411026fde3346c00093f1 *R/fsdir_abstraction_group.R
+d7505fc0ee3ba4f82feb03ea7f905ef4 *R/fsdir_abstraction_group.R
 3731a7169d733c757b14afa5c985f47c *R/fsdir_abstraction_subject.R
 701e119eb5e568253766d54377163126 *R/geodesic.R
 fde881509fe0bfb579df21c0ec62ab08 *R/helpers.R
@@ -35,7 +35,7 @@ dbb7f92f422ea5807c68f10be046afa3 *R/vis_multiview.R
 21cfe2384f0ca5e4f3786a680af58f32 *R/vis_volume.R
 3d981001b94aa5010d13ab9519a7a1d7 *R/vis_volume_3d.R
 9c3681dccd4b3502815c32b3544c399a *R/volume.R
-4ef3fd13fe05f83cee8ec9d571d3c011 *build/vignette.rds
+2b9c348f470c944de560c4a83080c5a5 *build/vignette.rds
 294935d7e1ea2fea965c7bf59026481e *inst/CITATION
 b99348ca6ebf9ff7781b88bbf2231e1a *inst/doc/fsbrain.R
 b9fa3adbc01441048071a432de20b136 *inst/doc/fsbrain.Rmd
@@ -378,7 +378,7 @@ ef051267b2a169e77431797436d16a41 *man/vol.slice.Rd
 cce9ca2b887e478fcca78ddf5e5b8022 *man/wrapped.image.append.Rd
 7585d2060961b7ff04c8652ca66646db *man/write.group.morph.standard.Rd
 35987d1a0d2b7348a942acd208e6fbe3 *man/write.group.morph.standard.mf.Rd
-67bb0755c5e058745cb5ea5b923cc740 *man/write.group.morph.standard.sf.Rd
+a19743d1d8e1a9487d8ea6e88df43c88 *man/write.group.morph.standard.sf.Rd
 896ae135968cc9a2fb19c801ac44139e *man/write.group.morph.standard.singlehemi.Rd
 0c8ca60bea09883978251edb378a7f28 *man/write.region.aggregated.Rd
 37e3264e8ce7e93db7d47727f2bf28f6 *man/write.region.values.Rd
