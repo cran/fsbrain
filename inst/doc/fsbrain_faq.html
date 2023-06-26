@@ -14,25 +14,38 @@
 
 <title>The fsbrain FAQ</title>
 
-<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
@@ -50,55 +63,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -107,13 +119,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -125,7 +144,187 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 
 
-<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
 
 
 
@@ -144,302 +343,557 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="input-data" class="section level2">
 <h2>Input data</h2>
 <div id="q-what-kind-of-input-data-do-i-need-for-fsbrain" class="section level3">
-<h3><strong>Q</strong>: What kind of input data do I need for fsbrain?</h3>
-<p>The <em>fsbrain</em> software is designed to be used with the output of <a href="http://freesurfer.net/">FreeSurfer</a> and similar neuroimaging software packages. Running FreeSurfer’s <em>recon-all</em> on your T1w MRI scan results in a directory structure full of different files and file types for each subject. The <em>fsbrain</em> library uses knowledge on this directory layout to load the proper data.</p>
-<p>However, while designed primarily with FreeSurfer in mind, fsbrain is not limited to FreeSurfer output, see below.</p>
+<h3><strong>Q</strong>: What kind of input data do I need for
+fsbrain?</h3>
+<p>The <em>fsbrain</em> software is designed to be used with the output
+of <a href="http://freesurfer.net/">FreeSurfer</a> and similar
+neuroimaging software packages. Running FreeSurfer’s <em>recon-all</em>
+on your T1w MRI scan results in a directory structure full of different
+files and file types for each subject. The <em>fsbrain</em> library uses
+knowledge on this directory layout to load the proper data.</p>
+<p>However, while designed primarily with FreeSurfer in mind, fsbrain is
+not limited to FreeSurfer output, see below.</p>
 </div>
 <div id="q-which-file-formats-are-supported" class="section level3">
 <h3><strong>Q</strong>: Which file formats are supported?</h3>
-<p>The <em>fsbrain</em> library uses <a href="https://github.com/dfsp-spirit/freesurferformats">freesurferformats</a> to load a variety of neuroimaging file formats, including data exchange formats used by other brain imaging software. See the <a href="https://github.com/dfsp-spirit/freesurferformats">freesurferformats website</a> for the full list.</p>
+<p>The <em>fsbrain</em> library uses <a href="https://github.com/dfsp-spirit/freesurferformats">freesurferformats</a>
+to load a variety of neuroimaging file formats, including data exchange
+formats used by other brain imaging software. See the <a href="https://github.com/dfsp-spirit/freesurferformats">freesurferformats
+website</a> for the full list.</p>
 </div>
 <div id="q-i-want-to-load-a-single-file-that-is-somewhere-on-my-harddisk-i.e.-not-within-a-standard-recon-all-output-directory-structure.-how-can-i-load-it" class="section level3">
-<h3><strong>Q</strong>: I want to load a single file that is <em>somewhere</em> on my harddisk, i.e., not within a standard recon-all output directory structure. How can I load it?</h3>
-<p>You can use <a href="https://github.com/dfsp-spirit/freesurferformats">freesurferformats</a> directly to load the data, then pass it to <em>fsbrain</em>. See the next question for an example.</p>
+<h3><strong>Q</strong>: I want to load a single file that is
+<em>somewhere</em> on my harddisk, i.e., not within a standard recon-all
+output directory structure. How can I load it?</h3>
+<p>You can use <a href="https://github.com/dfsp-spirit/freesurferformats">freesurferformats</a>
+directly to load the data, then pass it to <em>fsbrain</em>. See the
+next question for an example.</p>
 </div>
 <div id="q-can-i-use-fsbrain-to-visualize-data-from-spm12-cat12-or-other-software-packages" class="section level3">
-<h3><strong>Q</strong>: Can I use fsbrain to visualize data from SPM12 / CAT12 or other software packages?</h3>
-<p>Yes, the <a href="http://www.neuro.uni-jena.de/cat/">computational anatomy toolbox (CAT12)</a> for <a href="https://www.fil.ion.ucl.ac.uk/spm/">SPM</a> writes surfaces in GIFTI format and the morphometry data in curv format, both formats are supported by <em>fsbrain</em>. After running CAT12 surface measure computation on your subject <code>subject1</code>, you should have the following files in the <em>surf/</em> subdir:</p>
+<h3><strong>Q</strong>: Can I use fsbrain to visualize data from SPM12 /
+CAT12 or other software packages?</h3>
+<p>Yes, the <a href="https://neuro-jena.github.io/cat/">computational
+anatomy toolbox (CAT12)</a> for <a href="https://www.fil.ion.ucl.ac.uk/spm/">SPM</a> writes surfaces in
+GIFTI format and the morphometry data in curv format, both formats are
+supported by <em>fsbrain</em>. After running CAT12 surface measure
+computation on your subject <code>subject1</code>, you should have the
+following files in the <em>surf/</em> subdir:</p>
 <ul>
 <li>lh.central.subject1.gii</li>
 <li>lh.gyrification.subject1</li>
 </ul>
-<p>Try the following to visualize the gyrification data for the left hemisphere in <em>fsbrain</em>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>lh_surf <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read_nisurface</span>(<span class="st">&#39;~/data/subject1_spm12/surf/lh.central.subject1.gii&#39;</span>);</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>lh_gyrification <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.curv</span>(<span class="st">&#39;~/data/subject1_spm12/surf/lh.gyrification.subject1&#39;</span>);</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.data.on.subject</span>(<span class="st">&#39;~/data/&#39;</span>, <span class="st">&#39;subject1_spm12&#39;</span>, lh_gyrification, <span class="cn">NULL</span>, <span class="at">surface=</span>lh_surf);</span></code></pre></div>
-<p>You should be able to load data from a number of different neuroimaging software packages with freesurferformats, as it supports the very common NIFTI and GIFTI file formats.</p>
+<p>Try the following to visualize the gyrification data for the left
+hemisphere in <em>fsbrain</em>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>lh_surf <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read_nisurface</span>(<span class="st">&#39;~/data/subject1_spm12/surf/lh.central.subject1.gii&#39;</span>);</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>lh_gyrification <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.curv</span>(<span class="st">&#39;~/data/subject1_spm12/surf/lh.gyrification.subject1&#39;</span>);</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">vis.data.on.subject</span>(<span class="st">&#39;~/data/&#39;</span>, <span class="st">&#39;subject1_spm12&#39;</span>, lh_gyrification, <span class="cn">NULL</span>, <span class="at">surface=</span>lh_surf);</span></code></pre></div>
+<p>You should be able to load data from a number of different
+neuroimaging software packages with freesurferformats, as it supports
+the very common NIFTI and GIFTI file formats.</p>
 </div>
-<div id="what-is-the-best-way-to-visualize-data-from-data-computed-in-r-or-from-arbitrary-files-that-do-not-follow-the-freesurfer-recon-all-directory-layout" class="section level3">
-<h3>What is the best way to visualize data from data computed in R (or from arbitrary files that do not follow the FreeSurfer recon-all directory layout)?</h3>
-<p>One should use the <code>vis.subject.pre</code> function for that. Here is a full example that loads both the surfaces and the per-vertex data into R first and the creates a plot based on this pre-loaded data, without accessing any files anymore:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;fsbrain&quot;</span>);</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;freesurferformats&quot;</span>);</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Manually load some data from wherever you want. You can also compute this data in R of course, without loading anything.</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>my_data_dir<span class="ot">=</span><span class="st">&quot;~/data/study1/subject1&quot;</span>; <span class="co"># just an example.</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>surf_lh <span class="ot">&lt;-</span> <span class="fu">read.fs.surface</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;lh_sphere.surf.gii&quot;</span>));</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>surf_rh <span class="ot">&lt;-</span> <span class="fu">read.fs.surface</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;whatever/rh_sphere.obj&quot;</span>));</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>pvd_lh <span class="ot">=</span> <span class="fu">read.fs.morph</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;lh.curv&quot;</span>)); <span class="co"># pvd is for &#39;per-vertex data&#39;.</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>pvd_rh <span class="ot">=</span> <span class="fu">read.fs.morph</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;surf/converted/rh.mean_curvature.mgh&quot;</span>));</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Call high-level API for live plot.</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>surfaces <span class="ot">=</span> <span class="fu">hemilist</span>(surf_lh, surf_rh);</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>pvd  <span class="ot">=</span> <span class="fu">hemilist</span>(pvd_lh, pvd_rh);</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.pre</span>(surfaces, pvd , <span class="at">draw_colorbar =</span> T, <span class="at">rglactions =</span> <span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span><span class="fu">limit_fun</span>(<span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span>)));</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Export if you feel like it</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(cm, <span class="at">output_img =</span> <span class="st">&quot;~/out.png&quot;</span>, <span class="at">grid_like =</span> <span class="cn">FALSE</span>, <span class="at">colorbar_legend=</span><span class="st">&quot;Mean curvature [1/mm]&quot;</span>);</span></code></pre></div>
+<div id="what-is-the-best-way-to-visualize-data-computed-in-r-or-from-arbitrary-files-that-do-not-follow-the-freesurfer-recon-all-directory-layout" class="section level3">
+<h3>What is the best way to visualize data computed in R (or from
+arbitrary files that do not follow the FreeSurfer recon-all directory
+layout)?</h3>
+<p>One should use the <code>vis.subject.pre</code> function for that.
+Here is a full example that loads both the surfaces and the per-vertex
+data into R first and the creates a plot based on this pre-loaded data,
+without accessing any files anymore:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;fsbrain&quot;</span>);</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;freesurferformats&quot;</span>);</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Manually load some data from wherever you want. You can also compute this data in R of course, without loading anything.</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>my_data_dir<span class="ot">=</span><span class="st">&quot;~/data/study1/subject1&quot;</span>; <span class="co"># just an example.</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>surf_lh <span class="ot">&lt;-</span> <span class="fu">read.fs.surface</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;lh_sphere.surf.gii&quot;</span>));</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>surf_rh <span class="ot">&lt;-</span> <span class="fu">read.fs.surface</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;whatever/rh_sphere.obj&quot;</span>));</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>pvd_lh <span class="ot">=</span> <span class="fu">read.fs.morph</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;lh.curv&quot;</span>)); <span class="co"># pvd is for &#39;per-vertex data&#39;.</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>pvd_rh <span class="ot">=</span> <span class="fu">read.fs.morph</span>(<span class="fu">file.path</span>(my_data_dir, <span class="st">&quot;surf/converted/rh.mean_curvature.mgh&quot;</span>));</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co"># Call high-level API for live plot.</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>surfaces <span class="ot">=</span> <span class="fu">hemilist</span>(surf_lh, surf_rh);</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>pvd  <span class="ot">=</span> <span class="fu">hemilist</span>(pvd_lh, pvd_rh);</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.pre</span>(surfaces, pvd , <span class="at">draw_colorbar =</span> T, <span class="at">rglactions =</span> <span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span><span class="fu">limit_fun</span>(<span class="sc">-</span><span class="fl">0.2</span>, <span class="fl">0.2</span>)));</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co"># Export if you feel like it</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="fu">export</span>(cm, <span class="at">output_img =</span> <span class="st">&quot;~/out.png&quot;</span>, <span class="at">grid_like =</span> <span class="cn">FALSE</span>, <span class="at">colorbar_legend=</span><span class="st">&quot;Mean curvature [1/mm]&quot;</span>);</span></code></pre></div>
 </div>
 <div id="can-i-used-fsbrain-to-visualize-surface-data-from-brainsuite-surfaces-in-dfs-format" class="section level3">
-<h3>Can I used fsbrain to visualize surface data from BrainSuite surfaces in DFS format?</h3>
-<p>Yes, you can install the BrainSuite <code>bssr</code> R package to read DFS files and then visualize them. In the following examples, the directory <code>~/data/brainsuite_subject1/</code> contains the output of the cortical surface extraction sequence from BrainSuite (I used version 19b), applied to the fsbrain demo subject ‘subject1’.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read file with bssr package</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>bd <span class="ot">=</span> bssr<span class="sc">::</span><span class="fu">readdfs</span>(<span class="st">&#39;~/data/brainsuite_subject1/subject1_v1_sMRI.brain.dfs&#39;</span>);</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># turn into fs.surface</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>sfb <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;vertices&#39;</span><span class="ot">=</span><span class="fu">t</span>(bd<span class="sc">$</span>vertices), <span class="at">faces=</span><span class="fu">t</span>(bd<span class="sc">$</span>faces)<span class="sc">+</span>1L);</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(sfb) <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">class</span>(sfb), <span class="st">&#39;fs.surface&#39;</span>);</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># show it with fsbrain</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb);</span></code></pre></div>
-<p>If the DFS surface file contains vertex colors, labels and/or morphometry data, you can display that as well:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load and turn into fs.surface</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>bd_thickness <span class="ot">=</span> bssr<span class="sc">::</span><span class="fu">readdfs</span>(<span class="st">&#39;~/data/brainsuite_subject1/subject1_v1_sMRI.pvc-thickness_0-6mm.right.mid.cortex.dfs&#39;</span>);</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>sfb_thickness <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;vertices&#39;</span><span class="ot">=</span><span class="fu">t</span>(bd_thickness<span class="sc">$</span>vertices), <span class="at">faces=</span><span class="fu">t</span>(bd_thickness<span class="sc">$</span>faces)<span class="sc">+</span>1L);</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(sfb_thickness) <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">class</span>(sfb_thickness), <span class="st">&#39;fs.surface&#39;</span>);</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the vertex colors:</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb_thickness, <span class="at">col=</span><span class="fu">rgb</span>(<span class="fu">t</span>(bd_thickness<span class="sc">$</span>vColor)));        </span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Display labels (feel free to change the colormap).</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb_thickness, <span class="at">per_vertex_data =</span> bd_thickness<span class="sc">$</span>labels);  </span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Display raw morphometry data (feel free to change the colormap).</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb_thickness, <span class="at">per_vertex_data =</span> bd_thickness<span class="sc">$</span>attributes);        </span></code></pre></div>
-<p>Note: The <code>bssr</code> package is not on CRAN (as of September 2020), you will have to install it from the BrainSuite website.</p>
+<h3>Can I used fsbrain to visualize surface data from BrainSuite
+surfaces in DFS format?</h3>
+<p>Yes, you can install the BrainSuite <code>bssr</code> R package to
+read DFS files and then visualize them. In the following examples, the
+directory <code>~/data/brainsuite_subject1/</code> contains the output
+of the cortical surface extraction sequence from BrainSuite (I used
+version 19b), applied to the fsbrain demo subject ‘subject1’.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># read file with bssr package</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>bd <span class="ot">=</span> bssr<span class="sc">::</span><span class="fu">readdfs</span>(<span class="st">&#39;~/data/brainsuite_subject1/subject1_v1_sMRI.brain.dfs&#39;</span>);</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># turn into fs.surface</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>sfb <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;vertices&#39;</span><span class="ot">=</span><span class="fu">t</span>(bd<span class="sc">$</span>vertices), <span class="at">faces=</span><span class="fu">t</span>(bd<span class="sc">$</span>faces)<span class="sc">+</span>1L);</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">class</span>(sfb) <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">class</span>(sfb), <span class="st">&#39;fs.surface&#39;</span>);</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"># show it with fsbrain</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb);</span></code></pre></div>
+<p>If the DFS surface file contains vertex colors, labels and/or
+morphometry data, you can display that as well:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># load and turn into fs.surface</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>bd_thickness <span class="ot">=</span> bssr<span class="sc">::</span><span class="fu">readdfs</span>(<span class="st">&#39;~/data/brainsuite_subject1/subject1_v1_sMRI.pvc-thickness_0-6mm.right.mid.cortex.dfs&#39;</span>);</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>sfb_thickness <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;vertices&#39;</span><span class="ot">=</span><span class="fu">t</span>(bd_thickness<span class="sc">$</span>vertices), <span class="at">faces=</span><span class="fu">t</span>(bd_thickness<span class="sc">$</span>faces)<span class="sc">+</span>1L);</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="fu">class</span>(sfb_thickness) <span class="ot">=</span> <span class="fu">c</span>(<span class="fu">class</span>(sfb_thickness), <span class="st">&#39;fs.surface&#39;</span>);</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co"># Display the vertex colors:</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb_thickness, <span class="at">col=</span><span class="fu">rgb</span>(<span class="fu">t</span>(bd_thickness<span class="sc">$</span>vColor)));</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co"># Display labels (feel free to change the colormap).</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb_thickness, <span class="at">per_vertex_data =</span> bd_thickness<span class="sc">$</span>labels);</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co"># Display raw morphometry data (feel free to change the colormap).</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">vis.fs.surface</span>(sfb_thickness, <span class="at">per_vertex_data =</span> bd_thickness<span class="sc">$</span>attributes);</span></code></pre></div>
+<p>Note: The <code>bssr</code> package is not on CRAN (as of September
+2020), you will have to install it from the BrainSuite website.</p>
 </div>
 </div>
 <div id="visualization" class="section level2">
 <h2>Visualization</h2>
 <div id="how-can-i-set-the-output-image-resolution" class="section level3">
 <h3>How can I set the output image resolution?</h3>
-<p>To increase the output resolution, you need to increase the size of the <em>rgl</em> rendering device. To do this globally, before you call any <em>fsbrain</em> rendering function:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fsbrain.set.default.figsize</span>(<span class="dv">1200</span>, <span class="dv">1200</span>);</span></code></pre></div>
-<p>Alternatively, you can control the size when calling an <em>fsbrain</em> visualization function by passing the same information in the optional <code>rgloptions</code> parameter, like this:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rgloptions <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;windowRect&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">1800</span>, <span class="dv">1200</span>));</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">rgloptions=</span>rgloptions);</span></code></pre></div>
-<p>The 4 values in the ‘windowRect’ vector are the x and y screen positions (in pixels) where to position the upper left corner of the rendering window on your desktop, and the width and height of the plot/window.</p>
+<p>To increase the output resolution, you need to increase the size of
+the <em>rgl</em> rendering device. To do this globally, before you call
+any <em>fsbrain</em> rendering function:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">fsbrain.set.default.figsize</span>(<span class="dv">1200</span>, <span class="dv">1200</span>);</span></code></pre></div>
+<p>Alternatively, you can control the size when calling an
+<em>fsbrain</em> visualization function by passing the same information
+in the optional <code>rgloptions</code> parameter, like this:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>rgloptions <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;windowRect&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">1800</span>, <span class="dv">1200</span>));</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">rgloptions=</span>rgloptions);</span></code></pre></div>
+<p>The 4 values in the ‘windowRect’ vector are the x and y screen
+positions (in pixels) where to position the upper left corner of the
+rendering window on your desktop, and the width and height of the
+plot/window.</p>
 </div>
 <div id="how-can-i-save-high-quality-figures-to-png-images" class="section level3">
 <h3>How can I save high quality figures to PNG images?</h3>
-<p>Note that fsbrain renders images, which means the output is pixel-based (i.e., bitmap as opposed to vector graphics). To get high quality output, you need to increase the size of the <em>rgl</em> rendering device, as explained in the last question.</p>
-<p>To save the plot to a file in PNG format, you can use an rglaction:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>rgla <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;snapshot_png&#39;</span><span class="ot">=</span><span class="st">&#39;~/subject1_thickness.png&#39;</span>);</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions=</span>rgla);</span></code></pre></div>
-<p>This opens the plot in a window as usual and also saves it in PNG format to the file <em>subject1_thickness.png</em> in your home directory.</p>
+<p>Note that fsbrain renders images, which means the output is
+pixel-based (i.e., bitmap as opposed to vector graphics). To get high
+quality output, you need to increase the size of the <em>rgl</em>
+rendering device, as explained in the last question.</p>
+<p>To save the plot to a file in PNG format, you can use an
+rglaction:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>rgla <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;snapshot_png&#39;</span><span class="ot">=</span><span class="st">&#39;~/subject1_thickness.png&#39;</span>);</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions=</span>rgla);</span></code></pre></div>
+<p>This opens the plot in a window as usual and also saves it in PNG
+format to the file <em>subject1_thickness.png</em> in your home
+directory.</p>
 </div>
 <div id="can-i-save-fsbrain-figures-as-vector-images-like-pdf-eps-svg" class="section level3">
-<h3>Can I save fsbrain figures as vector images (like PDF, EPS, SVG)?</h3>
-<p>While one could convert the PNGs to these formats, doing so makes little sense. The images produced by fsbrain are <strong>bitmap</strong> images, not vector graphics. I would recommend to export the figures in high resolution as PNG images instead.</p>
-<p>The default settings used by the the <em>export()</em> function should be fine to reach the 300 DPI typically required for publications, unless you want the image to fill the entire page. In that case, you can further increase the output resolution.</p>
+<h3>Can I save fsbrain figures as vector images (like PDF, EPS,
+SVG)?</h3>
+<p>While one could convert the PNGs to these formats, doing so makes
+little sense. The images produced by fsbrain are <strong>bitmap</strong>
+images, not vector graphics. I would recommend to export the figures in
+high resolution as PNG images instead.</p>
+<p>The default settings used by the the <em>export()</em> function
+should be fine to reach the 300 DPI typically required for publications,
+unless you want the image to fill the entire page. In that case, you can
+further increase the output resolution.</p>
 </div>
 <div id="a-journal-requires-me-to-submit-a-vector-graphics-file-what-to-do" class="section level3">
-<h3>A journal requires me to submit a vector graphics file, what to do?</h3>
-<p>If a journal requires you to submit vector graphics files (PDF, SVG, EPS, …), you should simply embed the bitmap in a vector format container and submit that. E.g., in the free vector graphics software Inkscape, you could do this with the following steps (takes less than a minute from the 2nd time you do it):</p>
+<h3>A journal requires me to submit a vector graphics file, what to
+do?</h3>
+<p>If a journal requires you to submit vector graphics files (PDF, SVG,
+EPS, …), you should simply embed the bitmap in a vector format container
+and submit that. E.g., in the free vector graphics software Inkscape,
+you could do this with the following steps (takes less than a minute
+from the 2nd time you do it):</p>
 <ol style="list-style-type: decimal">
-<li>Start Inkscape, open the menu and select <code>File --&gt; New</code> if needed.</li>
-<li>Embed your PNG image exported from fsbrain: <code>File --&gt; Import...</code> and select the PNG image. In the new <code>png bitmap image import</code> window, the default settings should be fine (<code>Image Import Type: Embed</code>, <code>Image DPI: From File</code>, <code>Image Rendering Mode: None (Auto)</code>), just click <code>OK</code>.</li>
-<li>Make the embedded image fill the entire page. Go to <code>File --&gt; Document Properties</code>, and on the <code>Page</code> tab under <code>Custom Size</code>, click on <code>Fit page to content</code> to expand it, then make sure the margins are all set to 0 (the default), and click the button <code>Resize page to drawing or selection</code>.</li>
+<li>Start Inkscape, open the menu and select
+<code>File --&gt; New</code> if needed.</li>
+<li>Embed your PNG image exported from fsbrain:
+<code>File --&gt; Import...</code> and select the PNG image. In the new
+<code>png bitmap image import</code> window, the default settings should
+be fine (<code>Image Import Type: Embed</code>,
+<code>Image DPI: From File</code>,
+<code>Image Rendering Mode: None (Auto)</code>), just click
+<code>OK</code>.</li>
+<li>Make the embedded image fill the entire page. Go to
+<code>File --&gt; Document Properties</code>, and on the
+<code>Page</code> tab under <code>Custom Size</code>, click on
+<code>Fit page to content</code> to expand it, then make sure the
+margins are all set to 0 (the default), and click the button
+<code>Resize page to drawing or selection</code>.</li>
 </ol>
-<p>You can now save the image as SVG, PDF, EPS or whatever by clicking <code>File --&gt; Save as...</code>. I would recommend EPS format if you are using LateX, and PDF if you just need to upload the image in any vector format to the publisher’s website. Make sure to check the result in a standard vector graphics viewer like Adobe Acrobat before submitting it.</p>
-<p>This will of course not lead to a true vector graphics file that can be scaled/zoomed in without losing quality, but that is not what they are asking you to submit. They just want a vector container. I would not recommend to try to vectorize (or <code>trace</code>) the output of fsbrain to generate a true vector image as the quality will usually be bad, but you are of course free to try.</p>
+<p>You can now save the image as SVG, PDF, EPS or whatever by clicking
+<code>File --&gt; Save as...</code>. I would recommend EPS format if you
+are using LateX, and PDF if you just need to upload the image in any
+vector format to the publisher’s website. Make sure to check the result
+in a standard vector graphics viewer like Adobe Acrobat before
+submitting it.</p>
+<p>This will of course not lead to a true vector graphics file that can
+be scaled/zoomed in without losing quality, but that is not what they
+are asking you to submit. They just want a vector container. I would not
+recommend to try to vectorize (or <code>trace</code>) the output of
+fsbrain to generate a true vector image as the quality will usually be
+bad, but you are of course free to try.</p>
 </div>
 <div id="when-visualizing-data-with-outliers-and-long-tails-the-colors-are-not-helpful.-what-to-do" class="section level3">
-<h3>When visualizing data with outliers and long tails, the colors are not helpful. What to do?</h3>
-<p>If you have data with very few but extreme outliers, almost all of your plot will have a single color. This happens for example when plotting curvature data. You can of course first load the data using <code>subject.morph.native</code>, adjust it (transform it, remove outliers), and then plot it using <code>vis.data.on.subject</code>.</p>
-<p>In many cases, it is easier to use <code>rglactions</code> to clip the data to the 5th to 95th percentile, which can be done with an rglaction. E.g.:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rgla <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span>clip.data);</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;curv&#39;</span>, <span class="at">rglactions=</span>rgla);</span></code></pre></div>
+<h3>When visualizing data with outliers and long tails, the colors are
+not helpful. What to do?</h3>
+<p>If you have data with very few but extreme outliers, almost all of
+your plot will have a single color. This happens for example when
+plotting curvature data. You can of course first load the data using
+<code>subject.morph.native</code>, adjust it (transform it, remove
+outliers), and then plot it using <code>vis.data.on.subject</code>.</p>
+<p>In many cases, it is easier to use <code>rglactions</code> to clip
+the data to the 5th to 95th percentile, which can be done with an
+rglaction. E.g.:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>rgla <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span>clip.data);</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;curv&#39;</span>, <span class="at">rglactions=</span>rgla);</span></code></pre></div>
 </div>
 <div id="can-i-limit-the-data-range-including-the-min-and-max-values-displayed-on-the-color-bar" class="section level3">
-<h3>Can I limit the data range, including the min and max values displayed on the color bar?</h3>
+<h3>Can I limit the data range, including the min and max values
+displayed on the color bar?</h3>
 <p>Yes, this can be achieved in different ways:</p>
-<p>The first option is to use <code>rglactions</code> in combination with <code>limit_fun</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>rgla <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span><span class="fu">limit_fun</span>(<span class="dv">2</span>,<span class="dv">3</span>));</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions =</span> rgla);</span></code></pre></div>
+<p>The first option is to use <code>rglactions</code> in combination
+with <code>limit_fun</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>rgla <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span><span class="fu">limit_fun</span>(<span class="dv">2</span>,<span class="dv">3</span>));</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions =</span> rgla);</span></code></pre></div>
 <p>This will limit your data to the range 2 to 3.</p>
-<p>If you want the data values outside the given range to be plotted as background (in the color for <code>NA</code> values), use <code>limit_fun_na</code> instead of <code>limit_fun</code>.</p>
+<p>If you want the data values outside the given range to be plotted as
+background (in the color for <code>NA</code> values), use
+<code>limit_fun_na</code> instead of <code>limit_fun</code>.</p>
 <p>See the answer to the next question for a second option.</p>
 </div>
 <div id="how-can-i-enforce-fixed-colorbar-settings-i.e.-one-color-should-represent-the-same-value-across-several-images" class="section level3">
-<h3>How can I enforce fixed colorbar settings (i.e., one color should represent the same value) across several images?</h3>
-<p>This typically means that you want a colorbar that shows a larger data range than the real data range of your subject, for some of the subjects. In this case you should use the ‘range’ entry in ‘makecmap_options’:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;range&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">6</span>));</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options =</span> makecmap_options);</span></code></pre></div>
-<p>This is useful when plotting group data to ensure that all subjects use the same colors for identical values, or when comparing statistical results.</p>
+<h3>How can I enforce fixed colorbar settings (i.e., one color should
+represent the same value) across several images?</h3>
+<p>This typically means that you want a colorbar that shows a larger
+data range than the real data range of your subject, for some of the
+subjects. In this case you should use the ‘range’ entry in
+‘makecmap_options’:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;range&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">6</span>));</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options =</span> makecmap_options);</span></code></pre></div>
+<p>This is useful when plotting group data to ensure that all subjects
+use the same colors for identical values, or when comparing statistical
+results.</p>
 </div>
 <div id="how-can-i-change-the-colormap-for-the-plots" class="section level3">
 <h3>How can I change the colormap for the plots?</h3>
-<p>Pass a colormap function to any visualization function that supports the <em>makecmap_options</em> parameter, as entry <em>colFn</em> like illustrated below:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;colFn&#39;</span><span class="ot">=</span>viridis<span class="sc">::</span>viridis);</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options=</span>makecmap_options);</span></code></pre></div>
-<p>In that example, we used the popular <em>viridis</em> colormap. In R, it is available from the <em>viridis</em> package. If you don’t have it, you can install it with:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&#39;viridis&#39;</span>);</span></code></pre></div>
-<p>Of course, you can use any colormap function you want, currently the only limitation is that it should accept an integer parameter: the requested number of colors.</p>
-<p>The exact number of colors that will be requested depends on your data, and if the colormap you want only supports very few colors, you can use a wrapper function to interpolate. Here is an example for the very popular <em>RColorBrewer</em> package. Some of its colormaps have less than 10 colors, which is usually not enough for neuroimaging data. Here we wrap the ‘Blues’ palette, which has 9 colors:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>colFn_many_blues <span class="ot">=</span> <span class="fu">colorRampPalette</span>(RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="at">name=</span><span class="st">&quot;Blues&quot;</span>));</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;colFn&#39;</span><span class="ot">=</span>colFn_many_blues);</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options=</span>makecmap_options);</span></code></pre></div>
+<p>Pass a colormap function to any visualization function that supports
+the <em>makecmap_options</em> parameter, as entry <em>colFn</em> like
+illustrated below:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;colFn&#39;</span><span class="ot">=</span>viridis<span class="sc">::</span>viridis);</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options=</span>makecmap_options);</span></code></pre></div>
+<p>In that example, we used the popular <em>viridis</em> colormap. In R,
+it is available from the <em>viridis</em> package. If you don’t have it,
+you can install it with:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&#39;viridis&#39;</span>);</span></code></pre></div>
+<p>Of course, you can use any colormap function you want, currently the
+only limitation is that it should accept an integer parameter: the
+requested number of colors.</p>
+<p>The exact number of colors that will be requested depends on your
+data, and if the colormap you want only supports very few colors, you
+can use a wrapper function to interpolate. Here is an example for the
+very popular <em>RColorBrewer</em> package. Some of its colormaps have
+less than 10 colors, which is usually not enough for neuroimaging data.
+Here we wrap the ‘Blues’ palette, which has 9 colors:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>colFn_many_blues <span class="ot">=</span> <span class="fu">colorRampPalette</span>(RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="at">name=</span><span class="st">&quot;Blues&quot;</span>));</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;colFn&#39;</span><span class="ot">=</span>colFn_many_blues);</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options=</span>makecmap_options);</span></code></pre></div>
 </div>
 <div id="what-are-the-best-colormaps-for-my-data" class="section level3">
 <h3>What are the best colormaps for my data?</h3>
-<p>Choosing a colormap can be a surprisingly complex question and there are many publications which discuss this topic. You may want to consider what kind of data you have and what property you want to highlight, how many colors you need, whether you want colorblind-friendly colors, how they look when printed in gray-scale, whether they look pleasing to you, and maybe many more dimensions.</p>
-<p>The most important thing is to decide is whether you need a sequential, qualitative, or diverging palette for your data.</p>
-<p>I am definitely not an expert, but here are some color functions I personally like and use with fsbrain:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>colFn_sequential <span class="ot">=</span> viridis<span class="sc">::</span>viridis;</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>colFn_qualitative <span class="ot">=</span> <span class="cf">function</span>(n) { RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(n, <span class="at">name=</span><span class="st">&quot;Set2&quot;</span>); } <span class="co"># n &lt;= 11</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>colFn_diverging <span class="ot">=</span> grDevices<span class="sc">::</span><span class="fu">colorRampPalette</span>(RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(<span class="dv">11</span>, <span class="at">name=</span><span class="st">&quot;RdBu&quot;</span>));</span></code></pre></div>
-<p>They require the <em>viridis</em> and <em>RColorBrewer</em> packages to be installed. The qualitative map is fine if you do not have more than 11 different values.</p>
-<p>If you have R &gt;= 3.6, you may not need any extra packages: have a look at the <code>grDevices::hcl.colors</code> function. Here are some suggestions:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>colFn_sequential <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="at">palette =</span> <span class="st">&quot;viridis&quot;</span>); }</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>colFn_qualitative <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="at">palette =</span> <span class="st">&quot;Dark 3&quot;</span>); }</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>colFn_diverging <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="at">palette =</span> <span class="st">&quot;Blue-Red 3&quot;</span>); }</span></code></pre></div>
-<p>If you want a heatmap-style colormap (single hue sequential, yellow/red), try:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>colFn_sequential_heat <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="st">&quot;YlOrRd&quot;</span>); }</span></code></pre></div>
-<p>Make sure to read the next entry as well if you are using a diverging colormap.</p>
+<p>Choosing a colormap can be a surprisingly complex question and there
+are many publications which discuss this topic. You may want to consider
+what kind of data you have and what property you want to highlight, how
+many colors you need, whether you want colorblind-friendly colors, how
+they look when printed in gray-scale, whether they look pleasing to you,
+and maybe many more dimensions.</p>
+<p>The most important thing is to decide is whether you need a
+sequential, qualitative, or diverging palette for your data.</p>
+<p>I am definitely not an expert, but here are some color functions I
+personally like and use with fsbrain:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>colFn_sequential <span class="ot">=</span> viridis<span class="sc">::</span>viridis;</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>colFn_qualitative <span class="ot">=</span> <span class="cf">function</span>(n) { RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(n, <span class="at">name=</span><span class="st">&quot;Set2&quot;</span>); } <span class="co"># n &lt;= 11</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>colFn_diverging <span class="ot">=</span> grDevices<span class="sc">::</span><span class="fu">colorRampPalette</span>(RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(<span class="dv">11</span>, <span class="at">name=</span><span class="st">&quot;RdBu&quot;</span>));</span></code></pre></div>
+<p>They require the <em>viridis</em> and <em>RColorBrewer</em> packages
+to be installed. The qualitative map is fine if you do not have more
+than 11 different values.</p>
+<p>If you have R &gt;= 3.6, you may not need any extra packages: have a
+look at the <code>grDevices::hcl.colors</code> function. Here are some
+suggestions:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>colFn_sequential <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="at">palette =</span> <span class="st">&quot;viridis&quot;</span>); }</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>colFn_qualitative <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="at">palette =</span> <span class="st">&quot;Dark 3&quot;</span>); }</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>colFn_diverging <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="at">palette =</span> <span class="st">&quot;Blue-Red 3&quot;</span>); }</span></code></pre></div>
+<p>If you want a heatmap-style colormap (single hue sequential,
+yellow/red), try:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>colFn_sequential_heat <span class="ot">=</span> <span class="cf">function</span>(n) { grDevices<span class="sc">::</span><span class="fu">hcl.colors</span>(n, <span class="st">&quot;YlOrRd&quot;</span>); }</span></code></pre></div>
+<p>Make sure to read the next entry as well if you are using a diverging
+colormap.</p>
 </div>
 <div id="i-am-using-a-diverging-colormap.-when-plotting-the-colorbar-legend-the-neutral-value-is-not-at-zero.-how-to-fix-it" class="section level3">
-<h3>I am using a diverging colormap. When plotting the colorbar (legend), the neutral value is not at zero. How to fix it?</h3>
-<p>When using a diverging colormap, make sure to set the <em>symm</em> option to <em>makecmap_options</em> when using a visualization function, like this:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;colFn&#39;</span><span class="ot">=</span>colFn_diverging, <span class="st">&#39;symm&#39;</span><span class="ot">=</span><span class="cn">TRUE</span>);</span></code></pre></div>
-<p>This ensures that the neutral color of the diverging colormap (usually white) is aligned with the zero mark in the colorbar/legend, by adapting the value range displayed on the colorbar.</p>
+<h3>I am using a diverging colormap. When plotting the colorbar
+(legend), the neutral value is not at zero. How to fix it?</h3>
+<p>When using a diverging colormap, make sure to set the <em>symm</em>
+option to <em>makecmap_options</em> when using a visualization function,
+like this:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>makecmap_options <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;colFn&#39;</span><span class="ot">=</span>colFn_diverging, <span class="st">&#39;symm&#39;</span><span class="ot">=</span><span class="cn">TRUE</span>);</span></code></pre></div>
+<p>This ensures that the neutral color of the diverging colormap
+(usually white) is aligned with the zero mark in the colorbar/legend, by
+adapting the value range displayed on the colorbar.</p>
 </div>
 <div id="the-colorbar-shows-only-very-few-different-colors-why-is-that-and-how-can-i-change-it" class="section level3">
-<h3>The colorbar shows only very few different colors, why is that and how can I change it?</h3>
-<p>The impression that the numbers of colors in the colorbar is lower than in the rendered image is a consequence of the rendering process: the lighting (shadows, highlights) and the material properties (glossyness, partial transparency) have an effect on the appearance of colors in the rendered image.</p>
-<p>You can set the parameter <em>n</em> in the <em>makecmap_options</em> (see above) to request more colors, which will lead to a smooth colorbar.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mkc <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;n&#39;</span><span class="ot">=</span>200L, <span class="st">&#39;colFn&#39;</span><span class="ot">=</span>viridis<span class="sc">::</span>viridis);</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options=</span>mkc);</span></code></pre></div>
-<p>This also means that more colors are used in the rendered image, but the effect will be less noticable.</p>
+<h3>The colorbar shows only very few different colors, why is that and
+how can I change it?</h3>
+<p>The impression that the numbers of colors in the colorbar is lower
+than in the rendered image is a consequence of the rendering process:
+the lighting (shadows, highlights) and the material properties
+(glossyness, partial transparency) have an effect on the appearance of
+colors in the rendered image.</p>
+<p>You can set the parameter <em>n</em> in the <em>makecmap_options</em>
+(see above) to request more colors, which will lead to a smooth
+colorbar.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>mkc <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;n&#39;</span><span class="ot">=</span>200L, <span class="st">&#39;colFn&#39;</span><span class="ot">=</span>viridis<span class="sc">::</span>viridis);</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options=</span>mkc);</span></code></pre></div>
+<p>This also means that more colors are used in the rendered image, but
+the effect will be less noticable.</p>
 </div>
 <div id="can-i-set-a-custom-color-for-na-values-in-the-plot-like-the-masked-medial-wall" class="section level3">
-<h3>Can I set a custom color for NA values in the plot, like the masked medial wall?</h3>
-<p>By default, NA values are rendered in white. You can change this using col.na in makecmap_options:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>mkc <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;n&#39;</span><span class="ot">=</span>200L, <span class="st">&#39;col.na&#39;</span><span class="ot">=</span><span class="st">&#39;orange&#39;</span>, <span class="st">&#39;colFn&#39;</span><span class="ot">=</span>viridis<span class="sc">::</span>viridis);</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">cortex_only =</span> <span class="cn">TRUE</span>, <span class="at">makecmap_options=</span>mkc);</span></code></pre></div>
-<p>This is also useful when plotting clusters, just set all values which are not part of any cluster to NA.</p>
+<h3>Can I set a custom color for NA values in the plot, like the masked
+medial wall?</h3>
+<p>By default, NA values are rendered in white. You can change this
+using col.na in makecmap_options:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>mkc <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&#39;n&#39;</span><span class="ot">=</span>200L, <span class="st">&#39;col.na&#39;</span><span class="ot">=</span><span class="st">&#39;orange&#39;</span>, <span class="st">&#39;colFn&#39;</span><span class="ot">=</span>viridis<span class="sc">::</span>viridis);</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(<span class="st">&#39;~/mysubjects_dir&#39;</span>, <span class="st">&#39;subject1&#39;</span>, <span class="st">&#39;thickness&#39;</span>, <span class="at">cortex_only =</span> <span class="cn">TRUE</span>, <span class="at">makecmap_options=</span>mkc);</span></code></pre></div>
+<p>This is also useful when plotting clusters, just set all values which
+are not part of any cluster to NA.</p>
 </div>
 <div id="can-i-get-a-color-legend-when-plotting-atlas-regions-from-an-annotation-i-want-to-know-the-region-names-for-the-colors." class="section level3">
-<h3>Can I get a color legend when plotting atlas regions from an annotation? I want to know the region names for the colors.</h3>
+<h3>Can I get a color legend when plotting atlas regions from an
+annotation? I want to know the region names for the colors.</h3>
 <p>Yes, see the answer to the next question for details.</p>
 </div>
 <div id="can-i-get-a-color-legend-when-plotting-a-segmentationparcellation-different-brain-regions-based-on-a-color-lookup-table-like-the-freesurfercolorlut.txt-file" class="section level3">
-<h3>Can I get a color legend when plotting a segmentation/parcellation (different brain regions), based on a color lookup table (like the <em>FreeSurferColorLUT.txt</em> file)?</h3>
-<p>Yes, use the <code>vis.colortable.legend</code> function. You can pass an annotation or a color lookup table, and it will create a plot that shows the colors and the structure (or region) names. The output will be a separate plot, so you can use standard R methods to save it in vector formats like PDF for best quality.</p>
-<p>Hint: you can load a color lookup table with <code>freesurferformats::read.fs.colortable</code>.</p>
+<h3>Can I get a color legend when plotting a segmentation/parcellation
+(different brain regions), based on a color lookup table (like the
+<em>FreeSurferColorLUT.txt</em> file)?</h3>
+<p>Yes, use the <code>vis.colortable.legend</code> function. You can
+pass an annotation or a color lookup table, and it will create a plot
+that shows the colors and the structure (or region) names. The output
+will be a separate plot, so you can use standard R methods to save it in
+vector formats like PDF for best quality.</p>
+<p>Hint: you can load a color lookup table with
+<code>freesurferformats::read.fs.colortable</code>.</p>
 </div>
 <div id="there-is-too-much-whitespace-between-the-different-views-of-the-brain.-how-can-i-reduce-it" class="section level3">
-<h3>There is too much whitespace between the different views of the brain. How can I reduce it?</h3>
-<p>While this is not possible in <code>rgl</code>, fsbrain provides the <code>vislayout.from.coloredmeshes</code> function to achieve this using Image Magick. You need to have the suggested ‘magick’ package installed for this to work. The function renders separate images, crops the output figures to remove the background, then merges the seperate cropped images into a final output image and saves it as a PNG file. Here is a usage example:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># To get coloredmeshes return value only, ignore the visualization:</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options =</span> <span class="fu">list</span>(<span class="st">&#39;n&#39;</span><span class="ot">=</span><span class="dv">200</span>), <span class="at">cortex_only =</span> T);</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Produce high quality tight layout:</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">vislayout.from.coloredmeshes</span>(cm);</span></code></pre></div>
-<p>Note that your output resolution settings (see question above) now count for each of the single images. This means that you will get quite high resolution output in combination with the tight layout. This makes the function ideal for producing plots for publications.</p>
-<p>You can adjust various settings, e.g., change the rendering style, select different views, and save it to a custom file name in your home directory:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>output_brain_img <span class="ot">=</span> <span class="st">&quot;fsbrain_arranged.png&quot;</span>;</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">vislayout.from.coloredmeshes</span>(cm, <span class="at">view_angles =</span> <span class="fu">get.view.angle.names</span>(<span class="at">angle_set=</span><span class="st">&#39;t9&#39;</span>), <span class="at">output_img =</span> output_brain_img);</span></code></pre></div>
-<p>It is also possible to plot a separate colorbar image and combine that with the tight layout brainview image. Note that the settings for the colorbar are stored in the coloredmeshes, and can be adjusted by altering the initial call to <code>vis.subject.morph.native</code> (or whatever visualization function you use) above.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>output_cbar_img <span class="ot">=</span> <span class="st">&quot;fsbrain_cbar.png&quot;</span>;</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>output_final_img <span class="ot">=</span> <span class="st">&quot;fsbrain_merged.png&quot;</span>;</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">coloredmesh.plot.colorbar.separate</span>(cm, <span class="at">image.plot_extra_options =</span> <span class="fu">list</span>(<span class="st">&#39;horizontal&#39;</span> <span class="ot">=</span> <span class="cn">TRUE</span>), <span class="at">png_options =</span> <span class="fu">list</span>(<span class="st">&#39;filename&#39;</span><span class="ot">=</span>output_cbar_img, <span class="st">&#39;width&#39;</span><span class="ot">=</span><span class="dv">1800</span>));</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">combine.colorbar.with.brainview.image</span>(output_brain_img, output_cbar_img, output_final_img);</span></code></pre></div>
-<p>You may have to play a bit with the resolution settings of your brain images and the colorbar to get this right (the background cropping makes it hard to compute the exact values in advance).</p>
-<p>You should also have a look at the new <code>export()</code> function, which produces an image with colorbar and provides sane defaults for the resolution and suitable text sizes, etc.</p>
+<h3>There is too much whitespace between the different views of the
+brain. How can I reduce it?</h3>
+<p>While this is not possible in <code>rgl</code>, fsbrain provides the
+<code>vislayout.from.coloredmeshes</code> function to achieve this using
+Image Magick. You need to have the suggested ‘magick’ package installed
+for this to work. The function renders separate images, crops the output
+figures to remove the background, then merges the seperate cropped
+images into a final output image and saves it as a PNG file. Here is a
+usage example:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># To get coloredmeshes return value only, ignore the visualization:</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">makecmap_options =</span> <span class="fu">list</span>(<span class="st">&#39;n&#39;</span><span class="ot">=</span><span class="dv">200</span>), <span class="at">cortex_only =</span> T);</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="co"># Produce high quality tight layout:</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="fu">vislayout.from.coloredmeshes</span>(cm);</span></code></pre></div>
+<p>Note that your output resolution settings (see question above) now
+count for each of the single images. This means that you will get quite
+high resolution output in combination with the tight layout. This makes
+the function ideal for producing plots for publications.</p>
+<p>You can adjust various settings, e.g., change the rendering style,
+select different views, and save it to a custom file name in your home
+directory:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>output_brain_img <span class="ot">=</span> <span class="st">&quot;fsbrain_arranged.png&quot;</span>;</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">vislayout.from.coloredmeshes</span>(cm, <span class="at">view_angles =</span> <span class="fu">get.view.angle.names</span>(<span class="at">angle_set=</span><span class="st">&#39;t9&#39;</span>), <span class="at">output_img =</span> output_brain_img);</span></code></pre></div>
+<p>It is also possible to plot a separate colorbar image and combine
+that with the tight layout brainview image. Note that the settings for
+the colorbar are stored in the coloredmeshes, and can be adjusted by
+altering the initial call to <code>vis.subject.morph.native</code> (or
+whatever visualization function you use) above.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>output_cbar_img <span class="ot">=</span> <span class="st">&quot;fsbrain_cbar.png&quot;</span>;</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>output_final_img <span class="ot">=</span> <span class="st">&quot;fsbrain_merged.png&quot;</span>;</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">coloredmesh.plot.colorbar.separate</span>(cm, <span class="at">image.plot_extra_options =</span> <span class="fu">list</span>(<span class="st">&#39;horizontal&#39;</span> <span class="ot">=</span> <span class="cn">TRUE</span>), <span class="at">png_options =</span> <span class="fu">list</span>(<span class="st">&#39;filename&#39;</span><span class="ot">=</span>output_cbar_img, <span class="st">&#39;width&#39;</span><span class="ot">=</span><span class="dv">1800</span>));</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a><span class="fu">combine.colorbar.with.brainview.image</span>(output_brain_img, output_cbar_img, output_final_img);</span></code></pre></div>
+<p>You may have to play a bit with the resolution settings of your brain
+images and the colorbar to get this right (the background cropping makes
+it hard to compute the exact values in advance).</p>
+<p>You should also have a look at the new <code>export()</code>
+function, which produces an image with colorbar and provides sane
+defaults for the resolution and suitable text sizes, etc.</p>
 </div>
 <div id="can-i-export-png-images-with-transparent-instead-of-white-background" class="section level3">
-<h3>Can I export PNG images with transparent (instead of white) background?</h3>
-<p>To the best of my knowledge, RGL cannot produce transparent images (though you can of course render semi-transparent surfaces in the scene). However, since exporting PNGs with a transparent background is very useful for usage in presentations, we provide a hacked solution based on post-processing the output images with the magick package in R.</p>
-<p>This required fsbrain version &gt;= 0.4.3 and is implemented in the <code>export()</code> function via the <code>transparency_color</code> parameter.</p>
-<p>Here is how it works: the <code>transparency_color</code> is used as a background color for rendering in RGL. During the fsbrain post-processing, all pixels with this color in the image will be replaced with transparency.</p>
-<p>This means that: * The <code>transparency_color</code> has to be an RGB color, i.e., it cannot have an alpha value (if it is an RGBA color, the alpha part is silently ignored by RGL it seems). * The <code>transparency_color</code> can be almost any RGB color, but (1) it should not occur in the brain surface visualization to prevent transparent parts in the brain after post-processing. And (2) because of anti-aliasing, the color may slightly affect the border pixels of the rendered brain surfaces, so a neutral color like ‘#FFFFFF’ (for white) or some gray value like ‘#DDDDDD’ is maybe more suitable than a hot pink. At high resolution, this is hardly noticable though.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>coloredmeshes <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(subjects_dir, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;sulc&quot;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">export</span>(coloredmeshes, <span class="at">colorbar_legend =</span> <span class="st">&quot;sulcal depth [mm]&quot;</span>, <span class="at">transparency_color =</span> <span class="st">&quot;#FFFFFF&quot;</span>);</span></code></pre></div>
+<h3>Can I export PNG images with transparent (instead of white)
+background?</h3>
+<p>To the best of my knowledge, RGL cannot produce transparent images
+(though you can of course render semi-transparent surfaces in the
+scene). However, since exporting PNGs with a transparent background is
+very useful for usage in presentations, we provide a hacked solution
+based on post-processing the output images with the magick package in
+R.</p>
+<p>This required fsbrain version &gt;= 0.4.3 and is implemented in the
+<code>export()</code> function via the <code>transparency_color</code>
+parameter.</p>
+<p>Here is how it works: the <code>transparency_color</code> is used as
+a background color for rendering in RGL. During the fsbrain
+post-processing, all pixels with this color in the image will be
+replaced with transparency.</p>
+<p>This means that: * The <code>transparency_color</code> has to be an
+RGB color, i.e., it cannot have an alpha value (if it is an RGBA color,
+the alpha part is silently ignored by RGL it seems). * The
+<code>transparency_color</code> can be almost any RGB color, but (1) it
+should not occur in the brain surface visualization to prevent
+transparent parts in the brain after post-processing. And (2) because of
+anti-aliasing, the color may slightly affect the border pixels of the
+rendered brain surfaces, so a neutral color like ‘#FFFFFF’ (for white)
+or some gray value like ‘#DDDDDD’ is maybe more suitable than a hot
+pink. At high resolution, this is hardly noticable though.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>coloredmeshes <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(subjects_dir, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;sulc&quot;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="fu">export</span>(coloredmeshes, <span class="at">colorbar_legend =</span> <span class="st">&quot;sulcal depth [mm]&quot;</span>, <span class="at">transparency_color =</span> <span class="st">&quot;#FFFFFF&quot;</span>);</span></code></pre></div>
 </div>
 <div id="when-visualizing-data-on-the-inflated-surface-the-left-and-right-hemisphere-overlap-and-look-garbled.-how-to-fix-that" class="section level3">
-<h3>When visualizing data on the inflated surface, the left and right hemisphere overlap and look garbled. How to fix that?</h3>
-<p>This happens due to the inflation. One can use the <code>rglactions</code> parameter to push the hemis apart. By default, it pushes them apart by the amount they overlap:</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions =</span> <span class="fu">list</span>(<span class="st">&#39;shift_hemis_apart&#39;</span><span class="ot">=</span><span class="cn">TRUE</span>), <span class="at">surface=</span><span class="st">&#39;inflated&#39;</span>, <span class="at">views=</span><span class="st">&#39;si&#39;</span>);</span></code></pre></div>
+<h3>When visualizing data on the inflated surface, the left and right
+hemisphere overlap and look garbled. How to fix that?</h3>
+<p>This happens due to the inflation. One can use the
+<code>rglactions</code> parameter to push the hemis apart. By default,
+it pushes them apart by the amount they overlap:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions =</span> <span class="fu">list</span>(<span class="st">&#39;shift_hemis_apart&#39;</span><span class="ot">=</span><span class="cn">TRUE</span>), <span class="at">surface=</span><span class="st">&#39;inflated&#39;</span>, <span class="at">views=</span><span class="st">&#39;si&#39;</span>);</span></code></pre></div>
 <p>You can also set a distance manually:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions =</span> <span class="fu">list</span>(<span class="st">&#39;shift_hemis_apart&#39;</span><span class="ot">=</span><span class="fu">list</span>(<span class="st">&#39;min_dist&#39;</span><span class="ot">=</span><span class="dv">20</span>)), <span class="at">surface=</span><span class="st">&#39;inflated&#39;</span>, <span class="at">views=</span><span class="st">&#39;si&#39;</span>);</span></code></pre></div>
-<p>If you need more customization options, have a look at the <code>shift.hemis.apart</code> function. If you pass a named list in the rglactions for ‘shift_hemis_apart’ (like in the previous example), the entries are passed on to that function.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">rglactions =</span> <span class="fu">list</span>(<span class="st">&#39;shift_hemis_apart&#39;</span><span class="ot">=</span><span class="fu">list</span>(<span class="st">&#39;min_dist&#39;</span><span class="ot">=</span><span class="dv">20</span>)), <span class="at">surface=</span><span class="st">&#39;inflated&#39;</span>, <span class="at">views=</span><span class="st">&#39;si&#39;</span>);</span></code></pre></div>
+<p>If you need more customization options, have a look at the
+<code>shift.hemis.apart</code> function. If you pass a named list in the
+rglactions for ‘shift_hemis_apart’ (like in the previous example), the
+entries are passed on to that function.</p>
 </div>
 <div id="when-plotting-several-views-can-i-have-the-subplots-arranged-in-a-horizontal-strip-rather-than-2x2-tiles" class="section level3">
-<h3>When plotting several views, can I have the subplots arranged in a horizontal strip (rather than 2x2 tiles)?</h3>
-<p>There is no ‘view’ setting for that yet (like ‘t4’ for 4 tiles), but you can set the ‘grid_like’ to false to get a horizontal strip of images. Here is an example:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>subjects_dir <span class="ot">=</span> fsbrain<span class="sc">::</span><span class="fu">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>view_angles <span class="ot">=</span> <span class="fu">get.view.angle.names</span>(<span class="at">angle_set =</span> <span class="st">&quot;t4&quot;</span>);</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>coloredmeshes <span class="ot">=</span> <span class="fu">vis.subject.morph.native</span>(subjects_dir, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;thickness&quot;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="fu">vislayout.from.coloredmeshes</span>(coloredmeshes, <span class="at">view_angles =</span> view_angles, <span class="at">grid_like=</span><span class="cn">FALSE</span>, <span class="at">output_img=</span><span class="st">&quot;~/fsbrain_horizontal.png&quot;</span>);</span></code></pre></div>
-<p>If you want a colorbar, you can use <code>export</code> instead of <code>vislayout.from.coloredmeshes</code>. Using <code>export</code> is now recommended in any case.</p>
+<h3>When plotting several views, can I have the subplots arranged in a
+horizontal strip (rather than 2x2 tiles)?</h3>
+<p>There is no ‘view’ setting for that yet (like ‘t4’ for 4 tiles), but
+you can set the ‘grid_like’ to false to get a horizontal strip of
+images. Here is an example:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>subjects_dir <span class="ot">=</span> fsbrain<span class="sc">::</span><span class="fu">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a>view_angles <span class="ot">=</span> <span class="fu">get.view.angle.names</span>(<span class="at">angle_set =</span> <span class="st">&quot;t4&quot;</span>);</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a>coloredmeshes <span class="ot">=</span> <span class="fu">vis.subject.morph.native</span>(subjects_dir, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;thickness&quot;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a><span class="fu">vislayout.from.coloredmeshes</span>(coloredmeshes, <span class="at">view_angles =</span> view_angles, <span class="at">grid_like=</span><span class="cn">FALSE</span>, <span class="at">output_img=</span><span class="st">&quot;~/fsbrain_horizontal.png&quot;</span>);</span></code></pre></div>
+<p>If you want a colorbar, you can use <code>export</code> instead of
+<code>vislayout.from.coloredmeshes</code>. Using <code>export</code> is
+now recommended in any case.</p>
 </div>
 </div>
 <div id="various-topics" class="section level2">
 <h2>Various topics</h2>
 <div id="can-i-integrate-the-plots-produced-by-fsbrain-into-an-r-markdown-document-the-r-equivalent-of-a-python-jupyter-notebook" class="section level3">
-<h3>Can I integrate the plots produced by <em>fsbrain</em> into an R Markdown document (the R equivalent of a Python Jupyter notebook)?</h3>
-<p>Yes, see the example notebook files in the directory <a href="https://github.com/dfsp-spirit/fsbrain/tree/master/web/Rmd_web_examples">web</a> of the <em>fsbrain</em> repository. The Rmd files are actually notebooks in R markdown format.</p>
+<h3>Can I integrate the plots produced by <em>fsbrain</em> into an R
+Markdown document (the R equivalent of a Python Jupyter notebook)?</h3>
+<p>Yes, see the example notebook files in the directory <a href="https://github.com/dfsp-spirit/fsbrain/tree/master/web/Rmd_web_examples">web</a>
+of the <em>fsbrain</em> repository. The Rmd files are actually notebooks
+in R markdown format.</p>
 </div>
 <div id="can-i-use-fsbrain-to-visualize-arbitrary-triangular-meshes-in-r" class="section level3">
-<h3>Can I use fsbrain to visualize arbitrary triangular meshes in R?</h3>
-<p>Yes, <em>fsbrain</em> is not limited to brain surface meshes, and a wide array of mesh file formats are supported. Keep in mind though that fsbrain works with triangular meshes. To visualize a mesh from a file, the easiest way is to use <code>vis.fs.surface</code>:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.fs.surface</span>(<span class="st">&#39;~/Documents/my_mesh.ply&#39;</span>);</span></code></pre></div>
+<h3>Can I use fsbrain to visualize arbitrary triangular meshes in
+R?</h3>
+<p>Yes, <em>fsbrain</em> is not limited to brain surface meshes, and a
+wide array of mesh file formats are supported. Keep in mind though that
+fsbrain works with triangular meshes. To visualize a mesh from a file,
+the easiest way is to use <code>vis.fs.surface</code>:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">vis.fs.surface</span>(<span class="st">&#39;~/Documents/my_mesh.ply&#39;</span>);</span></code></pre></div>
 </div>
 </div>
 <div id="technical-problems" class="section level2">
 <h2>Technical problems</h2>
 <div id="i-am-getting-the-error-invalid-value-specified-for-graphical-parameter-plt-why" class="section level3">
-<h3>I am getting the error ‘invalid value specified for graphical parameter plt’, why?</h3>
+<h3>I am getting the error ‘invalid value specified for graphical
+parameter plt’, why?</h3>
 <p>The full error most likely looks like this, or similar:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>Error <span class="cf">in</span> <span class="fu">par</span>(<span class="at">new =</span> <span class="cn">TRUE</span>, <span class="at">pty =</span> <span class="st">&quot;m&quot;</span>, <span class="at">plt =</span> smallplot, <span class="at">err =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">:</span> </span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  invalid value specified <span class="cf">for</span> graphical parameter <span class="st">&quot;plt&quot;</span></span></code></pre></div>
-<p>If you experience this error, it most likely happened when you tried to plot something with a colorbar, and did not increase the device size (image resolution). The error occurs if there is no space for the colorbar plot, and the solution is to increase the resolution as explained in the answer to the question ‘How can I set the output image resolution?’ above.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>Error <span class="cf">in</span> <span class="fu">par</span>(<span class="at">new =</span> <span class="cn">TRUE</span>, <span class="at">pty =</span> <span class="st">&quot;m&quot;</span>, <span class="at">plt =</span> smallplot, <span class="at">err =</span> <span class="sc">-</span><span class="dv">1</span>) <span class="sc">:</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>  invalid value specified <span class="cf">for</span> graphical parameter <span class="st">&quot;plt&quot;</span></span></code></pre></div>
+<p>If you experience this error, it most likely happened when you tried
+to plot something with a colorbar, and did not increase the device size
+(image resolution). The error occurs if there is no space for the
+colorbar plot, and the solution is to increase the resolution as
+explained in the answer to the question ‘How can I set the output image
+resolution?’ above.</p>
 </div>
 <div id="i-am-getting-the-error-error-in-squashcmap-found-x-values-outside-map-range" class="section level3">
-<h3>I am getting the error ‘Error in squash::cmap, found x values outside map range’</h3>
-<p>This can happen when visualizing morphometry data with function like <code>vis.subject.morph.native</code>. The full error most likely looks like this, or similar:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;your_measure_here&#39;</span>)</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>Error <span class="cf">in</span> squash<span class="sc">::</span><span class="fu">cmap</span>(lh_morph_data, <span class="at">map =</span> common_cmap) <span class="sc">:</span> </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  Found <span class="dv">2193</span> values outside map range.</span></code></pre></div>
-<p>Most likely you have <code>Inf</code> values in your data, most likely in the medial wall, just try plotting without it:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;your_measure_here&#39;</span>, <span class="at">cortex_only =</span> T)</span></code></pre></div>
+<h3>I am getting the error ‘Error in squash::cmap, found x values
+outside map range’</h3>
+<p>This can happen when visualizing morphometry data with function like
+<code>vis.subject.morph.native</code>. The full error most likely looks
+like this, or similar:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;your_measure_here&#39;</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>Error <span class="cf">in</span> squash<span class="sc">::</span><span class="fu">cmap</span>(lh_morph_data, <span class="at">map =</span> common_cmap) <span class="sc">:</span></span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>  Found <span class="dv">2193</span> values outside map range.</span></code></pre></div>
+<p>Most likely you have <code>Inf</code> values in your data, most
+likely in the medial wall, just try plotting without it:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;your_measure_here&#39;</span>, <span class="at">cortex_only =</span> T)</span></code></pre></div>
 <p>If this does not help, load the data and inspect it manually.</p>
 </div>
 <div id="i-am-getting-the-warning-rgl-unable-to-open-x11-display-when-loading-fsbrain" class="section level3">
-<h3>I am getting the warning ‘RGL: unable to open X11 display’ when loading fsbrain</h3>
+<h3>I am getting the warning ‘RGL: unable to open X11 display’ when
+loading fsbrain</h3>
 <p>The full message most likely looks like this:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>Warning messages<span class="sc">:</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> In <span class="fu">rgl.init</span>(initValue, onlyNULL) <span class="sc">:</span> RGL<span class="sc">:</span> unable to open X11 display</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span> <span class="st">&#39;rgl.init&#39;</span> failed, running with <span class="st">&#39;rgl.useNULL = TRUE&#39;</span>.</span></code></pre></div>
-<p>This happens if you do not have X11, or no window can be opened. Possible reasons include that you are running R on a remote host using an SSH connection without X11 forwarding, or that you do not have XQuartz installed under MacOS.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a>Warning messages<span class="sc">:</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="dv">1</span><span class="sc">:</span> In <span class="fu">rgl.init</span>(initValue, onlyNULL) <span class="sc">:</span> RGL<span class="sc">:</span> unable to open X11 display</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a><span class="dv">2</span><span class="sc">:</span> <span class="st">&#39;rgl.init&#39;</span> failed, running with <span class="st">&#39;rgl.useNULL = TRUE&#39;</span>.</span></code></pre></div>
+<p>This happens if you do not have X11, or no window can be opened.
+Possible reasons include that you are running R on a remote host using
+an SSH connection without X11 forwarding, or that you do not have
+XQuartz installed under MacOS.</p>
+<p>If you do not want to plot (e.g., you only use fsbrain to load data),
+feel free to ignore this warning.</p>
+<p>If you want to plot and cannot install X11 on a machine (e.g., a
+compute node of a high performance computing cluster), you can still
+plot on the box using xvfb or similar means, see the next question.</p>
+</div>
+<div id="how-can-i-plot-on-a-machine-that-does-not-have-x11" class="section level3">
+<h3>How can I plot on a machine that does not have X11?</h3>
+<p>You can achieve this by using a virtual display server, e.g. by
+running R/fsbrain via <a href="https://en.wikipedia.org/wiki/Xvfb">xvfb</a> under Linux. An
+example script that illustrates how to do this for fsbrain can be found
+in the <a href="https://github.com/dfsp-spirit/fsbrain/tree/master/web/fsbrain_xvfb_demo">fsbrain_xvfb_demo
+directory</a> of the fsbrain repo on GitHub.</p>
 </div>
 <div id="i-am-trying-to-plot-a-very-large-image-with-fsbrain-but-the-output-is-not-as-large-as-expected.-why" class="section level3">
-<h3>I am trying to plot a very large image with fsbrain, but the output is not as large as expected. Why?</h3>
-<p>The output dimensions are limited by your screen resolution, so to be able to do something like this:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">fsbrain.set.default.figsize</span>(<span class="dv">3000</span>, <span class="dv">3000</span>, <span class="dv">0</span>, <span class="dv">0</span>);</span></code></pre></div>
-<p>you would need to have a screen with a resolution larger than 3000x3000 pixels.</p>
-<p>A technical note: This limitation exists due to the fact that rgl renders to an OpenGL window produced by your display server, and fsbrain basically takes a screenshot of that window. One can circumvent this limitation by using a virtual display server, e.g. by running R/fsbrain via <a href="https://en.wikipedia.org/wiki/Xvfb">xvfb</a> under Linux. An example script that illustrates how to do this for fsbrain can be found in the <a href="https://github.com/dfsp-spirit/fsbrain/tree/master/web/fsbrain_xvfb_demo">fsbrain_xvfb_demo directory</a> of the fsbrain repo on GitHub.</p>
+<h3>I am trying to plot a very large image with fsbrain, but the output
+is not as large as expected. Why?</h3>
+<p>The output dimensions are limited by your screen resolution, so to be
+able to do something like this:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a>fsbrain<span class="sc">::</span><span class="fu">fsbrain.set.default.figsize</span>(<span class="dv">3000</span>, <span class="dv">3000</span>, <span class="dv">0</span>, <span class="dv">0</span>);</span></code></pre></div>
+<p>you would need to have a screen with a resolution larger than
+3000x3000 pixels.</p>
+<p>A technical note: This limitation exists due to the fact that rgl
+renders to an OpenGL window produced by your display server, and fsbrain
+basically takes a screenshot of that window. One can circumvent this
+limitation by using a virtual display server, e.g. by running R/fsbrain
+via <a href="https://en.wikipedia.org/wiki/Xvfb">xvfb</a> under Linux.
+An example script that illustrates how to do this for fsbrain can be
+found in the <a href="https://github.com/dfsp-spirit/fsbrain/tree/master/web/fsbrain_xvfb_demo">fsbrain_xvfb_demo
+directory</a> of the fsbrain repo on GitHub.</p>
 </div>
 <div id="what-to-do-about-the-error-lazy-load-database-is-corrupt-when-loading-fsbrain" class="section level3">
-<h3>What to do about the error ‘lazy-load database is corrupt’ when loading fsbrain?</h3>
-<p>If you install the development version from github and try to load it without restarting R, you ma^y get this error:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;fsbrain&quot;</span>)</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>Error<span class="sc">:</span> package or namespace load failed <span class="cf">for</span> ‘fsbrain’ <span class="cf">in</span> <span class="fu">get</span>(method, <span class="at">envir =</span> home)<span class="sc">:</span></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>lazy<span class="sc">-</span>load database <span class="st">&#39;/Users/youruser/Library/R/3.6/library/fsbrain/R/fsbrain.rdb&#39;</span> is corrupt</span></code></pre></div>
+<h3>What to do about the error ‘lazy-load database is corrupt’ when
+loading fsbrain?</h3>
+<p>If you install the development version from github and try to load it
+without restarting R, you ma^y get this error:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&quot;fsbrain&quot;</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a>Error<span class="sc">:</span> package or namespace load failed <span class="cf">for</span> ‘fsbrain’ <span class="cf">in</span> <span class="fu">get</span>(method, <span class="at">envir =</span> home)<span class="sc">:</span></span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>lazy<span class="sc">-</span>load database <span class="st">&#39;/Users/youruser/Library/R/3.6/library/fsbrain/R/fsbrain.rdb&#39;</span> is corrupt</span></code></pre></div>
 <p>To fix this, simply restart R.</p>
+</div>
+<div id="i-see-no-output-image-after-running-a-vis-function-and-also-get-no-error-message.-what-to-do" class="section level3">
+<h3>I see no output image after running a vis function, and also get no
+error message. What to do?</h3>
+<p>So you get nothing at all after running a vis command, like this:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="fu">vis.subject.annot</span>(subject_dir, <span class="st">&#39;sub-sub001&#39;</span>, <span class="st">&#39;aparc&#39;</span>, <span class="st">&#39;both&#39;</span>, <span class="st">&#39;pial&#39;</span>,<span class="at">views=</span><span class="fu">c</span>(<span class="st">&#39;si&#39;</span>));</span></code></pre></div>
+<p>Then you can try to open the visualization in an rgl widget like
+this:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="fu">vis.subject.annot</span>(subject_dir, <span class="st">&#39;sub-sub001&#39;</span>, <span class="st">&#39;aparc&#39;</span>, <span class="st">&#39;both&#39;</span>, <span class="st">&#39;pial&#39;</span>,<span class="at">views=</span><span class="fu">c</span>(<span class="st">&#39;si&#39;</span>)); <span class="fu">library</span>(rgl); <span class="fu">rglwidget</span>()</span></code></pre></div>
+<p>This should show the brain plot in rstudio.</p>
+<p>Thanks to Clancy-wu for reporting this workaround.</p>
 </div>
 </div>
 

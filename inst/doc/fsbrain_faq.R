@@ -170,3 +170,9 @@
 #  Error: package or namespace load failed for ‘fsbrain’ in get(method, envir = home):
 #  lazy-load database '/Users/youruser/Library/R/3.6/library/fsbrain/R/fsbrain.rdb' is corrupt
 
+## ---- eval = FALSE------------------------------------------------------------
+#  vis.subject.annot(subject_dir, 'sub-sub001', 'aparc', 'both', 'pial',views=c('si'));
+
+## ---- eval = FALSE------------------------------------------------------------
+#  vis.subject.annot(subject_dir, 'sub-sub001', 'aparc', 'both', 'pial',views=c('si')); library(rgl); rglwidget()
+

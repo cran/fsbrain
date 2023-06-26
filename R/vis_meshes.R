@@ -203,7 +203,7 @@ vis.coloredmeshes.rotating <- function(coloredmeshes, background="white", skip_a
     for(cmesh in coloredmeshes) {
         vis.renderable(cmesh, skip_all_na=TRUE, style=style);
     }
-    rgl::rgl.viewpoint(-90, 0);
+    rgl::view3d(-90, 0);
 
     if (!rgl::rgl.useNULL()) {
         if(rglactions.has.key(rglactions, 'movie')) {
@@ -441,7 +441,7 @@ get.rglstyle.shiny <- function() {
 #' @return named list with two entries: "lh": list of coloredmeshes that have property hemi set to 'lh'. "rh": list of coloredmeshes that have property hemi set to 'rh'. The rest is ignored.
 #'
 #' @keywords internal
-sort.coloredmeshes.by.hemi <- function(coloredmeshes) {
+sortcoloredmeshes.by.hemi <- function(coloredmeshes) {
     lh_meshes = list();
     rh_meshes = list();
     for (mesh_idx in seq_len(length(coloredmeshes))) {

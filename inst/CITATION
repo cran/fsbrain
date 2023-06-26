@@ -1,13 +1,21 @@
 citHeader("To cite fsbrain in publications use:")
 
-citEntry(
-  entry        = "misc",
+ts <- person(given = "Tim", family = "Schaefer", middle = NULL,
+       email = "ts+code@rcmd.org", role = "cre",
+       comment = "ORCID: https://orcid.org/0000-0002-3683-8070")
+
+
+ce <- person(given = "Christine", family = "Ecker", middle = NULL,
+       email = "Christine.Ecker@kgu.de", role = "aut", comment = NULL)
+
+bibentry("Article",
+  doi = "10.1101/2020.09.18.302935",
   title        = "fsbrain: an {R} package for the visualization of structural neuroimaging data",
-  author       = personList(as.person("Tim Schaefer"), as.person("Christine Ecker")),
+  author       = c(ts, ce),
   year         = "2020",
   url          = "https://www.biorxiv.org/content/10.1101/2020.09.18.302935v1",
   doi          = "10.1101/2020.09.18.302935",
-  textVersion  = paste("Tim Schaefer, Christine Ecker (2020).",
-                     "fsbrain: an R package for the visualization of structural neuroimaging data.",
-                     "bioRxiv doi: 10.1101/2020.09.18.302935")
+  organization = "bioRxiv",
+  journal      = "bioRxiv",
+  note         = "pre-print"
 )
