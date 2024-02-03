@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -424,7 +424,7 @@ images (raw MRI scans, statistical results, etc). They assume that your
 subjects_dir is <code>~/data/study1</code> and that your
 <code>subject_id</code> is <code>subject1</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/brain.mgz&quot;</span>);</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/brain.mgz&quot;</span>, <span class="at">bbox_threshold =</span> 1L);</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/brain.mgz&quot;</span>, <span class="at">bbox_threshold =</span> <span class="dv">1</span><span class="dt">L</span>);</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/brain.mgz&quot;</span>, <span class="at">background =</span> <span class="st">&quot;~/data/study1/subject1/mri/T1.mgz&quot;</span>);</span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/brain.mgz&quot;</span>, <span class="at">background =</span> <span class="st">&quot;#FEFEFE&quot;</span>, <span class="at">background_color=</span><span class="st">&quot;#FEFEFE&quot;</span>);</span></code></pre></div>
 <div class="float">
@@ -446,8 +446,8 @@ course:</p>
 <p>And here are some example commands that illustrate how to visualize a
 segmentation using a color lookup table (LUT):</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>ct <span class="ot">=</span> <span class="fu">file.path</span>(<span class="fu">find.freesurferhome</span>(<span class="at">mustWork =</span> T), <span class="st">&quot;FreeSurferColorLUT.txt&quot;</span>); <span class="co"># ct = &quot;color table&quot;</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/aseg.mgz&quot;</span>, <span class="at">background =</span> <span class="st">&quot;~/data/study1/subject1/mri/T1.mgz&quot;</span>, <span class="at">colortable =</span> ct, <span class="at">colFn=</span><span class="cn">NULL</span>, <span class="at">axis=</span>2L);</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/aseg.mgz&quot;</span>, <span class="at">background =</span> <span class="st">&quot;~/data/study1/subject1/mri/T1.mgz&quot;</span>, <span class="at">colortable =</span> ct, <span class="at">colFn=</span><span class="cn">NULL</span>, <span class="at">axis=</span>1L, <span class="at">bbox_threshold =</span> <span class="dv">0</span>);</span></code></pre></div>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/aseg.mgz&quot;</span>, <span class="at">background =</span> <span class="st">&quot;~/data/study1/subject1/mri/T1.mgz&quot;</span>, <span class="at">colortable =</span> ct, <span class="at">colFn=</span><span class="cn">NULL</span>, <span class="at">axis=</span><span class="dv">2</span><span class="dt">L</span>);</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">volvis.lb</span>(<span class="st">&quot;~/data/study1/subject1/mri/aseg.mgz&quot;</span>, <span class="at">background =</span> <span class="st">&quot;~/data/study1/subject1/mri/T1.mgz&quot;</span>, <span class="at">colortable =</span> ct, <span class="at">colFn=</span><span class="cn">NULL</span>, <span class="at">axis=</span><span class="dv">1</span><span class="dt">L</span>, <span class="at">bbox_threshold =</span> <span class="dv">0</span>);</span></code></pre></div>
 <p>The function <em>volvis.lb</em> can also be used to easily visualize
 segmentations with a color lookup table (instead of a colormap function,
 which makes limited sense for categorical data).</p>
@@ -473,9 +473,9 @@ and set the voxels with intensity values in range 0-5 as background.</p>
 loading a volume, it may take a long time to render the image and the
 result will be a single large block.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>brain <span class="ot">=</span> <span class="fu">subject.volume</span>(subjects_dir, subject_id, <span class="st">&#39;brain&#39;</span>);</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>threshold <span class="ot">=</span> 5L;</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>threshold <span class="ot">=</span> <span class="dv">5</span><span class="dt">L</span>;</span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>brain[<span class="fu">which</span>(brain <span class="sc">&lt;=</span> threshold, <span class="at">arr.ind =</span> <span class="cn">TRUE</span>)] <span class="ot">=</span> <span class="cn">NA</span>;  <span class="co"># mark background</span></span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>brain <span class="ot">=</span> <span class="fu">vol.hull</span>(brain, <span class="at">thickness =</span> 2L);  <span class="co"># Remove inner triangles for performance, optional.</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>brain <span class="ot">=</span> <span class="fu">vol.hull</span>(brain, <span class="at">thickness =</span> <span class="dv">2</span><span class="dt">L</span>);  <span class="co"># Remove inner triangles for performance, optional.</span></span>
 <span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="fu">volvis.voxels</span>(brain);</span></code></pre></div>
 </div>
 </div>
