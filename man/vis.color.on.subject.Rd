@@ -30,7 +30,7 @@ vis.color.on.subject(
 
 \item{views}{list of strings. Valid entries include: 'si': single interactive view. 't4': tiled view showing the brain from 4 angles. 't9': tiled view showing the brain from 9 angles.}
 
-\item{rgloptions}{option list passed to \code{\link{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
+\item{rgloptions}{option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))}.}
 
 \item{rglactions}{named list. A list in which the names are from a set of pre-defined actions. The values can be used to specify parameters for the action. The following example clips outliers in the data before plotting and writes a screenshot in PNG format: \code{rglactions = list("snapshot_png"="~/fsbrain.png", "clip_data"=c(0.05, 0.95))}. See \code{\link{rglactions}}.}
 
@@ -62,8 +62,8 @@ Visualize pre-defined vertex colors on a subject.
 }
 \seealso{
 Other visualization functions: 
-\code{\link{highlight.vertices.on.subject.spheres}()},
 \code{\link{highlight.vertices.on.subject}()},
+\code{\link{highlight.vertices.on.subject.spheres}()},
 \code{\link{vis.data.on.fsaverage}()},
 \code{\link{vis.data.on.subject}()},
 \code{\link{vis.labeldata.on.subject}()},
@@ -78,8 +78,8 @@ Other visualization functions:
 \code{\link{vislayout.from.coloredmeshes}()}
 
 Other surface visualization functions: 
-\code{\link{highlight.vertices.on.subject.spheres}()},
-\code{\link{highlight.vertices.on.subject}()}
+\code{\link{highlight.vertices.on.subject}()},
+\code{\link{highlight.vertices.on.subject.spheres}()}
 }
 \concept{surface visualization functions}
 \concept{visualization functions}
