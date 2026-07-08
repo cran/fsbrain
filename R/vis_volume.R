@@ -1075,3 +1075,358 @@ volvis.lb <- function(volume, background=NULL, colFn=viridis::viridis, colortabl
     color_vol = vol.merge(background, overlay_colors, bbox_threshold = NULL);
     return(volvis.lightbox(color_vol, ...));
 }
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════
+# Surface contour overlay on 2D volume slices (lightbox)
+# ══════════════════════════════════════════════════════════════════════════════════════
+
+
+#' @title Transform surface vertices from surface RAS to 0-based volume CRS space.
+#'
+#' @description Applies the inverse of the FreeSurfer vox2ras_tkr matrix to all surface vertices, converting them from surface RAS coordinates to 0-based CRS (column, row, slice) indices. The resulting CRS coordinates can be used to directly index into a brain volume array (after adding 1 for R's 1-based indexing).
+#'
+#' @param surface an `fs.surface` instance, as returned by \code{\link[freesurferformats]{read.fs.surface}}.
+#'
+#' @return a modified copy of the input surface with `vertices` in 0-based CRS space.
+#'
+#' @keywords internal
+mesh.ras2crs <- function(surface) {
+    ras2vox <- solve(vox2ras_tkr());
+    verts_ras <- surface$vertices;
+    verts_homog <- cbind(verts_ras, 1);
+    verts_crs <- t(ras2vox %*% t(verts_homog))[, 1:3, drop = FALSE];
+    surface$vertices <- verts_crs;
+    return(surface);
+}
+
+
+#' @title Compute intersection of a triangular surface mesh with an axis-aligned plane.
+#'
+#' @description For a given axis and coordinate, finds all triangles that straddle the plane and computes the line segment where each crossing triangle intersects the plane. The input surface must have vertices in the same coordinate space as the slice plane definition (typically 0-based CRS).
+#'
+#' @param surface an `fs.surface` instance with vertices in CRS space (0-based), as produced by \code{\link[fsbrain]{mesh.ras2crs}}.
+#'
+#' @param axis integer, 1, 2, or 3. The axis perpendicular to the slice plane (1=sagittal, 2=coronal, 3=axial in CRS convention).
+#'
+#' @param slice_crs_coord numeric scalar, the coordinate along `axis` where the slice plane is located. In CRS space (0-based).
+#'
+#' @return a list of 2×2 numeric matrices. Each matrix represents one line segment with rows `[start, end]` and columns `[axis_val_1, axis_val_2]` giving the coordinates in the two axes orthogonal to the slice axis, in 0-based CRS units. Returns an empty list if no triangles intersect the plane.
+#'
+#' @keywords internal
+mesh.slice.intersection <- function(surface, axis, slice_crs_coord) {
+    verts <- surface$vertices;
+    faces <- surface$faces;
+    ax_val <- verts[, axis];
+
+    # Signed distance from plane for all 3 triangle vertices (fully vectorized)
+    d1 <- ax_val[faces[, 1]] - slice_crs_coord;
+    d2 <- ax_val[faces[, 2]] - slice_crs_coord;
+    d3 <- ax_val[faces[, 3]] - slice_crs_coord;
+
+    # Which triangles cross the plane?
+    crosses <- (d1 * d2 < 0) | (d2 * d3 < 0) | (d3 * d1 < 0);
+    # Vertex exactly on plane, other two split:
+    crosses <- crosses | (d1 == 0 & d2 * d3 < 0);
+    crosses <- crosses | (d2 == 0 & d1 * d3 < 0);
+    crosses <- crosses | (d3 == 0 & d1 * d2 < 0);
+
+    crossing_idx <- which(crosses);
+    other_axes <- setdiff(1:3, axis);
+    n_cross <- length(crossing_idx);
+    segs <- vector("list", n_cross);
+    seg_count <- 0L;
+
+    for (k in seq_len(n_cross)) {
+        fi <- crossing_idx[k];
+        idx <- faces[fi, ];
+        vv  <- verts[idx, , drop = FALSE];
+        dd  <- vv[, axis] - slice_crs_coord;
+
+        pts <- matrix(NA_real_, 0, 2);
+        for (ei in 1:3) {
+            i <- ei;
+            j <- if (ei == 3) 1 else ei + 1;
+            if (dd[i] * dd[j] < 0 || (dd[i] == 0 && dd[j] != 0)) {
+                t_val <- -dd[i] / (dd[j] - dd[i]);
+                pt <- vv[i, other_axes] + t_val * (vv[j, other_axes] - vv[i, other_axes]);
+                pts <- rbind(pts, pt);
+            } else if (dd[i] == 0 && dd[j] == 0) {
+                pts <- rbind(pts, vv[i, other_axes], vv[j, other_axes]);
+            }
+        }
+
+        if (nrow(pts) >= 2) {
+            seg_count <- seg_count + 1L;
+            segs[[seg_count]] <- pts[1:2, , drop = FALSE];
+        }
+    }
+
+    if (seg_count == 0) return(list());
+    return(segs[1:seg_count]);
+}
+
+
+#' @title Draw contour segments onto a magick image.
+#'
+#' @description Draws a set of line segments (as returned by \code{\link[fsbrain]{mesh.slice.intersection}}) onto a magick image. Individual mesh triangles produce small segments, which collectively trace the contour boundary when drawn together.
+#'
+#' @param img a magick image instance (a single 2D slice image).
+#'
+#' @param segments list of 2×2 matrices, each a line segment in 0-based CRS coordinates on the two orthogonal axes.
+#'
+#' @param slice_axis integer, the axis (1,2,3) perpendicular to the slice plane.
+#'
+#' @param row_axis integer, which CRS axis (1, 2, or 3) maps to the image row dimension.
+#'
+#' @param col_axis integer, which CRS axis (1, 2, or 3) maps to the image column dimension.
+#'
+#' @param color character string, the color for the contour lines.
+#'
+#' @param lwd numeric, line width passed to \code{\link[graphics]{segments}}. Defaults to 1.
+#'
+#' @return the modified magick image (invisibly).
+#'
+#' @keywords internal
+draw.segments.on.image <- function(img, segments, slice_axis, row_axis, col_axis, color = "#FF0000", lwd = 1) {
+    if (length(segments) == 0) return(invisible(img));
+
+    other_axes <- setdiff(1:3, slice_axis);
+    row_col <- match(row_axis, other_axes);
+    col_col <- match(col_axis, other_axes);
+
+    img_info <- magick::image_info(img);
+    img_width  <- img_info$width;
+    img_height <- img_info$height;
+
+    img <- magick::image_draw(img);
+    for (seg in segments) {
+        x0 <- max(1, min(img_width,  seg[1, col_col] + 1));
+        y0 <- max(1, min(img_height, seg[1, row_col] + 1));
+        x1 <- max(1, min(img_width,  seg[2, col_col] + 1));
+        y1 <- max(1, min(img_height, seg[2, row_col] + 1));
+        graphics::segments(x0, y0, x1, y1, col = color, lwd = lwd);
+    }
+    dev.off();
+
+    return(invisible(img));
+}
+
+
+#' @title Visualize volume slices with surface mesh contours overlaid in lightbox view.
+#'
+#' @description Creates a lightbox view of 2D MRI slices with the cortical surface boundary contours drawn on top. This is the fsbrain equivalent of what FreeSurfer's `freeview` or `tkmedit` show — useful for quality assessment of surface reconstruction against the underlying MRI volume. The surface mesh is loaded from the subject's FreeSurfer directory and its intersection with each displayed slice plane is computed and drawn as colored contour lines.
+#'
+#' @param subjects_dir character string, the FreeSurfer SUBJECTS_DIR.
+#'
+#' @param subject_id character string, the subject identifier.
+#'
+#' @param volume numeric 3D array or character string. Either a 3D brain volume (e.g., from T1.mgz or brain.mgz), or the name of a volume file to load from the subject's `mri/` directory. Defaults to \code{"brain"}.
+#'
+#' @param surface character string or vector of strings, the surface(s) to use for contour extraction. One or more of \code{"white"}, \code{"pial"}, or \code{"inflated"}. If a vector, contours for all surfaces are drawn. Defaults to \code{"white"}.
+#'
+#' @param hemi character string, one of \code{'lh'}, \code{'rh'}, or \code{'both'}. Which hemisphere surface(s) to overlay. Defaults to \code{"both"}.
+#'
+#' @param surface_color character string or character vector, the color(s) for the surface contour lines. If a single color, all surfaces and hemispheres use it. If a vector of length \code{length(surface)}, each surface gets its own color (both hemispheres use it). If a vector of length \code{2 * length(surface)}, colors are assigned as \code{(lh_surf1, rh_surf1, lh_surf2, rh_surf2, ...)}. Defaults to \code{"#FF0000"} (red).
+#'
+#' @param surface_lwd numeric, line width for the contour lines (passed as `lwd` to \code{\link[graphics]{segments}}). Defaults to 1.
+#'
+#' @param slices passed to \code{\link[fsbrain]{volvis.lightbox}}. A negative integer N means "use every Nth slice". A numeric vector gives explicit slice indices (1-based). Defaults to \code{-5} (every 5th slice).
+#'
+#' @param axis integer, the slice axis. 1 = sagittal, 2 = coronal, 3 = axial (in volume CRS convention). Defaults to \code{1L}.
+#'
+#' @param per_row integer, number of slice images per row in the lightbox grid. Defaults to \code{5L}.
+#'
+#' @param per_col integer, number of rows. If \code{NULL}, computed from \code{per_row}. Defaults to \code{NULL}.
+#'
+#' @param border_geometry character string, geometry for borders between tiles, passed to \code{\link[magick]{image_border}}. Defaults to \code{"5x5"}.
+#'
+#' @param background_color character string, background color for borders and empty tiles. Defaults to \code{"#000000"}.
+#'
+#' @param silent logical, whether to suppress messages. Defaults to \code{TRUE}.
+#'
+#' @return a magick image instance containing the lightbox with surface contours overlaid. Can be saved with \code{\link[magick]{image_write}} or displayed interactively.
+#'
+#' @examples
+#' \dontrun{
+#'    fsbrain::download_optional_data();
+#'    subjects_dir <- fsbrain::get_optional_data_filepath("subjects_dir");
+#'
+#'    # Axial slices with white surface contours in red:
+#'    img <- volvis.lb.with.surface(subjects_dir, "subject1",
+#'       volume="brain", surface="white", axis=3L,
+#'       surface_color="#FF0000");
+#'    magick::image_write(img, "~/fsbrain_qa_axial.png");
+#'
+#'    # Coronal slices in green:
+#'    img <- volvis.lb.with.surface(subjects_dir, "subject1",
+#'       volume="brain", surface="white", axis=2L,
+#'       surface_color="#00FF00");
+#'
+#'    # Sagittal slices: left hemisphere red, right hemisphere blue:
+#'    img <- volvis.lb.with.surface(subjects_dir, "subject1",
+#'       volume="brain", surface="white", axis=1L,
+#'       surface_color=c("#FF0000", "#0000FF"));
+#'
+#'    # Single hemisphere, pial surface, every 5th slice:
+#'    img <- volvis.lb.with.surface(subjects_dir, "subject1",
+#'       volume="brain", surface="pial", hemi="lh",
+#'       axis=3L, slices=-5, surface_color="#FF8800");
+#'
+#'    # Both white and pial surfaces overlaid: white in red, pial in yellow:
+#'    img <- volvis.lb.with.surface(subjects_dir, "subject1",
+#'       volume="brain", surface=c("white", "pial"), axis=3L,
+#'       surface_color=c("#FF0000", "#FFFF00"));
+#'
+#'    # White (lh red, rh blue) + pial (lh green, rh orange):
+#'    img <- volvis.lb.with.surface(subjects_dir, "subject1",
+#'       volume="brain", surface=c("white", "pial"), axis=3L,
+#'       surface_color=c("#FF0000", "#0000FF", "#00FF00", "#FF8800"));
+#' }
+#'
+#' @family volume visualization
+#'
+#' @export
+volvis.lb.with.surface <- function(subjects_dir, subject_id,
+    volume = "brain",
+    surface = "white",
+    hemi = "both",
+    surface_color = "#FF0000",
+    surface_lwd = 1,
+    slices = -5,
+    axis = 1L,
+    per_row = 5L,
+    per_col = NULL,
+    border_geometry = "5x5",
+    background_color = "#000000",
+    silent = TRUE
+) {
+    # ── Validate ──────────────────────────────────────────────────────────────
+    if(!(hemi %in% c("lh", "rh", "both"))) {
+        stop("Parameter 'hemi' must be one of 'lh', 'rh', or 'both'.");
+    }
+    if(!(axis %in% 1:3)) {
+        stop("Parameter 'axis' must be 1, 2, or 3.");
+    }
+
+    # ── Load volume ───────────────────────────────────────────────────────────
+    if(is.character(volume) && length(volume) == 1L && !startsWith(volume, "#")) {
+        vol_data <- subject.volume(subjects_dir, subject_id, volume);
+    } else {
+        vol_data <- volume;
+    }
+    if(!(is.array(vol_data) && length(dim(vol_data)) == 3L)) {
+        stop("Parameter 'volume' must be a 3D numeric array or a volume file name.");
+    }
+    voldim <- dim(vol_data);
+
+    # ── Normalize surface and surface_color to parallel vectors ───────────────
+    surfaces <- as.character(surface);
+    nsurf <- length(surfaces);
+
+    hemis <- if(hemi == "both") c("lh", "rh") else hemi;
+    nhemi <- length(hemis);
+
+    # Build per-surface, per-hemisphere color map
+    # surface_color can be:
+    #   length 1                   → all surfaces × hemis get this color
+    #   length nsurf               → each surface has its own color (both hemis)
+    #   length nsurf * nhemi       → per-(surface,hemi) color, ordered as
+    #                                 (surf1_lh, surf1_rh, surf2_lh, surf2_rh, ...)
+    nc <- length(surface_color);
+    if(nc == 1L) {
+        surf_col_map <- matrix(surface_color, nrow = nsurf, ncol = nhemi);
+    } else if(nc == nsurf) {
+        surf_col_map <- matrix(rep(surface_color, each = nhemi),
+            nrow = nsurf, ncol = nhemi, byrow = TRUE);
+    } else if(nc == nsurf * nhemi) {
+        surf_col_map <- matrix(surface_color, nrow = nsurf, ncol = nhemi, byrow = TRUE);
+    } else {
+        stop(sprintf(paste0("Length of 'surface_color' (%d) must be 1, the ",
+            "number of surfaces (%d), or the number of surfaces times the ",
+            "number of hemispheres (%d)."), nc, nsurf, nsurf * nhemi));
+    }
+    rownames(surf_col_map) <- surfaces;
+    colnames(surf_col_map) <- hemis;
+
+    # ── Load all surfaces and transform to CRS ────────────────────────────────
+    # surf_crs[[surface]][[hemi]]  (if hemi missing for a surface, skip)
+    surf_crs <- list();
+    for (surf_name in surfaces) {
+        surf_crs[[surf_name]] <- list();
+        for (h in hemis) {
+            surf_path <- file.path(subjects_dir, subject_id, "surf",
+                paste0(h, ".", surf_name));
+            if(!file.exists(surf_path)) {
+                warning(sprintf("Surface file not found, skipping '%s': %s", h, surf_path));
+                next;
+            }
+            s <- freesurferformats::read.fs.surface(surf_path);
+            surf_crs[[surf_name]][[h]] <- mesh.ras2crs(s);
+        }
+    }
+
+    if(length(surf_crs) == 0) {
+        stop("No surface files could be loaded. Check subjects_dir, subject_id, and surface parameters.");
+    }
+
+    # ── Compute slice indices ─────────────────────────────────────────────────
+    slice_indices <- get.slice.indices(voldim, axis, slices);
+    if(!silent) {
+        message(sprintf("Computing contours for %d slices along axis %d...",
+            length(slice_indices), axis));
+    }
+
+    # ── Mapping from contour CRS axes to image pixel axes ────────────────────
+    # For each axis, the 2D slice has dimensions given by the other two axes.
+    # row ↔ first remaining axis of vol.slice, col ↔ second remaining axis.
+    if(axis == 1L) {
+        row_axis <- 2L; col_axis <- 3L;   # vol[k,,] → [dim2, dim3]
+    } else if(axis == 2L) {
+        row_axis <- 1L; col_axis <- 3L;   # vol[,k,] → [dim1, dim3]
+    } else {
+        row_axis <- 1L; col_axis <- 2L;   # vol[,,k] → [dim1, dim2]
+    }
+
+    # ── Convert volume to grayscale RGB and extract slices ────────────────────
+    vol_rgb <- vol.intensity.to.color(vol_data, scale = "normalize");
+    img_slices_3d <- vol.slice(vol_rgb, slice_index = slice_indices, axis = axis);
+
+    # ── For each slice: compute contours, draw on image ──────────────────────
+    magick_images <- list();
+    for (si in seq_along(slice_indices)) {
+        slice_r_idx <- slice_indices[si];           # 1-based R index
+        slice_crs   <- slice_r_idx - 1;              # 0-based CRS
+
+        # Extract the 2D slice as a magick image
+        slice_2d <- vol.slice(vol_rgb, slice_index = slice_r_idx, axis = axis);
+        img <- magick::image_read(slice_2d);
+
+        # Compute and draw contours for each surface × hemisphere
+        for (surf_name in names(surf_crs)) {
+            for (h in names(surf_crs[[surf_name]])) {
+                segs <- mesh.slice.intersection(surf_crs[[surf_name]][[h]],
+                    axis, slice_crs);
+                if(length(segs) > 0) {
+                    img <- draw.segments.on.image(img, segs,
+                        slice_axis = axis,
+                        row_axis = row_axis, col_axis = col_axis,
+                        color = surf_col_map[surf_name, h], lwd = surface_lwd);
+                }
+            }
+        }
+        magick_images[[si]] <- img;
+    }
+
+    # ── Combine into magick image stack and arrange in grid ──────────────────
+    img_stack <- Reduce(c, magick_images);
+
+    if(!is.null(border_geometry) && !is.null(background_color)) {
+        img_stack <- magick::image_border(img_stack, background_color, border_geometry);
+    }
+
+    merged_img <- magick.grid(img_stack, per_row = per_row, per_col = per_col,
+        background_color = background_color);
+
+    return(merged_img);
+}

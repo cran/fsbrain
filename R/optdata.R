@@ -2,10 +2,12 @@
 #'
 #' @description Ensure that the optioanl data is available locally in the package cache. Will try to download the data only if it is not available. This data is not required for the package to work, but it is used in the examples, in the unit tests and also in the example code from the vignette. Downloading it is highly recommended.
 #'
+#' @param scheme character string, the URL scheme to use. Either `"https"` (the default) or `"http"`. Switching to `"http"` can be useful as a fallback if the HTTPS server is unreachable.
+#'
 #' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_file(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
 #'
 #' @export
-download_optional_data <- function() {
+download_optional_data <- function(scheme="https") {
     pkg_info = pkgfilecache::get_pkg_info("fsbrain");
 
     # Replace these with your optional data files.
@@ -200,7 +202,7 @@ download_optional_data <- function() {
     ext_urls_subject2 = paste(ext_url_subject_part_subject2, ext_url_parts_each_subject, sep='');
     ext_urls = c(ext_urls_subject1, ext_urls_subject2);
 
-    base_url = 'http://rcmd.org/projects/nitestdata/';
+    base_url = paste0(scheme, '://rcmd.org/projects/nitestdata/');
     urls = paste(base_url, ext_urls, sep='');
 
     cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);
@@ -215,10 +217,13 @@ download_optional_data <- function() {
 #'
 #' @param accept_freesurfer_license logical, whether you accept the FreeSurfer license for fsaverage, available at https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferSoftwareLicense. Defaults to FALSE.
 #'
+#' @param scheme character string, the URL scheme to use. Either `"https"` (the default) or `"http"`. Switching to `"http"` can be useful as a fallback if the HTTPS server is unreachable.
+#'
 #' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_file(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
 #'
 #' @export
-download_fsaverage <- function(accept_freesurfer_license=FALSE) {
+download_fsaverage <- function(accept_freesurfer_license=FALSE,
+                               scheme="https") {
 
     if(! accept_freesurfer_license) {
         cat(sprintf("Nothing downloaded. You have to accept the FreeSurfer license to download and use fsaverage.\n"));
@@ -296,7 +301,66 @@ download_fsaverage <- function(accept_freesurfer_license=FALSE) {
                                    'surf/rh.sphere'
     );
     ext_urls = paste(ext_url_subject_part_fsaverage, ext_url_parts_each_subject, sep='');
-    base_url = 'http://rcmd.org/projects/nitestdata/';
+    base_url = paste0(scheme, '://rcmd.org/projects/nitestdata/');
+    urls = paste(base_url, ext_urls, sep='');
+
+    cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);
+    cfiles$file_status = NULL; # not exposed to end user
+    return(invisible(cfiles));
+}
+
+
+#' @title Download only essential FreeSurfer v6 fsaverage files for quick visualization.
+#'
+#' @description Download a minimal subset of files from the FreeSurfer v6 fsaverage subject, containing only the white surfaces, cortex labels, and curvature files needed for basic 3D visualization (e.g., in a Shiny app). This is much faster than \code{\link{download_fsaverage}} which downloads 19 files. The files are subject to the FreeSurfer software license, see parameter 'accept_freesurfer_license' for details.
+#'
+#' @inheritParams download_fsaverage
+#'
+#' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_file(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
+#'
+#' @note This downloads approximately 8 files instead of the 19 downloaded by \code{download_fsaverage}, making it suitable for environments with startup time constraints (e.g., Posit Connect Cloud, shinyapps.io).
+#'
+#' @export
+download_fsaverage_minimal <- function(accept_freesurfer_license=FALSE,
+                                       scheme="https") {
+
+    if(! accept_freesurfer_license) {
+        cat(sprintf("Nothing downloaded. You have to accept the FreeSurfer license to download and use fsaverage.\n"));
+        cat(sprintf("Read the license at https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurferSoftwareLicense and set parameter 'accept_freesurfer_license' to TRUE if you accept it.\n"));
+        return(invisible(NULL));
+    }
+
+    pkg_info = pkgfilecache::get_pkg_info("fsbrain");
+    base_path_fsaverage = c('subjects_dir', 'fsaverage');
+    local_filenames = list(c(base_path_fsaverage, 'surf', 'lh.white'),
+                           c(base_path_fsaverage, 'surf', 'rh.white'),
+                           c(base_path_fsaverage, 'surf', 'lh.curv'),
+                           c(base_path_fsaverage, 'surf', 'rh.curv'),
+                           c(base_path_fsaverage, 'label', 'lh.cortex.label'),
+                           c(base_path_fsaverage, 'label', 'rh.cortex.label'),
+                           c(base_path_fsaverage, 'LICENSE')
+    );
+
+    md5sums = c('cbffce8198e0e10c17f79f6ae0454af5',  # lh.white
+                '1159a9ee160b1b0c76e0bb9ae789b9be',  # rh.white
+                '3e81598a5ac0546443ec37d0ac477c80',  # lh.curv
+                '76ad91d2488de081392313ad5a87fafb',  # rh.curv
+                '578f81e9946a76eb1c42d897d07da4a7',  # lh.cortex.label
+                'c8f59de23e9f90f18e96e9d037e42799',  # rh.cortex.label
+                'b39610adfe02fdce2ad9d30797c567b3'   # LICENSE
+    );
+
+    ext_url_subject_part_fsaverage = 'subjects_dir/fsaverage/';
+    ext_url_parts = c('surf/lh.white',
+                      'surf/rh.white',
+                      'surf/lh.curv',
+                      'surf/rh.curv',
+                      'label/lh.cortex.label',
+                      'label/rh.cortex.label',
+                      'LICENSE'
+    );
+    ext_urls = paste(ext_url_subject_part_fsaverage, ext_url_parts, sep='');
+    base_url = paste0(scheme, '://rcmd.org/projects/nitestdata/');
     urls = paste(base_url, ext_urls, sep='');
 
     cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);
@@ -316,7 +380,8 @@ download_fsaverage <- function(accept_freesurfer_license=FALSE) {
 #' @note The subject fsaverage3 is a downsampled (low mesh resolution) version of the standard fsaverage. If you never heard about fsaverage3, you do not need it. You will have to manually re-sample your data in FreeSurfer if you want to use it with fsaverage3.
 #'
 #' @export
-download_fsaverage3 <- function(accept_freesurfer_license=FALSE) {
+download_fsaverage3 <- function(accept_freesurfer_license=FALSE,
+                                scheme="https") {
 
     if(! accept_freesurfer_license) {
         cat(sprintf("Nothing downloaded. You have to accept the FreeSurfer license to download and use fsaverage.\n"));
@@ -364,7 +429,7 @@ download_fsaverage3 <- function(accept_freesurfer_license=FALSE) {
     );
     ext_urls_subject1 = paste(ext_url_subject_part_subject1, ext_url_parts_subject1, sep='');
     ext_urls = c(ext_urls_fsaverage3, ext_urls_subject1);
-    base_url = 'http://rcmd.org/projects/nitestdata/';
+    base_url = paste0(scheme, '://rcmd.org/projects/nitestdata/');
     urls = paste(base_url, ext_urls, sep='');
 
     cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);
@@ -383,7 +448,8 @@ download_fsaverage3 <- function(accept_freesurfer_license=FALSE) {
 #' @note The subject fsaverage6 is a slightly downsampled (low mesh resolution) version of the standard fsaverage. If you never heard about fsaverage6, you do not need it. You will have to manually re-sample your data in FreeSurfer if you want to use it with fsaverage6.
 #'
 #' @export
-download_fsaverage6 <- function(accept_freesurfer_license=FALSE) {
+download_fsaverage6 <- function(accept_freesurfer_license=FALSE,
+                                scheme="https") {
 
     if(! accept_freesurfer_license) {
         cat(sprintf("Nothing downloaded. You have to accept the FreeSurfer license to download and use fsaverage.\n"));
@@ -493,7 +559,7 @@ download_fsaverage6 <- function(accept_freesurfer_license=FALSE) {
     ext_urls_fsaverage6 = paste(ext_url_subject_part_fsaverage6, ext_url_parts_fsaverage6, sep='');
 
     ext_urls = ext_urls_fsaverage6;
-    base_url = 'http://rcmd.org/projects/nitestdata/';
+    base_url = paste0(scheme, '://rcmd.org/projects/nitestdata/');
     urls = paste(base_url, ext_urls, sep='');
 
     cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);
@@ -504,12 +570,14 @@ download_fsaverage6 <- function(accept_freesurfer_license=FALSE) {
 
 #' @title Download extra data to reproduce the figures from the fsbrain paper.
 #'
+#' @param scheme character string, the URL scheme to use. Either `"https"` (the default) or `"http"`. Switching to `"http"` can be useful as a fallback if the HTTPS server is unreachable.
+#'
 #' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_file(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
 #'
 #' @note Called for side effect of data download.
 #'
 #' @export
-download_optional_paper_data <- function() {
+download_optional_paper_data <- function(scheme="https") {
 
     pkg_info = pkgfilecache::get_pkg_info("fsbrain");
     base_path_subject1 = c('subjects_dir', 'subject1');
@@ -531,7 +599,7 @@ download_optional_paper_data <- function() {
     );
     ext_urls_subject1 = paste(ext_url_subject_part_subject1, ext_url_parts_subject1, sep='');
     ext_urls = ext_urls_subject1;
-    base_url = 'http://rcmd.org/projects/nitestdata/';
+    base_url = paste0(scheme, '://rcmd.org/projects/nitestdata/');
     urls = paste(base_url, ext_urls, sep='');
 
     cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);

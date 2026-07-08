@@ -18,7 +18,7 @@ vislayout.from.coloredmeshes(
 )
 }
 \arguments{
-\item{coloredmeshes, }{list of coloredmesh. A coloredmesh is a named list as returned by the `coloredmesh.from*` functions (like \code{\link{coloredmesh.from.morph.native}}). It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh. The `vis*` functions (like \code{\link[fsbrain]{vis.subject.morph.native}}) all return a list of coloredmeshes.}
+\item{coloredmeshes, }{list of coloredmesh. A coloredmesh is a named list as returned by the \verb{coloredmesh.from*} functions (like \code{\link{coloredmesh.from.morph.native}}). It has the entries 'mesh' of type tmesh3d, a 'col', which is a color specification for such a mesh. The \verb{vis*} functions (like \code{\link[fsbrain]{vis.subject.morph.native}}) all return a list of coloredmeshes.}
 
 \item{view_angles}{list of strings. See \code{\link{get.view.angle.names}} for all valid strings.}
 
@@ -42,7 +42,7 @@ vislayout.from.coloredmeshes(
 named list, see \code{\link{arrange.brainview.images}} for details
 }
 \description{
-Create a tight layout view of coloredmeshes from several angles. Creates separate `sd_<angle>` images, then crops and finally merges them into a single output image with image magick. The `coloredmeshes` to pass to this function are usually obtained by running any `vis*` function (like \code{\link[fsbrain]{vis.subject.morph.native}}, \code{\link[fsbrain]{vis.subject.morph.standard}}, \code{\link[fsbrain]{vis.subject.label}}, \code{\link[fsbrain]{vis.subject.annot}}, and others). That means you can use this function to visualize all kinds of data, e.g., morphometry data in native and standard space, labels, and brain atlases.
+Create a tight layout view of coloredmeshes from several angles. Creates separate \verb{sd_<angle>} images, then crops and finally merges them into a single output image with image magick. The \code{coloredmeshes} to pass to this function are usually obtained by running any \verb{vis*} function (like \code{\link[fsbrain]{vis.subject.morph.native}}, \code{\link[fsbrain]{vis.subject.morph.standard}}, \code{\link[fsbrain]{vis.subject.label}}, \code{\link[fsbrain]{vis.subject.annot}}, and others). That means you can use this function to visualize all kinds of data, e.g., morphometry data in native and standard space, labels, and brain atlases.
 }
 \examples{
 \dontrun{
@@ -73,11 +73,13 @@ Other visualization functions:
 \code{\link{vis.labeldata.on.subject}()},
 \code{\link{vis.mask.on.subject}()},
 \code{\link{vis.region.values.on.subject}()},
+\code{\link{vis.rglwidget}()},
 \code{\link{vis.subject.annot}()},
 \code{\link{vis.subject.label}()},
 \code{\link{vis.subject.morph.native}()},
 \code{\link{vis.subject.morph.standard}()},
 \code{\link{vis.subject.pre}()},
-\code{\link{vis.symmetric.data.on.subject}()}
+\code{\link{vis.symmetric.data.on.subject}()},
+\code{\link{vis.volume.on.surface}()}
 }
 \concept{visualization functions}

@@ -1,7 +1,7 @@
 Package: fsbrain
 Type: Package
 Title: Managing and Visualizing Brain Surface Data
-Version: 0.5.6
+Version: 0.6.0
 Authors@R: person("Tim", "Schäfer", role = c("aut", "cre"), email = "ts+code@rcmd.org", comment = c(ORCID = "0000-0002-3683-8070"))
 Maintainer: Tim Schäfer <ts+code@rcmd.org>
 Description: Provides high-level access to neuroimaging data from standard software packages like 'FreeSurfer' <http://freesurfer.net/> on the level of subjects and groups. Load morphometry data, surfaces and brain parcellations based on atlases. Mask data using labels, load data for specific atlas regions only, and visualize data and statistical results directly in 'R'.
@@ -17,7 +17,7 @@ Suggests: knitr, rmarkdown, testthat (>= 2.1.0), sphereplot (>= 1.5),
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-09-08 19:46:13 UTC; ts
+Packaged: 2026-07-08 15:30:01 UTC; ts
 Author: Tim Schäfer [aut, cre] (ORCID: <https://orcid.org/0000-0002-3683-8070>)
 Repository: CRAN
-Date/Publication: 2025-09-08 21:40:09 UTC
+Date/Publication: 2026-07-08 16:30:14 UTC
