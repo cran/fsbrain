@@ -33,7 +33,7 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
         images = magick::image_read(brainview_images);
 
         # trim images
-        images = magick::image_trim(images);
+        images = safe.image.trim(images);
 
         # Add tiny border back (to prevent them from touching each other)
         images = magick::image_border(images, background_color, border_geometry);
@@ -100,7 +100,7 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
         }
 
         if(map_bg_to_transparency) {
-            merged_img = image.remap.color(merged_img, source_color=background_color, source_point = NULL);
+            merged_img = image_remap_color(merged_img, source_color=background_color, source_point = NULL);
         }
 
         magick::image_write(merged_img, path = output_img);
@@ -126,8 +126,8 @@ arrange.brainview.images <- function(brainview_images, output_img, colorbar_img=
 #'
 #' @param target_color an image magick color string, use 'none' for transparency. Only used with flood fill.
 #'
-#' @keywords internal
-image.remap.color <- function(source_img, source_color=NULL, source_point="+1+1", target_color="none") {
+#' @noRd
+image_remap_color <- function(source_img, source_color=NULL, source_point="+1+1", target_color="none") {
     if(is.null(source_color)) {
         if(is.null(source_point)) {
             stop("One of 'source_color' or 'source_point' must be provided.");
@@ -166,7 +166,7 @@ arrange.brainview.images.grid <- function(brainview_images, output_img, colorbar
         images = magick::image_read(brainview_images);
 
         # trim images
-        images = magick::image_trim(images);
+        images = safe.image.trim(images);
 
         # Add tiny border back (to prevent them from touching each other)
         images = magick::image_border(images, background_color, border_geometry);
@@ -359,19 +359,73 @@ vislayout.from.coloredmeshes <- function(coloredmeshes, view_angles=get.view.ang
             background_color = transparency_color;
         }
 
-        # Create the temporary images at the temp paths
-        for(view_idx in seq_len(length(view_angles))) {
-            view = view_angles[[view_idx]];
-            view_image = view_images[[view_idx]];
-
-            internal_rglactions = list("snapshot_png"=view_image);
-            if(rglactions.has.key(rglactions, "snapshot_png")) {
-                warning("The key 'snapshot_png' in the 'rglactions' parameter is not supported for this function, it will be ignored. Use 'output_img' instead.");
-                rglactions$snapshot_png = NULL;
+        if(get.fsbrain.renderer.backend() == "scimesh") {
+            if (!requireNamespace("scimesh", quietly = TRUE)) {
+                stop("Renderer backend is 'scimesh' but the scimesh package is not installed.");
             }
-            final_rglactions = modifyList(rglactions, internal_rglactions);
 
-            brainviews(c(view), coloredmeshes, rgloptions = rgloptions, rglactions = final_rglactions, style = style, background = background_color);
+            if(rglactions.has.key(rglactions, "snapshot_png")) {
+                warning("The key 'snapshot_png' in the 'rglactions' parameter is not supported by the scimesh backend and will be ignored. Use 'output_img' instead.");
+            }
+
+            scene = coloredmeshes_to_scimesh(coloredmeshes, style = style);
+            if(length(scene) == 0L) {
+                warning("No renderable meshes in scene. Nothing to visualize.");
+                return(invisible(NULL));
+            }
+
+            # Opt-in hemisphere shift (same as rgl): only affects both-hemi views.
+            if(rglactions.has.key(rglactions, "shift_hemis_apart")) {
+                scene_both = coloredmeshes_to_scimesh(shift.hemis.rglactions(coloredmeshes, rglactions), style = style);
+            } else {
+                scene_both = scene;
+            }
+
+            bg_rgba = color_to_rgba(background_color);
+            output_dims = get.fsbrain.scimesh.output.dims();
+            opts = fsbrain_style_to_scimesh_options(style, bg_rgba,
+                                                    width = output_dims[1],
+                                                    height = output_dims[2]);
+
+            for(view_idx in seq_len(length(view_angles))) {
+                view = view_angles[[view_idx]];
+                view_image = view_images[[view_idx]];
+
+                hemi_filter = view.angle.to.hemi.filter(view);
+                active_scene = if(hemi_filter == "both") scene_both else scene;
+
+                cam_info = view_angle_to_scimesh_camera(active_scene, view);
+                renderable = filter_scene_by_view(active_scene, hemi_filter);
+
+                highlight_meshes = highlight_points_to_scimesh(rglactions, hemi_filter);
+                if(length(highlight_meshes) > 0L) {
+                    renderable = c(renderable, highlight_meshes);
+                }
+
+                if(length(renderable) > 0L) {
+                    img = scimesh::render_scene(renderable, cam_info$camera, opts);
+                    scimesh::write_png(img, view_image);
+                } else {
+                    warning(sprintf("No meshes to render for view '%s', creating empty placeholder.", view));
+                    blank_img = magick::image_blank(100L, 100L, background_color);
+                    magick::image_write(blank_img, view_image);
+                }
+            }
+        } else {
+            # Create the temporary images at the temp paths using rgl
+            for(view_idx in seq_len(length(view_angles))) {
+                view = view_angles[[view_idx]];
+                view_image = view_images[[view_idx]];
+
+                internal_rglactions = list("snapshot_png"=view_image);
+                if(rglactions.has.key(rglactions, "snapshot_png")) {
+                    warning("The key 'snapshot_png' in the 'rglactions' parameter is not supported for this function, it will be ignored. Use 'output_img' instead.");
+                    rglactions$snapshot_png = NULL;
+                }
+                final_rglactions = modifyList(rglactions, internal_rglactions);
+
+                brainviews(c(view), coloredmeshes, rgloptions = rgloptions, rglactions = final_rglactions, style = style, background = background_color);
+            }
         }
 
         # Now merge them into one

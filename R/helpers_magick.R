@@ -1,6 +1,87 @@
 # Helper functions related to image magick.
 
 
+#' @title Safe wrapper around magick::image_trim that handles blank images.
+#'
+#' @param image a magick image object.
+#'
+#' @return the trimmed magick image, or the original if trimming fails (e.g., uniform/blank image).
+#'
+#' @keywords internal
+safe.image.trim <- function(image) {
+    tryCatch(
+        magick::image_trim(image),
+        error = function(e) {
+            warning("Could not trim image (possibly blank rendering): ", conditionMessage(e));
+            image;
+        }
+    );
+}
+
+
+#' @title Take screenshot of rgl scene, with fallback for systems without X11.
+#'
+#' @description Takes a screenshot of the current rgl scene. On systems with working X11/OpenGL,
+#' uses the standard rgl.snapshot() method. On systems without X11 (e.g., recent macOS versions
+#' where XQuartz is broken), falls back to exporting as PDF via rgl.postscript() and converting
+#' to PNG using ImageMagick.
+#'
+#' @param output_image character string, path to the output PNG file.
+#' @param silent logical, whether to suppress messages. Default TRUE.
+#'
+#' @return invisible NULL, called for side effect of writing the image file.
+#'
+#' @keywords internal
+take.screenshot <- function(output_image, silent = TRUE) {
+    output_image = path.expand(output_image);
+
+    # Check if we can use the standard snapshot method (needs working X11/OpenGL)
+    use_fallback = FALSE;
+    if(rgl::rgl.useNULL()) {
+        use_fallback = TRUE;
+    }
+
+    if(!use_fallback) {
+        # Try standard screenshot method
+        tryCatch({
+            rgl::rgl.snapshot(output_image, fmt = "png");
+            if(!silent) {
+                message(sprintf("Screenshot written to '%s'.\n", output_image));
+            }
+            return(invisible(NULL));
+        }, error = function(e) {
+            # Snapshot failed, use fallback
+            use_fallback <<- TRUE;
+        });
+    }
+
+    if(use_fallback) {
+        # Fallback: export to PDF, then convert to PNG using ImageMagick
+        # PDF is much smaller than SVG (21.8 MB vs 170.2 MB for a brain mesh)
+        pdf_file = tempfile(fileext = ".pdf");
+        rgl::rgl.postscript(pdf_file, fmt = "pdf");
+
+        # Convert PDF to PNG using ImageMagick command line
+        # Use density to control output resolution (150 DPI gives good quality)
+        convert_cmd = sprintf("convert -density 150 -background white -flatten %s %s", 
+                              shQuote(pdf_file), shQuote(output_image));
+        result = system(convert_cmd, ignore.stdout = TRUE, ignore.stderr = TRUE);
+
+        unlink(pdf_file);
+
+        if(result != 0) {
+            stop("Failed to convert PDF to PNG. Make sure ImageMagick 'convert' is installed and in PATH.");
+        }
+
+        if(!silent) {
+            message(sprintf("Screenshot written to '%s' (via PDF fallback, no X11 required).\n", output_image));
+        }
+    }
+
+    return(invisible(NULL));
+}
+
+
 #' @title Wrapper around magick::image_append that allows specifying the background color when working with images of different width/height.
 #'
 #' @param images a vector/stack of magick images. See \code{magick::image_blank} or other methods to get one.
