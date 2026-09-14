@@ -40,6 +40,7 @@ Create a coloredmesh from native space morphometry data.
 }
 \seealso{
 Other coloredmesh functions:
+\code{\link[=Triangles3D.to.coloredmesh]{Triangles3D.to.coloredmesh()}},
 \code{\link[=coloredmesh.from.annot]{coloredmesh.from.annot()}},
 \code{\link[=coloredmesh.from.label]{coloredmesh.from.label()}},
 \code{\link[=coloredmesh.from.mask]{coloredmesh.from.mask()}},

@@ -358,7 +358,7 @@ with it. All code blocks below are shown for you to copy and adapt, but
 they are not executed during the build of this vignette (to keep it fast
 and independent of a network connection). If you want to browse a fully
 rendered version of this document, including all resulting images, have
-a look at the <a href="https://htmlpreview.github.io/?https://github.com/dfsp-spirit/fsbrain/blob/develop/web/Rmd_web_examples/fsbrain_with_scimesh.html">online
+a look at the <a href="https://dfsp-spirit.github.io/fsbrain/notebooks/fsbrain_with_scimesh.html">online
 notebook with pre-rendered figures</a>.</p>
 <div id="why-and-when-to-use-the-scimesh-backend" class="section level1">
 <h1>Why and when to use the scimesh backend</h1>
@@ -517,7 +517,7 @@ t-map). Both kinds of results are commonly displayed on the
 <h2>Results: region-based</h2>
 <p>The function <code>vis.region.values.on.subject()</code> visualizes
 one value per atlas region. Here we show an example on the Desikan
-atlas, using dummy values:</p>
+atlas, using simulated values:</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>atlas <span class="ot">=</span> <span class="st">&#39;aparc&#39;</span>;   <span class="co"># Desikan atlas</span></span>
 <span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co"># For the left hemisphere, we just assign a subset of the atlas regions.</span></span>
@@ -531,7 +531,7 @@ atlas, using dummy values:</p>
 <span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="fu">names</span>(rh_region_value_list) <span class="ot">=</span> atlas_region_names;</span>
 <span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a></span>
 <span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.region.values.on.subject</span>(sjd, sj, atlas, lh_region_value_list, rh_region_value_list, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Effect size (dummy data)&#39;</span>);</span></code></pre></div>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Effect size (simulated data)&#39;</span>);</span></code></pre></div>
 </div>
 <div id="results-vertex-based" class="section level2">
 <h2>Results: vertex-based</h2>
@@ -551,7 +551,7 @@ cortex. Here we use the demo cluster data that ships with
 <span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>rh_clust <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(rh_demo_cluster_file);   <span class="co"># two negative clusters</span></span>
 <span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a></span>
 <span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.symmetric.data.on.subject</span>(subjects_dir, subject_id, lh_clust, rh_clust, <span class="at">bg=</span><span class="st">&quot;curv_light&quot;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;t-value (dummy data)&#39;</span>);</span></code></pre></div>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;t-value (simulated data)&#39;</span>);</span></code></pre></div>
 </div>
 </div>
 <div id="part-3-a-workflow-with-manually-loaded-meshes-and-data" class="section level1">
@@ -595,7 +595,7 @@ FreeSurfer subjects directory at all.</p>
 </div>
 <div id="see-it-rendered" class="section level1">
 <h1>See it rendered</h1>
-<p>The <a href="https://htmlpreview.github.io/?https://github.com/dfsp-spirit/fsbrain/blob/develop/web/Rmd_web_examples/fsbrain_with_scimesh.html">online
+<p>The <a href="https://dfsp-spirit.github.io/fsbrain/notebooks/fsbrain_with_scimesh.html">online
 notebook with pre-rendered figures</a> runs all the code shown in this
 document and displays the resulting images, so you can see exactly what
 output to expect before writing any code yourself.</p>

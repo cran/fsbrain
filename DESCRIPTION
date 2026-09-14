@@ -1,24 +1,52 @@
 Package: fsbrain
 Type: Package
 Title: Managing and Visualizing Brain Surface Data
-Version: 0.7.0
-Authors@R: person("Tim", "Schäfer", role = c("aut", "cre"), email = "ts+code@rcmd.org", comment = c(ORCID = "0000-0002-3683-8070"))
+Version: 0.8.0
+Authors@R: c(person("Tim", "Schäfer", role = c("aut", "cre"), email = "ts+code@rcmd.org", comment = c(ORCID = "0000-0002-3683-8070")),
+    person("The General Hospital Corporation (Boston, MA)", role = "cph", comment = "Copyright holder of FreeSurfer and thus the fsaverage template subject that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Van Essen Lab", role = "cph", comment = "Copyright holder of the fs_LR 32k template that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Alexander", "Schaefer", role = "cph", comment = "Copyright holder of the Schaefer 100-1000 atlases that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Ru", "Kong", role = "cph", comment = "Copyright holder of the Brainnetome atlas that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Lingzhong", "Fan", role = "cph", comment = "Copyright holder of the AAL3 atlas that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Edmund T.", "Rolls", role = "cph", comment = "Copyright holder of the HCP-MMP1 atlas that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Matthew F.", "Glasser", role = "cph", comment = "Copyright holder of the HCP-MMP1 atlas that can OPTIONALLY be downloaded via fsbrain functions."),
+    person("Kathryn", "Mills", role = "cph", comment = "Provided the conversion of the HCP-MMP1 atlas to fsaverage space that can OPTIONALLY be downloaded via fsbrain functions."))
 Maintainer: Tim Schäfer <ts+code@rcmd.org>
 Description: Provides high-level access to neuroimaging data from standard software packages like 'FreeSurfer' <https://freesurfer.net/> on the level of subjects and groups. Load morphometry data, surfaces and brain parcellations based on atlases. Mask data using labels, load data for specific atlas regions only, and visualize data and statistical results directly in 'R'.
 License: MIT + file LICENSE
+Copyright: Tim Schäfer (package code); the optional data files that can
+        be downloaded at runtime are owned by their respective
+        copyright holders, see 'inst/COPYRIGHTS'.
 Encoding: UTF-8
 URL: https://github.com/dfsp-spirit/fsbrain
 BugReports: https://github.com/dfsp-spirit/fsbrain/issues
-Imports: reshape, freesurferformats (>= 0.1.17), pkgfilecache (>=
-        0.1.1), rgl, squash, fields, viridis, data.table, magick,
-        methods
+Imports: freesurferformats (>= 1.0.1), pkgfilecache (>= 0.4.1), rgl,
+        squash, fields, viridis, magick, methods
 Suggests: knitr, rmarkdown, scimesh (>= 0.3.4), testthat (>= 2.1.0),
-        sphereplot (>= 1.5), misc3d, RColorBrewer, Rvcg (>= 0.20.2),
-        igraph, pracma
+        misc3d, RColorBrewer, Rvcg (>= 0.20.2), igraph, pracma
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2026-08-23 11:19:11 UTC; ts
-Author: Tim Schäfer [aut, cre] (ORCID: <https://orcid.org/0000-0002-3683-8070>)
+Packaged: 2026-09-13 17:45:32 UTC; ts
+Author: Tim Schäfer [aut, cre] (ORCID: <https://orcid.org/0000-0002-3683-8070>),
+  The General Hospital Corporation (Boston, MA) [cph] (Copyright holder
+    of FreeSurfer and thus the fsaverage template subject that can
+    OPTIONALLY be downloaded via fsbrain functions.),
+  Van Essen Lab [cph] (Copyright holder of the fs_LR 32k template that
+    can OPTIONALLY be downloaded via fsbrain functions.),
+  Alexander Schaefer [cph] (Copyright holder of the Schaefer 100-1000
+    atlases that can OPTIONALLY be downloaded via fsbrain functions.),
+  Ru Kong [cph] (Copyright holder of the Brainnetome atlas that can
+    OPTIONALLY be downloaded via fsbrain functions.),
+  Lingzhong Fan [cph] (Copyright holder of the AAL3 atlas that can
+    OPTIONALLY be downloaded via fsbrain functions.),
+  Edmund T. Rolls [cph] (Copyright holder of the HCP-MMP1 atlas that can
+    OPTIONALLY be downloaded via fsbrain functions.),
+  Matthew F. Glasser [cph] (Copyright holder of the HCP-MMP1 atlas that
+    can OPTIONALLY be downloaded via fsbrain functions.),
+  Kathryn Mills [cph] (Provided the conversion of the HCP-MMP1 atlas to
+    fsaverage space that can OPTIONALLY be downloaded via fsbrain
+    functions.)
 Repository: CRAN
-Date/Publication: 2026-08-23 15:30:02 UTC
+Date/Publication: 2026-09-14 07:30:11 UTC

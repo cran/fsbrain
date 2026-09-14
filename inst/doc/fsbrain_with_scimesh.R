@@ -65,7 +65,7 @@
 # names(rh_region_value_list) = atlas_region_names;
 # 
 # cm = vis.region.values.on.subject(sjd, sj, atlas, lh_region_value_list, rh_region_value_list, views=NULL);
-# img = export(cm, colorbar_legend='Effect size (dummy data)');
+# img = export(cm, colorbar_legend='Effect size (simulated data)');
 
 ## ----eval=FALSE---------------------------------------------------------------
 # subjects_dir = get_optional_data_filepath("subjects_dir");
@@ -78,7 +78,7 @@
 # rh_clust = freesurferformats::read.fs.morph(rh_demo_cluster_file);   # two negative clusters
 # 
 # cm = vis.symmetric.data.on.subject(subjects_dir, subject_id, lh_clust, rh_clust, bg="curv_light", views=NULL);
-# img = export(cm, colorbar_legend='t-value (dummy data)');
+# img = export(cm, colorbar_legend='t-value (simulated data)');
 
 ## ----eval=FALSE---------------------------------------------------------------
 # # 1. Paths to the mesh and data files (arbitrary locations, no subjects_dir needed):

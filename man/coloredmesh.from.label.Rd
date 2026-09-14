@@ -37,6 +37,7 @@ Create a coloredmesh from a label.
 }
 \seealso{
 Other coloredmesh functions:
+\code{\link[=Triangles3D.to.coloredmesh]{Triangles3D.to.coloredmesh()}},
 \code{\link[=coloredmesh.from.annot]{coloredmesh.from.annot()}},
 \code{\link[=coloredmesh.from.mask]{coloredmesh.from.mask()}},
 \code{\link[=coloredmesh.from.morph.native]{coloredmesh.from.morph.native()}},
