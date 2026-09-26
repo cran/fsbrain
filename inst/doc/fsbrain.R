@@ -281,6 +281,10 @@
 # vis.subject.morph.native(subjects_dir, 'subject', 'thickness', hemi='both', views=c('si'), rgloptions=rgloptions)
 
 ## ----eval = FALSE-------------------------------------------------------------
+# # Set the output resolution of all scimesh renders to 2560x1440 pixels (the default is 1920x1080):
+# options(fsbrain.scimesh.output_dims = c(2560, 1440));
+
+## ----eval = FALSE-------------------------------------------------------------
 # subjects_dir = find.subjectsdir.of("fsaverage")$found_at;
 # subject_id = 'fsaverage';
 # 

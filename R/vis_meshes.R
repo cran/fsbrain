@@ -9,7 +9,7 @@
 #'
 #' @param skip_all_na logical, whether to skip (i.e., not render) meshes in the list that have the property 'render' set to FALSE. Defaults to TRUE. Practically, this means that a hemisphere for which the data was not given is not rendered, instead of being rendered in a single color.
 #'
-#' @param style a named list of style parameters or a string specifying an available style by name (e.g., 'shiny'). Defaults to 'default', the default style.
+#' @param style a named list of style parameters or a string specifying an available style by name (e.g., 'shiny'). Defaults to 'default', the default style. Use the magic word 'from_mesh' to use the 'style' field of each coloredmesh instead of a single, global style: this allows you to give individual meshes in the scene their own look, e.g., to render a cortex mesh semi-transparently behind colored data meshes. Meshes which have no 'style' field fall back to the 'default' style. See \code{\link[fsbrain]{vis.subcortical.region.values}} for an example, and note that the scimesh renderer backend currently only supports the alpha channel of a style, not other material properties.
 #'
 #' @param rgloptions option list passed to \code{\link[rgl]{par3d}}. Example: \code{rgloptions = list("windowRect"=c(50,50,1000,1000))};
 #'
@@ -102,13 +102,13 @@ vis.coloredmeshes <- function(coloredmeshes, background="white", skip_all_na=TRU
 #'
 #' @param x any `R` object
 #'
-#' @return TRUE if *x* is an instance of a class that can be rendered by fsbrain visualization functions, and FALSE otherwise. Currently, the following types are renderable: `fs.coloredvoxels`, `fs.coloredmesh`, `Triangles3D`.
+#' @return TRUE if *x* is an instance of a class that can be rendered by fsbrain visualization functions, and FALSE otherwise. Currently, the following types are renderable: `fs.coloredvoxels`, `fs.coloredmesh`, `fs.coloredpaths`, `Triangles3D`.
 #'
 #' @seealso \code{\link[fsbrain]{is.Triangles3D}}
 #'
 #' @keywords internal
 fsbrain.renderable <- function(x) {
-    return(is.fs.coloredvoxels(x) | is.fs.coloredmesh(x) | is.Triangles3D(x));
+    return(is.fs.coloredvoxels(x) | is.fs.coloredmesh(x) | is.fs.coloredpaths(x) | is.Triangles3D(x));
 }
 
 
@@ -124,7 +124,7 @@ is.Triangles3D <- function(x) inherits(x, "Triangles3D")
 
 #' @title Visualize a renderable object
 #'
-#' @description Renders instances of `coloredmesh`, `coloredvoxels` and `Triangles3D`.
+#' @description Renders instances of `coloredmesh`, `coloredvoxels`, `coloredpaths` and `Triangles3D`.
 #'
 #' @param cmesh an instance of one of the supported renderable classes
 #'
@@ -142,6 +142,10 @@ vis.renderable <- function(cmesh, skip_all_na=TRUE, style="default") {
         if(!(skip_all_na && !cmesh$render)) {
             vis.coloredmesh(cmesh, style = style);
         }
+    } else if (is.fs.coloredpaths(cmesh)) {
+        if(!(skip_all_na && !cmesh$render)) {
+            vis.coloredpaths(cmesh, style = style);
+        }
     } else if (is.fs.coloredvoxels(cmesh)) {
         style_params = get.rglstyle.parameters(cmesh, style);
         if(hasIn(cmesh, 'color')) {
@@ -157,8 +161,47 @@ vis.renderable <- function(cmesh, skip_all_na=TRUE, style="default") {
             warning("The 'misc3d' package must be installed to render 'Triangles3D' instances. Skipping visualization."); # nocov
         }
     } else {
-        stop(sprintf("Received object with classes '%s', cannot render this. Pass an 'fs.coloredmesh', 'fs.coloredvoxels', or 'Triangles3D' instance.\n", paste(class(cmesh), collapse=" ")));  # nocov
+        stop(sprintf("Received object with classes '%s', cannot render this. Pass an 'fs.coloredmesh', 'fs.coloredvoxels', 'fs.coloredpaths', or 'Triangles3D' instance.\n", paste(class(cmesh), collapse=" ")));  # nocov
     }
+}
+
+
+#' @title Draw the segments of an fs.coloredpaths instance with rgl.
+#'
+#' @description Uses rgl::segments3d, i.e., hardware lines, so that a line is always one pixel wide (times the requested width) no matter how far away it is from the camera. Segments which share a line width are drawn in a single call, because the line width is a material property (like the color, which can be set per segment).
+#'
+#' @param cpaths an fs.coloredpaths instance.
+#'
+#' @param style a rendering style, see \code{\link[fsbrain]{get.rglstyle}}.
+#'
+#' @return invisible NULL.
+#'
+#' @keywords internal
+#' @importFrom utils modifyList
+#' @importFrom rgl segments3d
+vis.coloredpaths <- function(cpaths, style="default") {
+    if(! is.fs.coloredpaths(cpaths)) {
+        stop("Parameter 'cpaths' must be an 'fs.coloredpaths' instance.");
+    }
+    if(nrow(cpaths$from) < 1L) {
+        return(invisible(NULL));
+    }
+
+    style_params = get.rglstyle.parameters(cpaths, style);
+
+    for(line_width in unique(cpaths$width)) {
+        sel = which(cpaths$width == line_width);
+        # segments3d expects the coordinates of the segment endpoints interleaved in a single vector per axis.
+        x = as.vector(rbind(cpaths$from[sel, 1], cpaths$to[sel, 1]));
+        y = as.vector(rbind(cpaths$from[sel, 2], cpaths$to[sel, 2]));
+        z = as.vector(rbind(cpaths$from[sel, 3], cpaths$to[sel, 3]));
+        # The entries after the style parameters take precedence over the style, so that the
+        # per-segment color and width win over the material defaults of the style.
+        line_params = modifyList(style_params, list("color"=cpaths$col[sel], "lwd"=line_width, "lit"=cpaths$lit, "point_antialias"=TRUE, "line_antialias"=TRUE));
+        do.call(rgl::segments3d, c(list(x, y, z), line_params));
+    }
+
+    return(invisible(NULL));
 }
 
 
@@ -351,7 +394,7 @@ vis.coloredmesh <- function(cmesh, style="default") {
 
 #' @title Produce the named list of style parameters from style definition.
 #'
-#' @description A style definition can be a character string like "shiny", already a parameter list, or a command like 'from_mesh' that tells us to get the style from the renderable. This function creates the final parameters from the definition and the renderable.
+#' @description A style definition can be a character string like "shiny", already a parameter list, or a command like 'from_mesh' that tells us to get the style from the renderable. This function creates the final parameters from the definition and the renderable. Note that a mesh which carries its own style (in its 'style' field, see \code{\link[fsbrain]{coloredmesh.from.color}}) is rendered with that style whenever the requested style is the 'default' style: this way, scenes that assign individual styles to their meshes look as intended even if the rendering or export function is called without an explicit style.
 #'
 #' @param renderable A renderable (or any list) which includes a 'style' key. If it does not include such a key, the 'default' style will be used.
 #'
@@ -371,6 +414,11 @@ get.rglstyle.parameters <- function(renderable, style) {
         style = if(! is.null(renderable$style)) renderable$style else 'default';
         return(get.rglstyle.parameters(renderable, style));
     }
+    # If the caller asked for the default style but the mesh has its own style, use the mesh style.
+    # (Guarded against 'default' in the mesh to avoid infinite recursion.)
+    if(style == 'default' && ! is.null(renderable$style) && ! identical(renderable$style, 'default')) {
+        return(get.rglstyle.parameters(renderable, renderable$style));
+    }
     return(get.rglstyle(style));
 }
 
@@ -382,6 +430,8 @@ get.rglstyle.parameters <- function(renderable, style) {
 #' @param style string. A style name. Available styles are one of: "default", "shiny", "semitransparent", "glass", "edges".
 #'
 #' @return a style, resolved to a parameter list compatible with \code{\link[rgl]{material3d}}.
+#'
+#' @note In addition to the style names listed above, the magic word 'from_mesh' can be passed as parameter 'style' to the rendering functions: it makes them use the style stored in the 'style' field of each individual mesh (see \code{\link[fsbrain]{coloredmesh.from.color}}). This allows you to give individual meshes of a scene their own look, e.g., to render a cortex mesh semi-transparently behind colored data meshes, see \code{\link[fsbrain]{vis.subcortical.region.values}}. Note that the scimesh renderer backend currently only supports the alpha channel of a style, not other material properties.
 #'
 #' @seealso \code{\link[rgl]{shade3d}} can use the returned style
 #'
@@ -490,8 +540,11 @@ sortcoloredmeshes.by.hemi <- function(coloredmeshes) {
     for (mesh_idx in seq_len(length(coloredmeshes))) {
         cmesh = coloredmeshes[[mesh_idx]];
         mesh_name = sprintf("mesh%d", mesh_idx);
-        if(! ('hemi' %in% names(cmesh))) {
-            if(is.fs.coloredmesh(cmesh)) {
+        # Note that a hemi value of NULL is the documented default for meshes which are not
+        # hemisphere-specific, e.g., volume iso-surfaces created with Triangles3D.to.coloredmesh().
+        # Such meshes are shown in the views of both hemispheres, just like hemi='both'.
+        if(! ('hemi' %in% names(cmesh)) || is.null(cmesh$hemi)) {
+            if(! ('hemi' %in% names(cmesh)) && is.fs.coloredmesh(cmesh)) {
                 warning(sprintf("Assigning coloredmesh # %d which has no hemi value at all to both hemispheres.\n", mesh_idx));
             }
             lh_meshes[[mesh_name]] = cmesh;

@@ -3,7 +3,7 @@
 
 #' @title Voxel-based visualization of volume mask at surface RAS positions.
 #'
-#' @description Plots a 3D box at every *foreground* voxel in the given volume. All voxels which do not have their intensity value set to `NA` are considered *foreground* voxels. The locations at which to plot the voxels is computed from the voxel CRS indices using the FreeSurfer \code{\link[fsbrain]{vox2ras_tkr}} matrix. This means that the position of the rendered data fits to the surface coordinates (in files like `surf/lh.white`), and that you can call this function while an active surface rendering window is open (e.g., from calling \code{\link[fsbrain]{vis.subject.morph.native}}), to superimpose the surface and volume data. **On coloring the voxels** (using *rgl materials*): Note that you can call this function several times for the active plot, and color the voxels differently by passing different material properties in each call. Alternatively, check the `voxelcol` parameter.
+#' @description Plots a 3D box at every *foreground* voxel in the given volume. All voxels which do not have their intensity value set to `NA` are considered *foreground* voxels. The locations at which to plot the voxels is computed from the 1-based R array indices of the voxels using the \code{\link[fsbrain]{index2ras_tkr}} matrix (see \code{\link[fsbrain]{vox2ras_tkr}} for the CRS-based variant). This means that the position of the rendered data fits to the surface coordinates (in files like `surf/lh.white`), and that you can call this function while an active surface rendering window is open (e.g., from calling \code{\link[fsbrain]{vis.subject.morph.native}}), to superimpose the surface and volume data. **On coloring the voxels** (using *rgl materials*): Note that you can call this function several times for the active plot, and color the voxels differently by passing different material properties in each call. Alternatively, check the `voxelcol` parameter.
 #'
 #' @param volume numeric 3d array, voxels which should not be plotted must have value `NA`. Take care not to plot too many.
 #'
@@ -76,7 +76,9 @@ volvis.voxels <- function(volume, render_every=1, voxelcol=NULL, ...) {
     if(num_foreground_voxels > 0) {
         voxel_crs = cbind(voxel_crs, 1); # turn coords into homogeneous repr.
         surface_ras = matrix(rep(0, length(rendered_voxels)*3), ncol=3);
-        vox2surface_ras_matrix = vox2ras_tkr();
+        # The indices from 'which(..., arr.ind = TRUE)' are 1-based R array indices, so the
+        # 'index2ras_tkr' matrix is used instead of the 'vox2ras_tkr' one (which expects CRS).
+        vox2surface_ras_matrix = index2ras_tkr();
         for(idx in seq(length(rendered_voxels))) {
             row_idx = rendered_voxels[idx];
             surface_ras[idx,] = (vox2surface_ras_matrix %*% voxel_crs[row_idx,])[1:3];
@@ -284,15 +286,28 @@ volvis.contour <- function(volume, level=80, show=TRUE, frame=1L, color='white')
 }
 
 
-#' Apply matmult transformation to input.
+#' Apply affine transformation to input.
 #'
-#' @description Apply affine transformation, like a *vox2ras_tkr* transformation, to input. This is just matrix multiplication for different input objects.
+#' @description Apply an affine transformation, like a *vox2ras_tkr* transformation, to input. This is just matrix multiplication for different input objects. Supported input types are coordinate vectors, coordinate matrices, `fs.surface` meshes (the vertex coordinates are transformed, the face indices stay the same), renderable objects like `fs.coloredmesh`, `fs.coloredvoxels`, `fs.coloredpaths` or *misc3d* `Triangles3D`, rgl `mesh3d`/`tmesh3d` instances (including their normals, if any), and (hemi-)lists of such objects (which are transformed element-wise).
 #'
-#' @param object numerical vector/matrix or Triangles3D instance, the coorindates or object to transform.
+#' @param object numerical vector/matrix, `fs.surface`, `fs.coloredmesh`, `fs.coloredvoxels`, `fs.coloredpaths`, `Triangles3D`, `mesh3d`/`tmesh3d` instance, or a list (e.g., a hemilist) of such objects, the coordinates or objects to transform.
 #'
-#' @param matrix_fun a 4x4 affine matrix or a function returning such a matrix. If `NULL`, the input is returned as-is. In many cases you way want to use a matrix computed from the header of a volume file, e.g., the `vox2ras` matrix of the respective volume. See the `mghheader.*` functions in the *freesurferformats* package to obtain these matrices.
+#' @param matrix_fun a 4x4 affine matrix or a function returning such a matrix. If `NULL`, the input is returned as-is. In many cases you way want to use a matrix computed from the header of a volume file, e.g., the `vox2ras` matrix of the respective volume. See the `mghheader.*` functions in the *freesurferformats* package to obtain these matrices. Registration files can be read with `freesurferformats::read.fs.transform` and friends, but note that such files often describe a *voxel* to *surface RAS* mapping, so you may have to compose them with a `vox2ras` matrix to get a transformation between RAS coordinates.
 #'
 #' @return the input after application of the affine matrix (matrix multiplication)
+#'
+#' @note The affine matrix is applied in the standard way: the coordinates are interpreted as homogeneous *column* vectors, i.e., a vertex `v` is transformed as `v' = M %*% v`. Note that rgl, and fsbrain functions that are implemented on top of rgl (like the camera transforms used internally for views), use the transposed convention for their rotation matrices, see \code{\link[rgl]{rotationMatrix}}. For pure translations and scalings, both conventions are identical.
+#'
+#'   Meshes keep their orientation: if the linear part of the matrix has a negative determinant, the transformation mirrors the object (this is the case for the FreeSurfer `vox2ras_tkr` matrix, which flips and permutes axes), which would invert all surface normals and make the mesh render inside-out. In that case, the vertex order within each face is reversed to preserve the original orientation, and the stored normals (if any) are transformed with the linear part of the matrix so that they stay consistent with the faces.
+#'
+#' @examples
+#' \dontrun{
+#'    # Transform the vertex coordinates of a surface mesh:
+#'    cube_file = system.file("extdata", "cube.ply", package = "fsbrain");
+#'    cube = freesurferformats::read.fs.surface(cube_file);
+#'    translation = matrix(c(1,0,0,10, 0,1,0,20, 0,0,1,30, 0,0,0,1), nrow = 4L, byrow = TRUE);
+#'    cube_moved = apply.transform(cube, translation);
+#' }
 #'
 #' @export
 apply.transform <- function(object, matrix_fun) {
@@ -308,32 +323,163 @@ apply.transform <- function(object, matrix_fun) {
         stop("Parameter 'matrix_fun' must be a function or a matrix.");
     }
 
-    if(is.vector(m)) {
-        if(length(m) == 3) {
-            m = c(m, 1L);
-        }
-        return((affine_matrix %*% m)[1:3]);
+    if(! is.matrix(affine_matrix) || nrow(affine_matrix) != 4L || ncol(affine_matrix) != 4L) {
+        stop(sprintf("Parameter 'matrix_fun' must be (or return) a 4x4 affine matrix, but the result is not: it has %d row(s) and %d column(s).\n", nrow(affine_matrix), ncol(affine_matrix)));
     }
-    else if(is.matrix(m)) {
-        surface_ras = matrix(rep(0, nrow(m)*3), ncol=3);
-        if(ncol(m) == 3L) {
-            m_cp = cbind(m, 1); # turn coords into homogeneous repr.
-        } else {
-            m_cp = m;
-        }
 
-        for(idx in seq(nrow(m))) {
-            surface_ras[idx,] = (affine_matrix %*% m_cp[idx,])[1:3];
+    return(apply.transform.matrix(m, affine_matrix));
+}
+
+
+#' @title Apply an affine transformation matrix to an object.
+#'
+#' @description Internal workhorse of \code{\link[fsbrain]{apply.transform}}, assumes that the matrix has already been resolved from the 'matrix_fun' parameter.
+#'
+#' @param object the object to transform.
+#'
+#' @param affine_matrix a 4x4 affine matrix.
+#'
+#' @return the transformed object.
+#'
+#' @keywords internal
+apply.transform.matrix <- function(object, affine_matrix) {
+
+    # If the linear part of the matrix has a negative determinant, the transformation mirrors the
+    # object, i.e., it turns a right-handed into a left-handed coordinate system. This happens for
+    # the FreeSurfer 'vox2ras_tkr' matrix (which flips and permutes axes), so it is the common case
+    # when transforming data from voxel space to surface RAS. Mirroring reverses the winding of
+    # every face, which makes all geometric normals point inwards: the mesh is rendered inside-out
+    # (dark, with wrong lighting), so we restore the original orientation after the transformation.
+    flips_orientation = det(affine_matrix[1:3, 1:3, drop = FALSE]) < 0;
+
+    # Vertex order which restores the original winding of a face: swap the 2nd and 3rd vertex and
+    # keep the remaining ones (quads) in place.
+    winding_restore_order = function(num_vertices) {
+        order = c(1L, 3L, 2L);
+        if(num_vertices > 3L) {
+            order = c(order, seq.int(4L, num_vertices));
         }
-        return(surface_ras);
-    } else if('Triangles3D' %in% class(m)) {
-        m$v1 = apply.transform(m$v1, matrix_fun=matrix_fun);   # v1 is an n x 3 matrix of the x,y,z coords of vertex v1 of the face
-        m$v2 = apply.transform(m$v2, matrix_fun=matrix_fun);
-        m$v3 = apply.transform(m$v3, matrix_fun=matrix_fun);
-        return(m);
-    } else {
-        stop("Input type of parameter 'object' not supported. Must be numerical vector/matrix or Triangles3D.");
+        return(order);
+    };
+
+    if(freesurferformats::is.fs.surface(object)) {
+        # Transform the vertex coordinates. The face indices themselves are unaffected, only their
+        # order within each face may change (see below).
+        object$vertices = apply.affine.to.coords(object$vertices, affine_matrix);
+        if(flips_orientation && ncol(object$faces) >= 3L) {
+            # Restore the original winding of the faces.
+            object$faces = object$faces[, winding_restore_order(ncol(object$faces)), drop = FALSE];
+        }
+        return(object);
     }
+
+    if(is.fs.coloredmesh(object)) {
+        object$mesh = apply.transform.matrix(object$mesh, affine_matrix);
+        # A coloredmesh stores the mesh it was created from in its metadata, keep it in sync.
+        if(freesurferformats::is.fs.surface(object$metadata$fs_mesh)) {
+            object$metadata$fs_mesh = apply.transform.matrix(object$metadata$fs_mesh, affine_matrix);
+        }
+        return(object);
+    }
+
+    if(is.fs.coloredvoxels(object)) {
+        object$voxeltris = apply.transform.matrix(object$voxeltris, affine_matrix);
+        return(object);
+    }
+
+    if(is.fs.coloredpaths(object)) {
+        # Line segments: transform both endpoints. The winding of faces is irrelevant here.
+        object$from = apply.affine.to.coords(object$from, affine_matrix);
+        object$to = apply.affine.to.coords(object$to, affine_matrix);
+        return(object);
+    }
+
+    if(is.Triangles3D(object)) {
+        object$v1 = apply.affine.to.coords(object$v1, affine_matrix);
+        object$v2 = apply.affine.to.coords(object$v2, affine_matrix);
+        object$v3 = apply.affine.to.coords(object$v3, affine_matrix);
+        if(flips_orientation) {
+            # Swap the second and third vertex of every triangle to restore the original winding.
+            tmp_v = object$v2;
+            object$v2 = object$v3;
+            object$v3 = tmp_v;
+        }
+        return(object);
+    }
+
+    if(inherits(object, "mesh3d") || (is.list(object) && ! is.null(object$vb))) {
+        object$vb[1:3, ] = t(apply.affine.to.coords(t(object$vb[1:3, , drop = FALSE]), affine_matrix));
+        if(! is.null(object$normals) && nrow(object$normals) >= 3L) {
+            # Normals are transformed with the linear part of the matrix (translation does not apply).
+            # Note that they must NOT be negated: the winding of the faces is restored above, so
+            # the transformed normals stay consistent with the (outward) faces, see the tests.
+            object$normals[1:3, ] = affine_matrix[1:3, 1:3, drop = FALSE] %*% object$normals[1:3, , drop = FALSE];
+        }
+        if(flips_orientation) {
+            # Same as above: restore the winding of the faces, in 'it' (triangles) or 'ib' (quads).
+            for(faces_key in c('it', 'ib')) {
+                if(! is.null(object[[faces_key]]) && nrow(object[[faces_key]]) >= 3L) {
+                    object[[faces_key]] = object[[faces_key]][winding_restore_order(nrow(object[[faces_key]])), , drop = FALSE];
+                }
+            }
+        }
+        return(object);
+    }
+
+    if(is.matrix(object)) {
+        if(ncol(object) == 3L) {   # Nx3 vertex coordinates
+            return(apply.affine.to.coords(object, affine_matrix));
+        } else if(ncol(object) == 4L) {   # Nx4 coordinates in homogeneous representation
+            return(t((affine_matrix %*% t(object)))[, 1:3, drop = FALSE]);
+        } else {
+            stop(sprintf("Matrix input must have 3 (x,y,z) or 4 (homogeneous x,y,z,w) columns, but has %d.\n", ncol(object)));
+        }
+    }
+
+    if(is.numeric(object) && ! is.matrix(object)) {
+        coords = object;
+        if(length(coords) == 3) {
+            coords = c(coords, 1L);
+        }
+        return((affine_matrix %*% coords)[1:3]);
+    }
+
+    if(is.list(object) && length(object) > 0L) {
+        # A (e.g., hemi-)list of objects: transform all elements, provided that they are supported.
+        supported = vapply(object, function(el) {
+            freesurferformats::is.fs.surface(el) || is.fs.coloredmesh(el) || is.fs.coloredvoxels(el) || is.fs.coloredpaths(el) || is.Triangles3D(el) || inherits(el, "mesh3d") || is.matrix(el) || is.list(el);
+        }, logical(1L));
+        if(all(supported)) {
+            return(lapply(object, apply.transform.matrix, affine_matrix = affine_matrix));
+        }
+    }
+
+    stop("Input type of parameter 'object' not supported. Must be a numerical vector/matrix, an fs.surface, an fs.coloredmesh, fs.coloredvoxels, fs.coloredpaths, Triangles3D or mesh3d instance, or a list of such objects.");
+}
+
+
+#' @title Apply a 4x4 affine matrix to vertex coordinates.
+#'
+#' @description Internal helper, applies the matrix to homogeneous column vectors, i.e., `v' = M %*% v`.
+#'
+#' @param coords Nx3 matrix of vertex coordinates (or a vector of length 3).
+#'
+#' @param affine_matrix a 4x4 affine matrix.
+#'
+#' @return Nx3 matrix of transformed coordinates.
+#'
+#' @keywords internal
+apply.affine.to.coords <- function(coords, affine_matrix) {
+    if(! is.matrix(coords)) {
+        coords = matrix(coords, ncol = 3L);
+    }
+    if(ncol(coords) != 3L) {
+        stop(sprintf("Coordinate input must have 3 (x,y,z) columns, but has %d.\n", ncol(coords)));
+    }
+    if(nrow(coords) == 0L) {
+        return(coords);
+    }
+    return((cbind(coords, 1) %*% t(affine_matrix))[, 1:3, drop = FALSE]);
 }
 
 
@@ -428,7 +574,7 @@ print.fs.coloredvoxels <- function(x, ...) {
 
 #' @title Visualize a brain volume overlaid on a cortical surface in 3D.
 #'
-#' @description Render a brain volume (as an isosurface or as voxels) together with a cortical surface mesh colored by morphometry data in the same interactive 3D scene. The volume coordinates are transformed to surface RAS space using the FreeSurfer \code{vox2ras_tkr} matrix, ensuring proper spatial alignment of volume and surface.
+#' @description Render a brain volume (as an isosurface or as voxels) together with a cortical surface mesh colored by morphometry data in the same interactive 3D scene. The volume coordinates are transformed to surface RAS space using the FreeSurfer \code{\link[fsbrain]{vox2ras_tkr}} matrix (more precisely \code{\link[fsbrain]{index2ras_tkr}}, see there for the R-index versus CRS distinction), ensuring proper spatial alignment of volume and surface.
 #'
 #' @param subjects_dir character string, the FreeSurfer SUBJECTS_DIR, i.e., a directory containing the data for all your subjects, each in a subdir named after the subject identifier.
 #'
@@ -542,15 +688,15 @@ vis.volume.on.surface <- function(subjects_dir, subject_id,
     vol_result = NULL;
 
     if(volume_mode == "contour") {
-        # Create isosurface in voxel CRS, transform to surface RAS, draw into scene
+        # Create isosurface in R array index space, transform to surface RAS, draw into scene
         vol_tris = misc3d::contour3d(vol_data, level = volume_level,
             color = volume_color, alpha = volume_alpha, draw = FALSE);
-        vol_tris = apply.transform(vol_tris, vox2ras_tkr());
+        vol_tris = apply.transform(vol_tris, index2ras_tkr());
         misc3d::drawScene.rgl(vol_tris, add = TRUE);
         vol_result = vol_tris;
 
     } else if(volume_mode == "voxels") {
-        # volvis.voxels handles the vox2ras_tkr transform internally
+        # volvis.voxels handles the index2ras_tkr transform internally
         # and renders directly into the current rgl scene
         vol_data_bg = vol_data;
         vol_data_bg[vol_data_bg == 0] = NA;

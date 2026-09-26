@@ -63,7 +63,7 @@ vis.volume.on.surface(
 invisible named list with entries: \code{"surface"} (the coloredmeshes from the surface rendering, a hemilist of \code{coloredmesh} instances) and \code{"volume"} (the volume rendering result: a \code{Triangles3D} object for contour mode, or a list of \code{coloredvoxels} for voxel mode).
 }
 \description{
-Render a brain volume (as an isosurface or as voxels) together with a cortical surface mesh colored by morphometry data in the same interactive 3D scene. The volume coordinates are transformed to surface RAS space using the FreeSurfer \code{vox2ras_tkr} matrix, ensuring proper spatial alignment of volume and surface.
+Render a brain volume (as an isosurface or as voxels) together with a cortical surface mesh colored by morphometry data in the same interactive 3D scene. The volume coordinates are transformed to surface RAS space using the FreeSurfer \code{\link[fsbrain]{vox2ras_tkr}} matrix (more precisely \code{\link[fsbrain]{index2ras_tkr}}, see there for the R-index versus CRS distinction), ensuring proper spatial alignment of volume and surface.
 }
 \examples{
 \dontrun{
@@ -93,15 +93,18 @@ Other visualization functions:
 \code{\link[=vis.mask.on.subject]{vis.mask.on.subject()}},
 \code{\link[=vis.region.values.on.subject]{vis.region.values.on.subject()}},
 \code{\link[=vis.rglwidget]{vis.rglwidget()}},
+\code{\link[=vis.subcortical.region.values]{vis.subcortical.region.values()}},
 \code{\link[=vis.subject.annot]{vis.subject.annot()}},
 \code{\link[=vis.subject.label]{vis.subject.label()}},
 \code{\link[=vis.subject.morph.native]{vis.subject.morph.native()}},
 \code{\link[=vis.subject.morph.standard]{vis.subject.morph.standard()}},
 \code{\link[=vis.subject.pre]{vis.subject.pre()}},
 \code{\link[=vis.symmetric.data.on.subject]{vis.symmetric.data.on.subject()}},
+\code{\link[=vis.volume.clusters]{vis.volume.clusters()}},
 \code{\link[=vislayout.from.coloredmeshes]{vislayout.from.coloredmeshes()}}
 
 Other volume visualization:
+\code{\link[=vis.volume.clusters]{vis.volume.clusters()}},
 \code{\link[=volvis.lb]{volvis.lb()}},
 \code{\link[=volvis.lb.with.surface]{volvis.lb.with.surface()}},
 \code{\link[=volvis.lightbox]{volvis.lightbox()}},

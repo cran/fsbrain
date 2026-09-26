@@ -1,6 +1,6 @@
 #' @title Download optional data for this package if required.
 #'
-#' @description Ensure that the optioanl data is available locally in the package cache. Will try to download the data only if it is not available. This data is not required for the package to work, but it is used in the examples, in the unit tests and also in the example code from the vignette. Downloading it is highly recommended.
+#' @description Ensure that the optioanl data is available locally in the package cache. Will try to download the data only if it is not available. This data is not required for the package to work, but it is used in the examples, in the unit tests and also in the example code from the vignette. Downloading it is highly recommended. This function also calls \code{\link[fsbrain]{download_fsaverage_atlases}}, so the atlases defined in fsaverage space (including the subcortical atlas, see \code{\link[fsbrain]{vis.subcortical.region.values}}) become available as well.
 #'
 #' @param scheme character string, the URL scheme to use. Either `"https"` (the default) or `"http"`. Switching to `"http"` can be useful as a fallback if the HTTPS server is unreachable.
 #'
@@ -207,6 +207,11 @@ download_optional_data <- function(scheme="https") {
 
     cfiles = pkgfilecache::ensure_files_available(pkg_info, local_filenames, urls, md5sums=md5sums);
     cfiles$file_status = NULL; # not exposed to end user
+
+    # Also make sure that the atlas files defined in declarative manifest files are available, this
+    # includes the subcortical atlas of the ENIGMA structures (see 'vis.subcortical.region.values').
+    invisible(download_fsaverage_atlases(scheme=scheme));
+
     return(invisible(cfiles));
 }
 
@@ -570,7 +575,7 @@ download_fsaverage6 <- function(accept_freesurfer_license=FALSE,
 
 #' @title Download atlas files for the fsaverage template subject.
 #'
-#' @description Download a set of cortical atlas files (annotations) defined in the space of the fsaverage template subject, based on a declarative manifest file shipped with this package. The atlases (e.g., Schaefer 100-1000, Brainnetome, HCP-MMP1, AAL3) are defined in fsaverage space, but they are not part of FreeSurfer and are not subject to the FreeSurfer license. This data is not required for the package to work.
+#' @description Download a set of atlas files defined in the space of the fsaverage template subject, based on a declarative manifest file shipped with this package. The atlases (e.g., Schaefer 100-1000, Brainnetome, HCP-MMP1, AAL3) are defined in fsaverage space, but they are not part of FreeSurfer and are not subject to the FreeSurfer license. This data is not required for the package to work. Note that some atlases are not defined on the cortical surface and ship their own surface mesh, e.g., the subcortical atlas of the ENIGMA aseg structures: for those, the 'surf/lh.subcortical' and 'label/lh.subcortical.annot' files (and the same for the right hemisphere) are downloaded, see \code{\link[fsbrain]{vis.subcortical.region.values}}.
 #'
 #' @param scheme character string, the URL scheme to use. Either `"https"` (the default) or `"http"`. Switching to `"http"` can be useful as a fallback if the HTTPS server is unreachable.
 #'
@@ -596,6 +601,8 @@ download_fsaverage_atlases <- function(scheme="https") {
 #'
 #' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_filepath(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
 #'
+#' @family fs_LR 32k template functions
+#'
 #' @export
 download_fs_LR_32_atlases <- function(scheme="https") {
     pkg_info = pkgfilecache::get_pkg_info("fsbrain");
@@ -616,10 +623,41 @@ download_fs_LR_32_atlases <- function(scheme="https") {
 #'
 #' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_filepath(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
 #'
+#' @family fs_LR 32k template functions
+#'
 #' @export
 download_fs_LR_32_meshes <- function(scheme="https") {
     pkg_info = pkgfilecache::get_pkg_info("fsbrain");
     manifest_file = system.file("extdata", "pkgfilecache_manifest_fs_LR_32_meshes.csv", package="fsbrain");
+    manifest = pkgfilecache::read_manifest(manifest_file);
+    manifest$url = paste0(scheme, "://", manifest$url);  # The manifest stores scheme-less URLs.
+    cfiles = pkgfilecache::ensure_files_available_from_manifest(pkg_info, manifest);
+    cfiles$file_status = NULL; # not exposed to end user
+    return(invisible(cfiles));
+}
+
+
+#' @title Download label files for the fs_LR 32k template.
+#'
+#' @description Download a set of label files for the fs_LR 32k template (the HCP-style surface space), based on a declarative manifest file shipped with this package. Currently this is the cortex label (`?h.cortex.label`), which defines the medial wall: all vertices which are *not* part of the label are medial wall vertices. It can be used to mask the medial wall when projecting volume data to the fs_LR 32k surface, see \code{\link[fsbrain]{template.vol2surf}} (parameter `cortex_only`). This data is not required for the package to work.
+#'
+#' @inheritParams download_fsaverage_atlases
+#'
+#' @return Named list. The list has entries: "available": vector of strings. The names of the files that are available in the local file cache. You can access them using get_optional_data_filepath(). "missing": vector of strings. The names of the files that this function was unable to retrieve.
+#'
+#' @family fs_LR 32k template functions
+#'
+#' @examples
+#' \dontrun{
+#'    fsbrain::download_fs_LR_32_labels();
+#'    subjects_dir = fsbrain::get_optional_data_filepath("subjects_dir");
+#'    cortex_lh = subject.label(subjects_dir, "fs_LR_32", "cortex.label", "lh");
+#' }
+#'
+#' @export
+download_fs_LR_32_labels <- function(scheme="https") {
+    pkg_info = pkgfilecache::get_pkg_info("fsbrain");
+    manifest_file = system.file("extdata", "pkgfilecache_manifest_fs_LR_32_labels.csv", package="fsbrain");
     manifest = pkgfilecache::read_manifest(manifest_file);
     manifest$url = paste0(scheme, "://", manifest$url);  # The manifest stores scheme-less URLs.
     cfiles = pkgfilecache::ensure_files_available_from_manifest(pkg_info, manifest);

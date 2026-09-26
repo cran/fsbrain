@@ -191,6 +191,130 @@ coloredmeshes_to_scimesh <- function(coloredmeshes, style = "default") {
 }
 
 
+#' @title Convert an fs.coloredpaths instance to scimesh line layers
+#'
+#' @description Line segments have no mesh representation, so they cannot be
+#'   passed to the scimesh renderer as meshes. They are converted to scimesh
+#'   line layers instead (see \code{scimesh::line_layer}), which the scimesh
+#'   rasterizer draws directly, without creating any geometry. This is the
+#'   cheap way to draw many thin lines, like the edges of a connectome.
+#'
+#' @param cpaths an fs.coloredpaths instance.
+#'
+#' @param style a rendering style, see \code{\link{get.rglstyle}}.
+#'
+#' @return a list of scimesh line layers (class 'scimesh_lines'). One layer per
+#'   distinct line width, because the width is a property of the layer.
+#'
+#' @keywords internal
+coloredpaths_to_scimesh <- function(cpaths, style = "default") {
+    if (!requireNamespace("scimesh", quietly = TRUE)) {
+        stop("The 'scimesh' package is required for the scimesh renderer backend.")
+    }
+    if (!is.fs.coloredpaths(cpaths)) {
+        stop("Parameter 'cpaths' must be an fs.coloredpaths instance.")
+    }
+    if (!isTRUE(cpaths$render) || nrow(cpaths$from) < 1L) {
+        return(list())
+    }
+
+    rgba <- hex_colors_to_rgba_matrix(cpaths$col)
+    style_params <- get.rglstyle.parameters(cpaths, style)
+    rgba[, "A"] <- apply.style.alpha(style_params)
+
+    layers <- list()
+    for (line_width in unique(cpaths$width)) {
+        sel <- which(cpaths$width == line_width)
+        layers[[length(layers) + 1L]] <- scimesh::line_layer(
+            from = cpaths$from[sel, , drop = FALSE],
+            to = cpaths$to[sel, , drop = FALSE],
+            colors = rgba[sel, , drop = FALSE],
+            width = line_width,
+            depth_test = isTRUE(cpaths$depth_test),
+            lit = isTRUE(cpaths$lit)
+        )
+    }
+
+    return(layers)
+}
+
+
+#' @title Collect the scimesh line layers of all fs.coloredpaths instances in a renderable list
+#'
+#' @description Walks a renderable list (a flat list of renderables, a hemilist,
+#'   or a single renderable) and converts everything that is an
+#'   fs.coloredpaths instance to scimesh line layers. Non-line renderables are
+#'   ignored, they are handled by \code{\link{coloredmeshes_to_scimesh}}.
+#'
+#' @param renderables a renderable, or a (possibly nested) list of renderables.
+#'
+#' @param style a rendering style, see \code{\link{get.rglstyle}}.
+#'
+#' @return a list of scimesh line layers, possibly empty.
+#'
+#' @keywords internal
+renderables_to_line_layers <- function(renderables, style = "default") {
+    layers <- list()
+    bbox <- NULL
+
+    collect <- function(x) {
+        if (is.fs.coloredpaths(x)) {
+            layers <<- c(layers, coloredpaths_to_scimesh(x, style))
+            bbox <<- combine_bboxes(bbox, segment_bbox(x$from, x$to))
+        } else if (is.list(x) && !inherits(x, "mesh3d") && !is.fs.coloredmesh(x)) {
+            for (entry in x) {
+                collect(entry)
+            }
+        }
+        invisible(NULL)
+    }
+
+    collect(renderables)
+    # The bounding box of all segments is needed to place the camera in scenes
+    # which contain line renderables but no mesh, see
+    # view_angle_to_scimesh_camera().
+    attr(layers, "bbox") <- bbox
+    return(layers);
+}
+
+
+#' @title Compute the bounding box of line segments.
+#'
+#' @param from matrix of segment start points.
+#'
+#' @param to matrix of segment end points.
+#'
+#' @return numeric vector of length 6: \code{c(xmin, xmax, ymin, ymax, zmin, zmax)}.
+#'
+#' @keywords internal
+segment_bbox <- function(from, to) {
+    points <- rbind(from, to)
+    return(c(min(points[, 1L]), max(points[, 1L]),
+             min(points[, 2L]), max(points[, 2L]),
+             min(points[, 3L]), max(points[, 3L])))
+}
+
+
+#' @title Combine two bounding boxes.
+#'
+#' @param bbox1 numeric vector of length 6 or NULL, see
+#'   \code{\link{segment_bbox}}.
+#'
+#' @param bbox2 numeric vector of length 6.
+#'
+#' @return numeric vector of length 6, the box that contains both input boxes.
+#'
+#' @keywords internal
+combine_bboxes <- function(bbox1, bbox2) {
+    if (is.null(bbox1)) {
+        return(bbox2)
+    }
+    return(c(min(bbox1[1L], bbox2[1L]), max(bbox1[2L], bbox2[2L]),
+             min(bbox1[3L], bbox2[3L]), max(bbox1[4L], bbox2[4L]),
+             min(bbox1[5L], bbox2[5L]), max(bbox1[6L], bbox2[6L])))
+}
+
+
 #' @title Filter a scimesh scene to the meshes visible from a given view
 #'
 #' @param scene a named list of scimesh mesh descriptors (with "lh" and/or "rh" entries).
@@ -263,12 +387,16 @@ view.angle.to.hemi.filter <- function(view_angle) {
 #'   entries, as returned by \code{coloredmeshes_to_scimesh}.
 #' @param view_angle character string, a valid view angle. See
 #'   \code{\link{get.view.angle.names}} for all valid options.
+#' @param fallback_bbox numeric vector of length 6 or NULL, the bounding box to
+#'   compute the camera from if the scene contains no mesh, see
+#'   \code{\link{segment_bbox}}. This is needed for scenes that contain only line
+#'   renderables, e.g. tracts without a context surface.
 #'
 #' @return a list with entries: \code{camera} (scimesh camera list from
 #'   \code{camera_auto}), and \code{hemi_filter} (one of "lh", "rh", or "both").
 #'
 #' @keywords internal
-view_angle_to_scimesh_camera <- function(scene, view_angle) {
+view_angle_to_scimesh_camera <- function(scene, view_angle, fallback_bbox = NULL) {
     if (!requireNamespace("scimesh", quietly = TRUE)) {
         stop("The 'scimesh' package is required for the scimesh renderer backend.")
     }
@@ -278,7 +406,7 @@ view_angle_to_scimesh_camera <- function(scene, view_angle) {
     }
 
     all_meshes <- filter_scene_by_view(scene, "both")
-    if (length(all_meshes) == 0L) {
+    if (length(all_meshes) == 0L && is.null(fallback_bbox)) {
         stop("No meshes in scene to compute camera position.")
     }
 
@@ -319,7 +447,14 @@ view_angle_to_scimesh_camera <- function(scene, view_angle) {
     # scimesh's orthographic frustum half-height equals |eye - center|, so
     # dist = sphere_radius yields a framing identical to rgl (see
     # TODO_FSBRAIN_RGL_CAM.md, Step 2).
-    bs <- bounding_sphere(hemi_meshes)
+    if (length(all_meshes) == 0L) {
+        # A scene with line renderables but without any mesh: use the bounding box
+        # of the lines instead of the mesh geometry.
+        bs <- bounding_sphere(rbind(c(fallback_bbox[1L], fallback_bbox[3L], fallback_bbox[5L]),
+                                    c(fallback_bbox[2L], fallback_bbox[4L], fallback_bbox[6L])))
+    } else {
+        bs <- bounding_sphere(hemi_meshes)
+    }
     bbox_center <- bs$center
 
     dir <- view_config$direction / sqrt(sum(view_config$direction^2))
@@ -389,7 +524,7 @@ fsbrain_style_to_scimesh_options <- function(style = "default",
         shininess <- as.numeric(rgl_params$shininess)
     }
 
-    scimesh::render_options(
+    scimesh_opts <- list(
         width = as.integer(width),
         height = as.integer(height),
         shading = shading,
@@ -399,8 +534,14 @@ fsbrain_style_to_scimesh_options <- function(style = "default",
         wireframe = wireframe,
         projection = "orthographic",
         specular_color = specular_color,
-        shininess = shininess
-    )
+        shininess = shininess,
+        # Anti-aliasing: scimesh defaults to no AA, which shows on thin lines,
+        # so fsbrain asks for supersampling. See
+        # get.fsbrain.scimesh.aa.samples() for how the factor is determined.
+        aa_samples = get.fsbrain.scimesh.aa.samples()
+    );
+
+    return(do.call(scimesh::render_options, scimesh_opts));
 }
 
 
@@ -457,6 +598,68 @@ get.fsbrain.scimesh.output.dims <- function() {
         stop("Option 'fsbrain.scimesh.output_dims' must be a numeric vector of length 2 (width, height).")
     }
     return(as.integer(dims))
+}
+
+
+#' @title The default anti-aliasing factor of the scimesh backend
+#'
+#' @description The anti-aliasing factor used for scimesh renders when neither
+#'   the fsbrain option 'fsbrain.scimesh.aa_samples' nor the scimesh-wide option
+#'   'scimesh.aa_samples' is set. scimesh renders without anti-aliasing by
+#'   default, which is most visible on thin lines (they show a staircase
+#'   pattern, unlike the hardware-drawn lines of the rgl backend), so fsbrain
+#'   requests 2x2 supersampling. Set 'fsbrain.scimesh.aa_samples' to 1 to turn
+#'   anti-aliasing off, or to 4 for higher quality.
+#'
+#' @keywords internal
+FSBRAIN_SCIMESH_DEFAULT_AA <- 2L
+
+
+#' @title Get the anti-aliasing factor for the scimesh backend
+#'
+#' @description Determines the anti-aliasing (supersampling) factor that
+#'   fsbrain passes to scimesh. The value is taken from the global option
+#'   'fsbrain.scimesh.aa_samples'; when that option is unset, an explicitly set
+#'   scimesh-wide option 'scimesh.aa_samples' is used instead, so that a
+#'   session-wide scimesh setting is honored. If neither is set, fsbrain uses
+#'   \code{FSBRAIN_SCIMESH_DEFAULT_AA} (2, i.e. 2x2 supersampling).
+#'
+#' @details The order of precedence is:
+#'   \code{fsbrain.scimesh.aa_samples} > \code{scimesh.aa_samples} >
+#'   \code{2} (the fsbrain default). The option is read for every render call,
+#'   so it can be changed at any time with \code{options()}.
+#'
+#' @return single positive integer.
+#'
+#' @examples
+#' \dontrun{
+#'   # Higher quality (4x4 supersampling) for all scimesh renders:
+#'   options(fsbrain.scimesh.aa_samples = 4);
+#'
+#'   # Back to the fsbrain default (2x2), ignoring a scimesh-wide setting:
+#'   options(fsbrain.scimesh.aa_samples = 2);
+#'
+#'   # No anti-aliasing, for fast drafts:
+#'   options(fsbrain.scimesh.aa_samples = 1);
+#' }
+#'
+#' @keywords internal
+get.fsbrain.scimesh.aa.samples <- function() {
+    aa_samples <- getOption("fsbrain.scimesh.aa_samples", default = NULL);
+    if (is.null(aa_samples)) {
+        # No fsbrain-specific setting: honor an explicit scimesh-wide setting,
+        # otherwise fall back to the fsbrain default.
+        aa_samples <- getOption("scimesh.aa_samples", default = NULL);
+        if (is.null(aa_samples)) {
+            aa_samples <- FSBRAIN_SCIMESH_DEFAULT_AA;
+        }
+    }
+    if (!is.numeric(aa_samples) || length(aa_samples) != 1L ||
+        is.na(aa_samples) || !is.finite(aa_samples) || aa_samples < 1 ||
+        abs(aa_samples - round(aa_samples)) > 1e-8) {
+        stop("Option 'fsbrain.scimesh.aa_samples' (or 'scimesh.aa_samples') must be a single positive integer, e.g. 1 (no anti-aliasing), 2 or 4.");
+    }
+    return(as.integer(round(aa_samples)));
 }
 
 

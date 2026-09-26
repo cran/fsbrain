@@ -12,6 +12,16 @@
 # options(fsbrain.scimesh.output_dims = c(1600, 900));
 
 ## ----eval=FALSE---------------------------------------------------------------
+# # 4x4 supersampling, for publication quality (slower):
+# options(fsbrain.scimesh.aa_samples = 4);
+# 
+# # No anti-aliasing, for fast drafts (fastest):
+# options(fsbrain.scimesh.aa_samples = 1);
+
+## ----eval=FALSE---------------------------------------------------------------
+# options(scimesh.aa_samples = 2);
+
+## ----eval=FALSE---------------------------------------------------------------
 # options(fsbrain.renderer_backend = "rgl");
 
 ## ----eval=FALSE---------------------------------------------------------------

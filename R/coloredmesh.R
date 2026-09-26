@@ -108,13 +108,17 @@ tmesh3d.to.fs.surface <- function(tmesh) {
 #'
 #' @param color_data vector of hex color strings, a single one or one per vertex.
 #'
-#' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
+#' @param style `NULL` or a rendering style for this mesh, see \code{\link[fsbrain]{get.rglstyle}}. Styles can be a style name (like 'default' or 'glass') or a named list of material properties (like \code{list('alpha'=0.2)}). The style is stored in the 'style' field of the returned coloredmesh and is used when the mesh is rendered with \code{style='from_mesh'}, see \code{\link[fsbrain]{vis.coloredmeshes}}. This is how you can give individual meshes in a scene their own look, e.g., to draw a cortex mesh semi-transparently behind colored data meshes.
 #'
-#' @note Do not call this directly, use \code{\link[fsbrain]{coloredmeshes.from.color}} instead.
+#' @return coloredmesh. A named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'. If not `NULL`, also "style": the rendering style for this mesh.
 #'
-#' @keywords internal
+#' @note You will usually not call this directly, but use \code{\link[fsbrain]{coloredmeshes.from.color}} or \code{\link[fsbrain]{vis.color.on.subject}} instead. It is exported for cases in which you want to build a single hemisphere of a scene manually.
+#'
+#' @family coloredmesh functions
+#'
+#' @export
 #' @importFrom rgl tmesh3d open3d wire3d
-coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=list()) {
+coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=list(), style=NULL) {
 
     if(!(hemi %in% c("lh", "rh"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh' or 'rh' but is '%s'.\n", hemi));
@@ -144,7 +148,12 @@ coloredmesh.from.color <- function(subjects_dir, subject_id, color_data, hemi, s
 
     metadata$fs_mesh = surface_mesh;
 
-    return(fs.coloredmesh(mesh, color_data, hemi, metadata=metadata));
+    cm = fs.coloredmesh(mesh, color_data, hemi, metadata=metadata);
+    if(! is.null(style)) {
+        cm$style = style;
+    }
+
+    return(cm);
 }
 
 
@@ -178,12 +187,14 @@ brain <- function(lh_cm, rh_cm) {
 #'
 #' @param metadata a named list, can contain whatever you want. Typical entries are: 'src_data' a hemilist containing the source data from which the 'color_data' was created, optional. If available, it is encoded into the coloredmesh and can be used later to plot a colorbar. 'makecmap_options': the options used to created the colormap from the data.
 #'
-#' @return named list of coloredmeshes. Each entry is a named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'.
+#' @param style `NULL` or a rendering style for the created meshes, see \code{\link[fsbrain]{get.rglstyle}}. Styles can be a style name (like 'default' or 'glass') or a named list of material properties (like \code{list('alpha'=0.2)}). The style is stored in the 'style' field of the returned coloredmeshes and is used when the meshes are rendered with \code{style='from_mesh'}, see \code{\link[fsbrain]{vis.coloredmeshes}}.
+#'
+#' @return named list of coloredmeshes. Each entry is a named list with entries: "mesh" the \code{\link[rgl]{tmesh3d}} mesh object. "col": the mesh colors. "render", logical, whether to render the mesh. "hemi": the hemisphere, one of 'lh' or 'rh'. If not `NULL`, also "style": the rendering style for the mesh.
 #'
 #' @family coloredmesh functions
 #'
 #' @export
-coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=list()) {
+coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi, surface="white", metadata=list(), style=NULL) {
     if(!(hemi %in% c("lh", "rh", "both"))) {
         stop(sprintf("Parameter 'hemi' must be one of 'lh', 'rh', or 'both' but is '%s'.\n", hemi));
     }
@@ -192,14 +203,14 @@ coloredmeshes.from.color <- function(subjects_dir, subject_id, color_data, hemi,
         if(! is.hemilist(color_data)) {
             stop("The parameter 'color_data' must be a named list with entries 'lh' and 'rh' if 'hemi' is 'both'.");
         }
-        lh_cm = coloredmesh.from.color(subjects_dir, subject_id, color_data$lh, 'lh', surface=surface, metadata=metadata);
-        rh_cm = coloredmesh.from.color(subjects_dir, subject_id, color_data$rh, 'rh', surface=surface, metadata=metadata);
+        lh_cm = coloredmesh.from.color(subjects_dir, subject_id, color_data$lh, 'lh', surface=surface, metadata=metadata, style=style);
+        rh_cm = coloredmesh.from.color(subjects_dir, subject_id, color_data$rh, 'rh', surface=surface, metadata=metadata, style=style);
         return(brain(lh_cm, rh_cm));
     } else {
         if(is.hemilist(color_data)) {
             color_data = hemilist.unwrap(color_data);
         }
-        cm = coloredmesh.from.color(subjects_dir, subject_id, color_data, hemi, surface=surface, metadata=metadata);
+        cm = coloredmesh.from.color(subjects_dir, subject_id, color_data, hemi, surface=surface, metadata=metadata, style=style);
         return(hemilist.wrap(cm, hemi));
     }
 }
@@ -534,6 +545,73 @@ coloredmesh.from.mask <- function(subjects_dir, subject_id, mask, hemi, surface=
 }
 
 
+#' @title Weld the vertices of a mesh and remove degenerate faces.
+#'
+#' @description Meshes returned by the marching cubes implementations are usually not clean: `Rvcg::vcgIsosurface()` returns duplicated vertices along with a large number of degenerate (zero area) faces which overlap the real faces, and `misc3d::contour3d()` returns completely unwelded meshes, i.e., one vertex per triangle corner. Both waste memory and render badly when lighting is enabled: the degenerate faces get invalid normals and fight for the same depth values as the real faces, which makes the surface look patched, grooved and partly black instead of smoothly shaded. This function welds vertices which are at (numerically) identical positions, removes the faces which use the same vertex more than once, and recomputes the normals.
+#'
+#' @param mesh a `mesh3d` instance, e.g., as returned by `Rvcg::vcgIsosurface()`, `misc3d::contour3d()` or \code{\link[fsbrain]{shell.extract.mesh}}.
+#'
+#' @param drop_degenerate logical, whether to remove the degenerate faces, i.e., the faces which have at least two coincident corners and thus zero area. Defaults to `TRUE`.
+#'
+#' @param add_normals logical, whether to compute per-vertex normals for the result. Defaults to `TRUE`.
+#'
+#' @param tolerance numerical scalar, the distance (in the units of the mesh coordinates, typically mm) below which two vertices are considered identical. Defaults to `1e-6`.
+#'
+#' @return a `mesh3d` instance with welded vertices, without degenerate faces, and with normals if requested. Vertices which are not used by any face are dropped, so per-vertex data like colors has to be assigned *after* welding (see the note).
+#'
+#' @note Welding changes the vertex array, so per-vertex data which is not part of the mesh (e.g., a color vector) cannot be preserved. Assign such data to the welded mesh, which is what the visualization functions do internally.
+#'
+#' @keywords internal
+#' @importFrom rgl addNormals
+mesh.weld <- function(mesh, drop_degenerate = TRUE, add_normals = TRUE, tolerance = 1e-6) {
+    if(! inherits(mesh, "mesh3d")) {
+        stop("Parameter 'mesh' must be a mesh3d instance.\n");
+    }
+    # Any normals the caller may have attached are invalidated by the welding and cleaning below.
+    mesh$normals = NULL;
+
+    # Merge vertices which are at the same position. Marching cubes implementations return such
+    # vertices either as exact duplicates (Rvcg) or as numbers which differ only in the last bits of
+    # their double representation (misc3d), so the coordinates are quantized to 'tolerance' to build
+    # the key. Note that 'rgl::mergeVertices' does not merge all of these duplicates.
+    num_verts = ncol(mesh$vb);
+    verts = t(mesh$vb[1:3, , drop = FALSE]);
+    key = paste(round(verts[, 1L] / tolerance), round(verts[, 2L] / tolerance), round(verts[, 3L] / tolerance), sep = "_");
+    first_at_position = match(key, key);     # for each vertex, the index of the first vertex at its position
+    if(! is.null(mesh$it)) {
+        mesh$it = matrix(first_at_position[mesh$it], nrow = 3L);
+    }
+    if(! is.null(mesh$ib)) {
+        mesh$ib = matrix(first_at_position[mesh$ib], nrow = 4L);
+    }
+
+    # Drop the degenerate faces (those which use the same vertex more than once), they have no area.
+    if(isTRUE(drop_degenerate) && ! is.null(mesh$it)) {
+        faces = mesh$it;
+        keep = ! (faces[1L, ] == faces[2L, ] | faces[2L, ] == faces[3L, ] | faces[1L, ] == faces[3L, ]);
+        if(! all(keep)) {
+            mesh$it = faces[, keep, drop = FALSE];
+        }
+    }
+
+    # Drop the vertices which are no longer used by any face.
+    used_vertices = sort(unique(as.vector(c(mesh$ip, mesh$is, mesh$it, mesh$ib))));
+    if(length(used_vertices) < num_verts && length(used_vertices) > 0L) {
+        mesh$vb = mesh$vb[, used_vertices, drop = FALSE];
+        renumber = function(indices) { return(match(indices, used_vertices)); };
+        if(! is.null(mesh$ip)) { mesh$ip = renumber(mesh$ip); }
+        if(! is.null(mesh$is)) { mesh$is = renumber(mesh$is); }
+        if(! is.null(mesh$it)) { mesh$it = matrix(renumber(mesh$it), nrow = 3L); }
+        if(! is.null(mesh$ib)) { mesh$ib = matrix(renumber(mesh$ib), nrow = 4L); }
+    }
+
+    if(isTRUE(add_normals)) {
+        mesh = rgl::addNormals(mesh);
+    }
+    return(mesh);
+}
+
+
 #' @title Convert a misc3d Triangles3D iso-surface to a coloredmesh.
 #'
 #' @description Convert a `misc3d::contour3d(draw = FALSE)` result (an iso-surface mesh of class 'Triangles3D', e.g., as returned by \code{\link[fsbrain]{volvis.contour}}) into an `fs.coloredmesh`. This allows rendering volume iso-surfaces with ANY renderer backend: while the rgl backend can render 'Triangles3D' instances directly, the scimesh backend requires `fs.coloredmesh` instances and converts them automatically, so you normally do not need to call this function yourself.
@@ -559,8 +637,17 @@ Triangles3D.to.coloredmesh <- function(tris, hemi = NULL, add_normals = TRUE) {
         stop("Parameter 'tris' must be a misc3d 'Triangles3D' instance (as returned by misc3d::contour3d(draw = FALSE) or fsbrain::volvis.contour) or a list of such instances.");
     }
 
+    # The fields 'v1', 'v2' and 'v3' of a misc3d 'Triangles3D' are Nx3 matrices, one row per
+    # triangle, and they are stored as consecutive blocks in 'vertices'. So the three vertices of
+    # triangle k are the k-th row of each block, i.e., rows k, num_tris+k and 2*num_tris+k.
+    num_verts_per_tri = if(is.matrix(tris$v1)) ncol(tris$v1) else length(tris$v1);
+    if(num_verts_per_tri != 3L) {
+        stop(sprintf("Expected the 'Triangles3D' fields 'v1', 'v2' and 'v3' to contain 3 vertex coordinates (x,y,z) per triangle, but 'v1' has %d.\n", num_verts_per_tri));
+    }
+    num_tris = length(tris$v1) / 3L;
+
     vertices = rbind(tris$v1, tris$v2, tris$v3);
-    faces = matrix(seq_len(nrow(vertices)), ncol = 3L, byrow = TRUE);   # each row is one triangle
+    faces = cbind(seq_len(num_tris), num_tris + seq_len(num_tris), 2L * num_tris + seq_len(num_tris));   # each row is one triangle
     mesh = rgl::tmesh3d(t(cbind(vertices, 1)), c(t(faces)));           # faces passed flat (3 x n)
 
     col = if(is.null(tris$color)) "white" else tris$color;

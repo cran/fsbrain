@@ -408,8 +408,31 @@ with the <code>fsbrain.scimesh.output_dims</code> option:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">fsbrain.scimesh.output_dims =</span> <span class="fu">c</span>(<span class="dv">1600</span>, <span class="dv">900</span>));</span></code></pre></div>
 <p>Note that <code>fsbrain.set.default.figsize()</code>, which controls
 the rgl window size, has no effect on scimesh rendering.</p>
+<p>scimesh itself renders without anti-aliasing, which is most
+noticeable on thin lines and points (they show a hard staircase pattern,
+unlike the hardware-accelerated lines that rgl draws). fsbrain therefore
+requests 2x2 supersampling by default. To change the quality, use the
+fsbrain-specific option:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># 4x4 supersampling, for publication quality (slower):</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">options</span>(<span class="at">fsbrain.scimesh.aa_samples =</span> <span class="dv">4</span>);</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># No anti-aliasing, for fast drafts (fastest):</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">options</span>(<span class="at">fsbrain.scimesh.aa_samples =</span> <span class="dv">1</span>);</span></code></pre></div>
+<p>The scimesh-wide option is honored as well, as long as the fsbrain
+option is not set, so the setting can apply to all scimesh render
+calls:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scimesh.aa_samples =</span> <span class="dv">2</span>);</span></code></pre></div>
+<p>Both options are read when fsbrain builds the render options for the
+scimesh backend, so they apply to all subsequent <code>export()</code>
+calls. The order of precedence is
+<code>fsbrain.scimesh.aa_samples</code> &gt;
+<code>scimesh.aa_samples</code> &gt; <code>2</code> (the fsbrain
+default). Higher factors cost render time and memory (the image is
+rendered internally at <code>width * aa_samples</code> by
+<code>height * aa_samples</code>), so 2 is a compromise between quality
+and speed.</p>
 <p>You can switch back to the default rgl backend at any time:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">fsbrain.renderer_backend =</span> <span class="st">&quot;rgl&quot;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">options</span>(<span class="at">fsbrain.renderer_backend =</span> <span class="st">&quot;rgl&quot;</span>);</span></code></pre></div>
 <p>Again, please keep in mind that interactive viewing (e.g.,
 <code>views = &quot;si&quot;</code>, <code>&quot;sr&quot;</code>, <code>&quot;t4&quot;</code>,
 <code>&quot;t9&quot;</code> passed to a <code>vis*</code> function) always uses
@@ -425,13 +448,13 @@ function, as shown in the rest of this document.</p>
 FreeSurfer <em>fsaverage</em> template subject (see
 <code>?download_fsaverage</code>, and note that you have to accept the
 FreeSurfer license to download it):</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;fsbrain&#39;</span>);</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="fu">download_optional_data</span>();</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="fu">download_fsaverage</span>(<span class="at">accept_freesurfer_license =</span> <span class="cn">TRUE</span>);</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>sjd <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>sj <span class="ot">=</span> <span class="st">&#39;subject1&#39;</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">library</span>(<span class="st">&#39;fsbrain&#39;</span>);</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">download_optional_data</span>();</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="fu">download_fsaverage</span>(<span class="at">accept_freesurfer_license =</span> <span class="cn">TRUE</span>);</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>sjd <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>sj <span class="ot">=</span> <span class="st">&#39;subject1&#39;</span>;</span></code></pre></div>
 </div>
 <div id="part-1-different-ways-to-use-the-export-api" class="section level1">
 <h1>Part 1: Different ways to use the export API</h1>
@@ -448,8 +471,8 @@ while still returning the coloredmeshes. We then pass it to
 <h2>A basic export</h2>
 <p>Standard-space cortical thickness, with a legend above the
 colorbar:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Cortical thickness [mm]&#39;</span>, <span class="at">output_img=</span><span class="st">&#39;thickness_t4.png&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;thickness&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Cortical thickness [mm]&#39;</span>, <span class="at">output_img=</span><span class="st">&#39;thickness_t4.png&#39;</span>);</span></code></pre></div>
 </div>
 <div id="custom-view-angles" class="section level2">
 <h2>Custom view angles</h2>
@@ -458,8 +481,8 @@ select any subset of the available views via the
 <code>view_angles</code> parameter (see
 <code>get.view.angle.names()</code> for all valid view names). Here we
 show only the two medial views, for an annotation:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.annot</span>(sjd, sj, <span class="st">&#39;aparc&#39;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">c</span>(<span class="st">&quot;sd_medial_lh&quot;</span>, <span class="st">&quot;sd_medial_rh&quot;</span>));</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.annot</span>(sjd, sj, <span class="st">&#39;aparc&#39;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">c</span>(<span class="st">&quot;sd_medial_lh&quot;</span>, <span class="st">&quot;sd_medial_rh&quot;</span>));</span></code></pre></div>
 </div>
 <div id="a-larger-grid-of-views" class="section level2">
 <h2>A larger grid of views</h2>
@@ -467,15 +490,15 @@ show only the two medial views, for an annotation:</p>
 of requested views: 4 views become a 2x2 grid, 8 views a 2x4 grid, and
 any other number produces a vertical strip. Here we use all 8 views and
 clip the tails of the mean curvature data:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;curv&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>, <span class="at">rglactions=</span><span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span>clip.data));</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">get.view.angle.names</span>(<span class="at">angle_set =</span> <span class="st">&quot;t8&quot;</span>), <span class="at">colorbar_legend=</span><span class="st">&#39;Mean curvature [mm^-1]&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.native</span>(sjd, sj, <span class="st">&#39;curv&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>, <span class="at">rglactions=</span><span class="fu">list</span>(<span class="st">&#39;trans_fun&#39;</span><span class="ot">=</span>clip.data));</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">get.view.angle.names</span>(<span class="at">angle_set =</span> <span class="st">&quot;t8&quot;</span>), <span class="at">colorbar_legend=</span><span class="st">&#39;Mean curvature [mm^-1]&#39;</span>);</span></code></pre></div>
 </div>
 <div id="forcing-a-vertical-strip-instead-of-a-grid" class="section level2">
 <h2>Forcing a vertical strip instead of a grid</h2>
 <p>You can always force a strip layout by setting
 <code>grid_like = FALSE</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">get.view.angle.names</span>(<span class="st">&quot;t4&quot;</span>), <span class="at">grid_like =</span> <span class="cn">FALSE</span>, <span class="at">colorbar_legend=</span><span class="st">&#39;Sulcal depth [mm]&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">get.view.angle.names</span>(<span class="st">&quot;t4&quot;</span>), <span class="at">grid_like =</span> <span class="cn">FALSE</span>, <span class="at">colorbar_legend=</span><span class="st">&#39;Sulcal depth [mm]&#39;</span>);</span></code></pre></div>
 </div>
 <div id="the-colorbar" class="section level2">
 <h2>The colorbar</h2>
@@ -485,16 +508,16 @@ clip the tails of the mean curvature data:</p>
 disabled with <code>FALSE</code>. Note that a colorbar is only drawn if
 the coloredmeshes contain colormap information (this is the case for
 morphometry-like data, but not for annotations or custom colors):</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Sulcal depth [mm]&#39;</span>, <span class="at">draw_colorbar =</span> <span class="st">&#39;vertical&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Sulcal depth [mm]&#39;</span>, <span class="at">draw_colorbar =</span> <span class="st">&#39;vertical&#39;</span>);</span></code></pre></div>
 </div>
 <div id="changing-the-background-color" class="section level2">
 <h2>Changing the background color</h2>
 <p>Use hex color strings (like <code>&#39;#000000&#39;</code>) rather than color
 names (like <code>&#39;black&#39;</code>), because color names are ambiguous and
 their interpretation differs between R and ImageMagick:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">c</span>(<span class="st">&quot;sd_medial_lh&quot;</span>, <span class="st">&quot;sd_medial_rh&quot;</span>), <span class="at">background_color =</span> <span class="st">&#39;#000000&#39;</span>, <span class="at">draw_colorbar =</span> <span class="cn">FALSE</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">c</span>(<span class="st">&quot;sd_medial_lh&quot;</span>, <span class="st">&quot;sd_medial_rh&quot;</span>), <span class="at">background_color =</span> <span class="st">&#39;#000000&#39;</span>, <span class="at">draw_colorbar =</span> <span class="cn">FALSE</span>);</span></code></pre></div>
 </div>
 <div id="transparent-background" class="section level2">
 <h2>Transparent background</h2>
@@ -502,8 +525,8 @@ their interpretation differs between R and ImageMagick:</p>
 publications), use the <code>transparency_color</code> parameter. It
 works by rendering on a temporary background color and later mapping
 that color to transparency in the output image:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">c</span>(<span class="st">&quot;sd_medial_lh&quot;</span>, <span class="st">&quot;sd_medial_rh&quot;</span>), <span class="at">transparency_color =</span> <span class="st">&#39;#FFFFFF&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.subject.morph.standard</span>(sjd, sj, <span class="st">&#39;sulc&#39;</span>, <span class="at">fwhm=</span><span class="st">&#39;10&#39;</span>, <span class="at">cortex_only=</span><span class="cn">TRUE</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">view_angles =</span> <span class="fu">c</span>(<span class="st">&quot;sd_medial_lh&quot;</span>, <span class="st">&quot;sd_medial_rh&quot;</span>), <span class="at">transparency_color =</span> <span class="st">&#39;#FFFFFF&#39;</span>);</span></code></pre></div>
 </div>
 </div>
 <div id="part-2-plotting-region-based-and-vertex-based-results" class="section level1">
@@ -518,20 +541,20 @@ t-map). Both kinds of results are commonly displayed on the
 <p>The function <code>vis.region.values.on.subject()</code> visualizes
 one value per atlas region. Here we show an example on the Desikan
 atlas, using simulated values:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>atlas <span class="ot">=</span> <span class="st">&#39;aparc&#39;</span>;   <span class="co"># Desikan atlas</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co"># For the left hemisphere, we just assign a subset of the atlas regions.</span></span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co"># The others will get the default value.</span></span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>lh_region_value_list <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&quot;bankssts&quot;</span><span class="ot">=</span><span class="fl">0.9</span>, <span class="st">&quot;precuneus&quot;</span><span class="ot">=</span><span class="fl">0.7</span>, <span class="st">&quot;postcentral&quot;</span><span class="ot">=</span><span class="fl">0.8</span>, <span class="st">&quot;lingual&quot;</span><span class="ot">=</span><span class="fl">0.6</span>);</span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co"># For the right hemisphere, we retrieve the full list of regions for the</span></span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co"># atlas and assign random values to all of them.</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>atlas_region_names <span class="ot">=</span> <span class="fu">get.atlas.region.names</span>(atlas, <span class="at">template_subjects_dir =</span> sjd, <span class="at">template_subject =</span> sj);</span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>rh_region_value_list <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="fu">length</span>(atlas_region_names), <span class="fl">0.8</span>, <span class="fl">0.2</span>);</span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="fu">names</span>(rh_region_value_list) <span class="ot">=</span> atlas_region_names;</span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a></span>
-<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.region.values.on.subject</span>(sjd, sj, atlas, lh_region_value_list, rh_region_value_list, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Effect size (simulated data)&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>atlas <span class="ot">=</span> <span class="st">&#39;aparc&#39;</span>;   <span class="co"># Desikan atlas</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co"># For the left hemisphere, we just assign a subset of the atlas regions.</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co"># The others will get the default value.</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>lh_region_value_list <span class="ot">=</span> <span class="fu">list</span>(<span class="st">&quot;bankssts&quot;</span><span class="ot">=</span><span class="fl">0.9</span>, <span class="st">&quot;precuneus&quot;</span><span class="ot">=</span><span class="fl">0.7</span>, <span class="st">&quot;postcentral&quot;</span><span class="ot">=</span><span class="fl">0.8</span>, <span class="st">&quot;lingual&quot;</span><span class="ot">=</span><span class="fl">0.6</span>);</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co"># For the right hemisphere, we retrieve the full list of regions for the</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co"># atlas and assign random values to all of them.</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>atlas_region_names <span class="ot">=</span> <span class="fu">get.atlas.region.names</span>(atlas, <span class="at">template_subjects_dir =</span> sjd, <span class="at">template_subject =</span> sj);</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>rh_region_value_list <span class="ot">=</span> <span class="fu">rnorm</span>(<span class="fu">length</span>(atlas_region_names), <span class="fl">0.8</span>, <span class="fl">0.2</span>);</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="fu">names</span>(rh_region_value_list) <span class="ot">=</span> atlas_region_names;</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.region.values.on.subject</span>(sjd, sj, atlas, lh_region_value_list, rh_region_value_list, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;Effect size (simulated data)&#39;</span>);</span></code></pre></div>
 </div>
 <div id="results-vertex-based" class="section level2">
 <h2>Results: vertex-based</h2>
@@ -541,17 +564,17 @@ symmetric colormap. The function
 draw a gray-scale background computed from the mean curvature of the
 cortex. Here we use the demo cluster data that ships with
 <em>fsbrain</em> and render it on <em>fsaverage</em>:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>subjects_dir <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);</span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>subject_id <span class="ot">=</span> <span class="st">&#39;fsaverage&#39;</span>;</span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>lh_demo_cluster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;lh.clusters_fsaverage.mgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;fsbrain&quot;</span>, <span class="at">mustWork =</span> <span class="cn">TRUE</span>);</span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>rh_demo_cluster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;rh.clusters_fsaverage.mgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;fsbrain&quot;</span>, <span class="at">mustWork =</span> <span class="cn">TRUE</span>);</span>
-<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a></span>
-<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>lh_clust <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(lh_demo_cluster_file);   <span class="co"># a single positive cluster (activation), the other values are 0</span></span>
-<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>rh_clust <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(rh_demo_cluster_file);   <span class="co"># two negative clusters</span></span>
-<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a></span>
-<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.symmetric.data.on.subject</span>(subjects_dir, subject_id, lh_clust, rh_clust, <span class="at">bg=</span><span class="st">&quot;curv_light&quot;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
-<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;t-value (simulated data)&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>subjects_dir <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="st">&quot;subjects_dir&quot;</span>);</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>subject_id <span class="ot">=</span> <span class="st">&#39;fsaverage&#39;</span>;</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>lh_demo_cluster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;lh.clusters_fsaverage.mgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;fsbrain&quot;</span>, <span class="at">mustWork =</span> <span class="cn">TRUE</span>);</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>rh_demo_cluster_file <span class="ot">=</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;rh.clusters_fsaverage.mgz&quot;</span>, <span class="at">package =</span> <span class="st">&quot;fsbrain&quot;</span>, <span class="at">mustWork =</span> <span class="cn">TRUE</span>);</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>lh_clust <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(lh_demo_cluster_file);   <span class="co"># a single positive cluster (activation), the other values are 0</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>rh_clust <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(rh_demo_cluster_file);   <span class="co"># two negative clusters</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>cm <span class="ot">=</span> <span class="fu">vis.symmetric.data.on.subject</span>(subjects_dir, subject_id, lh_clust, rh_clust, <span class="at">bg=</span><span class="st">&quot;curv_light&quot;</span>, <span class="at">views=</span><span class="cn">NULL</span>);</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(cm, <span class="at">colorbar_legend=</span><span class="st">&#39;t-value (simulated data)&#39;</span>);</span></code></pre></div>
 </div>
 </div>
 <div id="part-3-a-workflow-with-manually-loaded-meshes-and-data" class="section level1">
@@ -572,23 +595,23 @@ coloredmeshes with <code>coloredmesh.from.preloaded.data()</code> and
 render them with <code>export()</code>. Note that we never call a
 <code>vis.subject.*</code> function and never rely on automatic
 subjects_dir detection.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># 1. Paths to the mesh and data files (arbitrary locations, no subjects_dir needed):</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>lh_surf_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;lh.white&quot;</span>));</span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>rh_surf_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;rh.white&quot;</span>));</span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>lh_thick_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;lh.thickness&quot;</span>));</span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>rh_thick_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;rh.thickness&quot;</span>));</span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co"># 2. Load the meshes and the per-vertex data:</span></span>
-<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>lh_surf <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.surface</span>(lh_surf_file);</span>
-<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>rh_surf <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.surface</span>(rh_surf_file);</span>
-<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>lh_thick <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(lh_thick_file);</span>
-<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>rh_thick <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(rh_thick_file);</span>
-<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a></span>
-<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co"># 3. Build coloredmeshes from the preloaded data and export a multi-view figure:</span></span>
-<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>cm_lh <span class="ot">=</span> <span class="fu">coloredmesh.from.preloaded.data</span>(lh_surf, <span class="at">morph_data =</span> lh_thick, <span class="at">hemi =</span> <span class="st">&quot;lh&quot;</span>);</span>
-<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>cm_rh <span class="ot">=</span> <span class="fu">coloredmesh.from.preloaded.data</span>(rh_surf, <span class="at">morph_data =</span> rh_thick, <span class="at">hemi =</span> <span class="st">&quot;rh&quot;</span>);</span>
-<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a></span>
-<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(<span class="fu">list</span>(<span class="st">&quot;lh&quot;</span> <span class="ot">=</span> cm_lh, <span class="st">&quot;rh&quot;</span> <span class="ot">=</span> cm_rh), <span class="at">colorbar_legend =</span> <span class="st">&#39;Cortical thickness [mm]&#39;</span>, <span class="at">output_img =</span> <span class="st">&#39;manual_thickness_t4.png&#39;</span>);</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># 1. Paths to the mesh and data files (arbitrary locations, no subjects_dir needed):</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>lh_surf_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;lh.white&quot;</span>));</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>rh_surf_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;rh.white&quot;</span>));</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>lh_thick_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;lh.thickness&quot;</span>));</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>rh_thick_file <span class="ot">=</span> <span class="fu">get_optional_data_filepath</span>(<span class="fu">file.path</span>(<span class="st">&quot;subjects_dir&quot;</span>, <span class="st">&quot;subject1&quot;</span>, <span class="st">&quot;surf&quot;</span>, <span class="st">&quot;rh.thickness&quot;</span>));</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="co"># 2. Load the meshes and the per-vertex data:</span></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>lh_surf <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.surface</span>(lh_surf_file);</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>rh_surf <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.surface</span>(rh_surf_file);</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>lh_thick <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(lh_thick_file);</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>rh_thick <span class="ot">=</span> freesurferformats<span class="sc">::</span><span class="fu">read.fs.morph</span>(rh_thick_file);</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co"># 3. Build coloredmeshes from the preloaded data and export a multi-view figure:</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>cm_lh <span class="ot">=</span> <span class="fu">coloredmesh.from.preloaded.data</span>(lh_surf, <span class="at">morph_data =</span> lh_thick, <span class="at">hemi =</span> <span class="st">&quot;lh&quot;</span>);</span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>cm_rh <span class="ot">=</span> <span class="fu">coloredmesh.from.preloaded.data</span>(rh_surf, <span class="at">morph_data =</span> rh_thick, <span class="at">hemi =</span> <span class="st">&quot;rh&quot;</span>);</span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>img <span class="ot">=</span> <span class="fu">export</span>(<span class="fu">list</span>(<span class="st">&quot;lh&quot;</span> <span class="ot">=</span> cm_lh, <span class="st">&quot;rh&quot;</span> <span class="ot">=</span> cm_rh), <span class="at">colorbar_legend =</span> <span class="st">&#39;Cortical thickness [mm]&#39;</span>, <span class="at">output_img =</span> <span class="st">&#39;manual_thickness_t4.png&#39;</span>);</span></code></pre></div>
 <p>This is the same pattern that is used to visualize e.g. CIFTI
 grayordinate data on fs_LR 32k surfaces, which do not live in a
 FreeSurfer subjects directory at all.</p>
